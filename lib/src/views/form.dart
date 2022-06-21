@@ -395,6 +395,7 @@ class _FormScreenState extends State<FormScreen> {
               child: button(
                   text: 'Proceed',
                   onTap: () async {
+                    purchaseData['product_id'] = productId;
                     buyProduct();
                   }),
             ),

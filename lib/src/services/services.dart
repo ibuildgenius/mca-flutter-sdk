@@ -24,6 +24,9 @@ class WebServices {
         "product_id": productId,
       };
     }
+
+    print('Input data');
+    print(data);
     return await ApiScheme.initialisePostRequest(
         url: _initialiseSdkUrl, data: data);
   }

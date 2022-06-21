@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:my_cover_sdk/src/services/services.dart';
+import 'package:my_cover_sdk/src/views/all_products.dart';
 
 import '../theme.dart';
 import '../widgets/dialogs.dart';
@@ -40,14 +41,14 @@ class MyCoverLaunch {
         context,
         MaterialPageRoute(
           builder: (context) =>
-              // productId==''? AllP(
-              //   userId: userId,
-              //   email: userId,
-              //   productId: productId,
-              //   productData: response,
-              //   primaryColor: primaryColor,
-              //   accentColor: accentColor,
-              // ):
+              productId==''? AllProducts(
+                userId: userId,
+                email: userId,
+                productId: productId,
+                productData: response['data']['productDetails'],
+                primaryColor: primaryColor,
+                accentColor: accentColor,
+              ):
               MyCover(
             userId: userId,
             email: userId,

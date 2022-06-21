@@ -41,7 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var userId = "olakunle@mycovergenius.com";
     final mycover =
         MyCoverLaunch(context: context, userId: userId, productId: productId??'');
-    var res = mycover.charge();
+    mycover.charge();
   }
 
   @override
@@ -96,7 +96,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text('All products'),
+          title: const Text('All products')
         ),
         body: allProducts == null
             ? const Center(
