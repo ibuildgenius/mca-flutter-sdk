@@ -51,7 +51,7 @@ class InputFormField extends StatelessWidget {
         enabled: enabled,
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(fontSize: 14, color: GREY),
+        style: const TextStyle(fontSize: 14, color: DARK),
         textCapitalization: textCapitalization,
         validator: validator,
         onChanged: onChanged,

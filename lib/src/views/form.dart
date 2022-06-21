@@ -11,8 +11,10 @@ import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({Key? key, required this.productDetail}) : super(key: key);
+  const FormScreen({Key? key, required this.productDetail, this.email})
+      : super(key: key);
   final productDetail;
+  final email;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -23,7 +25,12 @@ class _FormScreenState extends State<FormScreen> {
   var productDetail;
   var forms;
   String productName = '';
+  String firstName = '';
+  String lastName = '';
+  String email = '';
+  String productId = '';
   String businessId = '';
+  String price = '';
   var purchaseData = {};
 
   @override
@@ -35,13 +42,25 @@ class _FormScreenState extends State<FormScreen> {
   setData() {
     productDetail = widget.productDetail;
     setState(() {
+      email = widget.email;
       forms = productDetail['data']['productDetails'][0]['form_fields'];
       log('form length ${forms.length}');
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       log('Product name $productName');
 
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
-      log('Business ID $businessId');
+      productId = productDetail['data']['productDetails'][0]['id'] ?? '';
+      price = productDetail['data']['productDetails'][0]['price'] ?? '';
+      var name =
+          productDetail['data']['businessDetails']['business_name'] ?? '';
+      firstName = name.toString().split(' ')[0];
+      lastName = name.toString().split(' ')[1];
+      log('Price $price');
+      log('Product ID $productId');
+      log('Lastname $lastName');
+      log('Firstname $firstName');
+      log('Email $email');
+      log('Product ID $productId');
     });
   }
 
@@ -69,6 +88,7 @@ class _FormScreenState extends State<FormScreen> {
     }
     if (response['responseText'].toString().toLowerCase().contains('title')) {
       titleList = response['data'];
+      print(titleList);
     }
     if (response['responseText'].toString().toLowerCase().contains('year')) {
       yearList = response['data'];
@@ -83,10 +103,10 @@ class _FormScreenState extends State<FormScreen> {
 
   final Map<String, TextEditingController> _controllerMap = Map();
 
-  TextEditingController _getControllerOf(String name) {
+  TextEditingController _getControllerOf(String name, {initValue}) {
     var controller = _controllerMap[name];
     if (controller == null) {
-      controller = TextEditingController(text: '');
+      controller = TextEditingController(text: initValue ?? '');
       _controllerMap[name] = controller;
     }
     return controller;
@@ -117,22 +137,30 @@ class _FormScreenState extends State<FormScreen> {
                         children: List.generate(
                             list.length,
                             (i) => ListTile(
-                                  title: Text(
-                                      title.contains('designation')
-                                          ? list[i]['name']
-                                          : list[i],
+                                  title: Text(list[i],
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 16)),
-                                  onTap: () => onSelect(
-                                      title.contains('designation')
-                                          ? list[i]['name']
-                                          : list[i]),
+                                  onTap: () => onSelect(list[i]),
                                 ))),
                   ),
                 ),
               ],
             )));
+  }
+
+  getInitialValue(String title) {
+    if (title.toLowerCase().contains('email')) {
+      return email;
+    } else if (title.toLowerCase().contains('product')) {
+      return productId;
+    } else if (title.toLowerCase().contains('first name')) {
+      return firstName;
+    } else if (title.toLowerCase().contains('last name')) {
+      return lastName;
+    } else {
+      return '';
+    }
   }
 
   Widget inputBody() {
@@ -181,7 +209,9 @@ class _FormScreenState extends State<FormScreen> {
                                 getList(item['data_url']);
                               }
 
-                              final controller = _getControllerOf(item['name']);
+                              final controller = _getControllerOf(item['name'],
+                                  initValue: getInitialValue(
+                                      item['label'].toString()));
 
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -222,6 +252,8 @@ class _FormScreenState extends State<FormScreen> {
                                               onSelect: (value) {
                                             Navigator.pop(context);
                                             controller.text = value;
+                                            purchaseData[item['name']] =
+                                                controller.text;
                                           });
                                         }
                                       } else if (item['label']
@@ -230,7 +262,6 @@ class _FormScreenState extends State<FormScreen> {
                                           .contains('date')) {
                                         var pickedDate =
                                             await selectDate(context);
-                                        print(pickedDate.toString());
 
                                         if (pickedDate != null) {
                                           controller.text =
@@ -241,7 +272,6 @@ class _FormScreenState extends State<FormScreen> {
                                     child: InputFormField(
                                         controller: controller,
                                         onChanged: (value) {
-                                          print(controller.text);
                                           purchaseData[item['name']] =
                                               controller.text;
                                         },
@@ -292,6 +322,163 @@ class _FormScreenState extends State<FormScreen> {
     ));
   }
 
+  payment(){
+    return Expanded(
+        child: Container(
+          color: WHITE,
+          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+          child: Column(
+            children: [
+              verticalSpace(),
+              Container(
+                decoration: BoxDecoration(
+                    color: GREEN.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(3)),
+                child: Padding(
+                  padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                  child: Column(
+                    children: const [
+                      Text(
+                          'Enter details as it appear on legal documents.',
+                          style: TextStyle(fontSize: 12))
+                    ],
+                  ),
+                ),
+              ),
+              verticalSpace(),
+              Expanded(
+                child: productDetail == null
+                    ? const Center(child: CircularProgressIndicator.adaptive())
+                    : forms == null
+                    ? const Center(child: CircularProgressIndicator.adaptive())
+                    : Form(
+                  key: _formKey,
+                  child: ListView.separated(
+                      separatorBuilder: (c, i) => smallVerticalSpace(),
+                      itemCount: forms.length,
+                      shrinkWrap: true,
+                      itemBuilder: (c, i) {
+                        var item = forms[i];
+                        if (item['data_url'].toString() != 'null') {
+                          getList(item['data_url']);
+                        }
+
+                        final controller = _getControllerOf(item['name'],
+                            initValue: getInitialValue(
+                                item['label'].toString()));
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            textBoxTitle(item['description']),
+                            InkWell(
+                              onTap: () async {
+                                if (item['data_url'].toString() !=
+                                    'null') {
+                                  var listItem;
+                                  if (item['data_url']
+                                      .toString()
+                                      .contains('title')) {
+                                    listItem = titleList;
+                                  }
+                                  if (item['data_url']
+                                      .toString()
+                                      .contains('state')) {
+                                    listItem = stateList;
+                                  }
+                                  if (item['data_url']
+                                      .toString()
+                                      .contains('identity')) {
+                                    listItem = identityList;
+                                  }
+                                  if (item['data_url']
+                                      .toString()
+                                      .contains('category')) {
+                                    listItem = vehicleList;
+                                  }
+                                  if (item['data_url']
+                                      .toString()
+                                      .contains('year')) {
+                                    listItem = yearList;
+                                  }
+                                  if (listItem != null) {
+                                    pickItem(listItem, item['label'],
+                                        onSelect: (value) {
+                                          Navigator.pop(context);
+                                          controller.text = value;
+                                          purchaseData[item['name']] =
+                                              controller.text;
+                                        });
+                                  }
+                                } else if (item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('date')) {
+                                  var pickedDate =
+                                  await selectDate(context);
+
+                                  if (pickedDate != null) {
+                                    controller.text =
+                                        pickedDate.toString();
+                                  }
+                                }
+                              },
+                              child: InputFormField(
+                                  controller: controller,
+                                  onChanged: (value) {
+                                    purchaseData[item['name']] =
+                                        controller.text;
+                                  },
+                                  enabled: item['data_url'].toString() !=
+                                      'null' ||
+                                      item['label']
+                                          .toString()
+                                          .toLowerCase()
+                                          .contains('date')
+                                      ? false
+                                      : true,
+                                  hint: item['label'],
+                                  suffixIcon: item['data_url']
+                                      .toString() !=
+                                      'null'
+                                      ? const Icon(Icons.expand_more)
+                                      : item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('date')
+                                      ? const Icon(Icons.event_note)
+                                      : const SizedBox.shrink(),
+                                  textCapitalization:
+                                  TextCapitalization.sentences,
+                                  keyboardType: TextInputType.text,
+                                  validator: (value) {
+                                    selectValidator(item['label'],
+                                        value: value,
+                                        error: item['errorMsg']);
+                                  }),
+                            ),
+                          ],
+                        );
+                      }),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: button(
+                    text: 'Get Covered',
+                    onTap: () async {
+                      buyProduct();
+                    }),
+              ),
+              getProductName(productName),
+            ],
+          ),
+        ));
+
+  }
+
+  // a72c4e3c-e868-4782-bb35-df6e3344ae6c
   buyProduct() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
 
@@ -299,6 +486,8 @@ class _FormScreenState extends State<FormScreen> {
         apiKey: businessId, userId: WebServices.userId, payload: purchaseData);
     Navigator.pop(context);
     if (res is String) {
+      Dialogs.failedDialog(context: context);
+
     } else {
       Dialogs.successDialog(context: context, productName: productName);
     }

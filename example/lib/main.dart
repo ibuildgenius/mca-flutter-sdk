@@ -38,7 +38,7 @@ class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
 
   initialiseSdk(context, {productId}) {
-    var userId = "kinglexy10@gmail.com";
+    var userId = "olakunle@mycovergenius.com";
     final mycover =
         MyCoverLaunch(context: context, userId: userId, productId: productId);
     var res = mycover.charge();

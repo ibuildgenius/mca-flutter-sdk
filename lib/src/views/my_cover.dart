@@ -45,6 +45,7 @@ class MyCoverLaunch {
           builder: (context) =>
               MyCover(
                 userId: userId,
+                email: userId,
                 productId: productId,
                 productData: response,
                 primaryColor: primaryColor,

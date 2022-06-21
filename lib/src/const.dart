@@ -4,6 +4,7 @@
 const String insight = 'assets/images/insight.png';
 const String book = 'assets/images/book.png';
 const String checkOut = 'assets/images/check_icon.png';
+const String failed = 'assets/images/fail_icon.png';
 const String myCover = 'assets/images/my_cover.png';
 const String mca = 'assets/images/mca.png';
 const String layer = 'assets/images/layer.png';

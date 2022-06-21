@@ -17,12 +17,14 @@ class MyCover extends StatefulWidget {
       {Key? key,
         required this.productData,
         required this.productId,
+        required this.email,
         this.accentColor = PRIMARY,
         this.primaryColor = FILL_GREEN,
         required this.userId})
       : super(key: key);
   final String productId;
   final String userId;
+  final String email;
   final productData;
   final primaryColor;
   final accentColor;
@@ -110,7 +112,7 @@ class _MyCoverState extends State<MyCover>   {
                       businessName,
                       softWrap: true,
                       style:
-                      TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                     const  TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
                     ),
                   ),
                 ],
@@ -135,7 +137,7 @@ class _MyCoverState extends State<MyCover>   {
       case BodyType.introPage:
         return introBodyScreen();
       case BodyType.detail:
-        return  FormScreen(productDetail: widget.productData);
+        return  FormScreen(productDetail: widget.productData,email: widget.email);
       case BodyType.success:
         return successScreen();
     }
