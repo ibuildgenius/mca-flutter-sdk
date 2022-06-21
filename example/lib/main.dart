@@ -1,7 +1,8 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:my_cover_sdk/my_cover_sdk.dart';
 
 void main() {
@@ -39,13 +40,15 @@ class _MyHomePageState extends State<MyHomePage> {
 
   initialiseSdk(context, {productId}) {
     var userId = "olakunle@mycovergenius.com";
-    final mycover =
-        MyCoverLaunch(context: context, userId: userId, productId: productId??'');
-    mycover.charge();
+    final mycover = MyCoverAI(
+        context: context, userId: userId, productId: productId ?? '');
+    mycover.initialise();
   }
 
   @override
   initState() {
+    // initialiseSdk(context);
+
     getAllProducts();
     super.initState();
   }
@@ -53,9 +56,6 @@ class _MyHomePageState extends State<MyHomePage> {
   static makePostRequest({apiUrl, data, apiKey}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-    print(data);
-    print(apiUrl);
-    print(apiKey);
 
     var headers;
     if (apiKey == null) {
@@ -83,7 +83,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
         setState(() => allProducts = body['data']['productDetails']);
-      }else{
+      } else {
         print('Errororororoor CHUCKS oooooooooooo');
       }
     } catch (e) {
@@ -95,9 +95,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: const Text('All products')
-        ),
+        appBar: AppBar(title: const Text('All products')),
         body: allProducts == null
             ? const Center(
                 child: CircularProgressIndicator.adaptive(
@@ -107,8 +105,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   var item = allProducts[i];
                   return ListTile(
                       title: Text(item['name']),
-                      onTap: () =>
-                          initialiseSdk(context));
+                      onTap: () =>    initialiseSdk(context));
+
+                      // initialiseSdk(context, productId: item['id']));
                 },
                 separatorBuilder: (c, i) => const SizedBox(height: 5),
                 itemCount: allProducts.length));

@@ -8,8 +8,8 @@ import 'landing.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
 
-class MyCoverLaunch {
-  const MyCoverLaunch(
+class MyCoverAI {
+  const MyCoverAI(
       {Key? key,
       required this.context,
       required this.productId,
@@ -25,7 +25,7 @@ class MyCoverLaunch {
 
   /// Starts Standard Transaction
 
-  charge() async {
+  initialise() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
 
     var response =

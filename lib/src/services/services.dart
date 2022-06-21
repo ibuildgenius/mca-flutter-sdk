@@ -1,18 +1,19 @@
-import 'package:my_cover_sdk/src/services/api_scheme.dart';
+import 'dart:io';
+
 // import 'package:connectivity/connectivity.dart';
+import 'package:http/http.dart' as http;
+import 'package:my_cover_sdk/src/services/api_scheme.dart';
 
 class WebServices {
   static const String _basUrl = 'https://staging.api.mycover.ai/v1';
   static const String _initialiseSdkUrl = '$_basUrl/sdk/initialize';
   static const String _buySdkUrl = '$_basUrl/sdk/buy';
+  static const String _uploadUrl = '$_basUrl/sdk/upload-file';
 
   static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
   static const String userId = 'olakunle@mycovergenius.com';
 
-  static initialiseSdk({
-    required String userId,
-    String? productId,
-  }) async {
+  static initialiseSdk({required String userId, String? productId}) async {
     var data;
     if (productId == '') {
       data = {
@@ -29,6 +30,59 @@ class WebServices {
     print(data);
     return await ApiScheme.initialisePostRequest(
         url: _initialiseSdkUrl, data: data);
+  }
+
+  uploadFile(context, File image) async {
+    Map<String, String> headers = {
+      "Accept": "application/json",
+    };
+
+    var uri = Uri.parse(_uploadUrl);
+
+    var request = http.MultipartRequest("POST", uri);
+
+    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+
+    request.fields['fileType'] = 'image';
+    request.headers.addAll(headers);
+
+    var response = await request.send();
+
+    return response;
+
+    // if (response.statusCode.toString() == '200' ||
+    //     response.statusCode.toString() == '201') {
+    //   Get.back();
+    //   response.stream.transform(utf8.decoder).listen((value) {
+    //     setState(() {
+    //       var body = jsonDecode(value);
+    //       print('response body');
+    //       print(body);
+    //       claimInvoiceUrl = body['data']['file_url'];
+    //       claimDetail['claimInvoiceUrl'] = claimInvoiceUrl;
+    //       claimDetail['repairEstimate'] =
+    //           amountController.text.replaceAll(',', '');
+    //       claimDetail['claimOwnerFirstName'] = firstName;
+    //       claimDetail['claimOwnerLastName'] = lastName;
+    //       claimDetail['claimOwnerEmail'] = email;
+    //       claimDetail['claimOwnerPhone'] = phone;
+    //
+    //       Get.to(
+    //               () => Platform.isIOS
+    //               ? InspectionScreen(route: 'claim')
+    //               : AndroidInspection(route: 'claim'),
+    //           arguments: {'claimDetail': claimDetail});
+    //       // Get.to(() => InspectionScreen(route: 'claim'),
+    //       //     arguments: {'claimDetail': claimDetail});
+    //     });
+    //     // submitClaim();
+    //   });
+    //   // return response;
+    // } else {
+    //   Get.back();
+    //
+    //   Dialogs.showErrorSnackBar('Error!', 'Try again');
+    // }
   }
 
   static getListData(String url) async {

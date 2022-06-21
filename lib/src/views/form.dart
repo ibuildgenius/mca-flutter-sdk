@@ -1,6 +1,8 @@
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../const.dart';
 import '../services/services.dart';
@@ -25,9 +27,8 @@ class _FormScreenState extends State<FormScreen> {
   final _formKey = GlobalKey<FormState>();
   var productDetail;
   var forms;
+  File? _image;
   String productName = '';
-  String firstName = '';
-  String lastName = '';
   String email = '';
   String productId = '';
   String businessId = '';
@@ -53,16 +54,9 @@ class _FormScreenState extends State<FormScreen> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
-      var name =
-          productDetail['data']['businessDetails']['business_name'] ?? '';
-      firstName = name.toString().split(' ')[0];
-      if (name.split(' ').length > 1) {
-        lastName = name.toString().split(' ')[1];
-      }
+
       log('Price $price');
       log('Product ID $productId');
-      log('Lastname $lastName');
-      log('Firstname $firstName');
       log('Email $email');
       log('Product ID $productId');
     });
@@ -71,6 +65,153 @@ class _FormScreenState extends State<FormScreen> {
   @override
   Widget build(BuildContext context) {
     return selectBody(bodyType);
+  }
+
+  Future<dynamic> showImagePickers(context) {
+    return showModalBottomSheet(
+        backgroundColor: Colors.transparent,
+        context: context,
+        isDismissible: true,
+        isScrollControlled: true,
+        builder: (context) {
+          return SizedBox(
+            // height: height(context) * 0.3,
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: <Widget>[
+                    Container(
+                      decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.all(Radius.circular(15))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: InkWell(
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  var selectedImage = await openCamera();
+                                  if (selectedImage != null) {
+                                    setState(() {
+                                      _image = selectedImage;
+                                    });
+                                    print(_image);
+                                  }
+                                },
+                                child: Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: const <Widget>[
+                                    Expanded(child: Text("Take a Photo")),
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Icon(
+                                        Icons.camera_alt,
+                                        size: 25,
+                                        color: PRIMARY,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Divider(),
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: InkWell(
+                                onTap: () async {
+                                  Navigator.pop(context);
+
+                                  var selectedImage = await openGallery();
+                                  if (selectedImage != null) {
+                                    setState(() {
+                                      // iDImage = selectedImage.path;
+                                      _image = selectedImage;
+                                    });
+                                    print(_image);
+                                  }
+                                },
+                                child: Row(
+                                  children: const <Widget>[
+                                    Expanded(child: Text("Photo Library")),
+                                    Padding(
+                                      padding: EdgeInsets.only(right: 10),
+                                      child: Icon(
+                                        Icons.collections,
+                                        size: 25,
+                                        color: PRIMARY,
+                                      ),
+                                    )
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: Container(
+                        height: 65,
+                        decoration: const BoxDecoration(
+                            color: WHITE,
+                            borderRadius:
+                                BorderRadius.all(Radius.circular(15))),
+                        child: const Center(
+                          child: Text(
+                            "Cancel",
+                            style: TextStyle(
+                                fontWeight: FontWeight.w600, fontSize: 18),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+
+  openCamera() async {
+    ImagePicker imagePicker = ImagePicker();
+    XFile? pickedFile = await imagePicker.pickImage(
+        source: ImageSource.camera,
+        imageQuality: 50,
+        maxHeight: 612,
+        maxWidth: 816);
+
+    if (pickedFile != null) {
+      File file = File(pickedFile.path);
+      return file;
+    }
+
+    return null;
+  }
+
+  openGallery() async {
+    ImagePicker imagePicker = ImagePicker();
+    XFile? pickedFile = await imagePicker.pickImage(
+        source: ImageSource.gallery,
+        imageQuality: 50,
+        maxHeight: 612,
+        maxWidth: 816);
+
+    if (pickedFile != null) {
+      File file = File(pickedFile.path);
+      return file;
+    }
+
+    return null;
   }
 
   var vehicleList;
@@ -158,10 +299,6 @@ class _FormScreenState extends State<FormScreen> {
       return email;
     } else if (title.toLowerCase().contains('product')) {
       return productId;
-    } else if (title.toLowerCase().contains('first name')) {
-      return firstName;
-    } else if (title.toLowerCase().contains('last name')) {
-      return lastName;
     } else {
       return '';
     }
@@ -220,7 +357,7 @@ class _FormScreenState extends State<FormScreen> {
                               return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  textBoxTitle(item['description']),
+                                  textBoxTitle(item['label']),
                                   InkWell(
                                     onTap: () async {
                                       if (item['data_url'].toString() !=
@@ -271,6 +408,11 @@ class _FormScreenState extends State<FormScreen> {
                                           controller.text =
                                               pickedDate.toString();
                                         }
+                                      } else if (item['label']
+                                          .toString()
+                                          .toLowerCase()
+                                          .contains('image')) {
+                                        showImagePickers(context);
                                       }
                                     },
                                     child: InputFormField(
@@ -284,10 +426,14 @@ class _FormScreenState extends State<FormScreen> {
                                                 item['label']
                                                     .toString()
                                                     .toLowerCase()
-                                                    .contains('date')
+                                                    .contains('date') ||
+                                                item['label']
+                                                    .toString()
+                                                    .toLowerCase()
+                                                    .contains('image')
                                             ? false
                                             : true,
-                                        hint: item['label'],
+                                        hint: item['description'],
                                         suffixIcon: item['data_url']
                                                     .toString() !=
                                                 'null'
@@ -297,7 +443,12 @@ class _FormScreenState extends State<FormScreen> {
                                                     .toLowerCase()
                                                     .contains('date')
                                                 ? const Icon(Icons.event_note)
-                                                : const SizedBox.shrink(),
+                                                : item['label']
+                                                        .toString()
+                                                        .toLowerCase()
+                                                        .contains('image')
+                                                    ? const Icon(Icons.image)
+                                                    : const SizedBox.shrink(),
                                         textCapitalization:
                                             TextCapitalization.sentences,
                                         keyboardType: TextInputType.text,
@@ -394,6 +545,77 @@ class _FormScreenState extends State<FormScreen> {
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: button(
                   text: 'Proceed',
+                  onTap: () async {
+                    purchaseData['product_id'] = productId;
+                    buyProduct();
+                  }),
+            ),
+            Center(child: getProductName(productName)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  bankDetailCard() {
+    return Expanded(
+      child: Container(
+        color: WHITE,
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            verticalSpace(),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(email, style: const TextStyle(fontSize: 12)),
+                    RichText(
+                        text: TextSpan(children: [
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: 'NGN$price',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
+                  ],
+                ),
+              ),
+            ),
+            verticalSpace(),
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Select to the Account No. below',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    )),
+                const SizedBox(height: 5),
+                const Text('Choose an option to proceed',
+                    style: TextStyle(fontSize: 12, color: DARK)),
+                verticalSpace(),
+                paymentMethodCard(transfer, 'Transfer'),
+                verticalSpace(),
+                paymentMethodCard(ussd, 'USSD'),
+              ],
+            )),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: button(
+                  text: 'I have sent the money',
                   onTap: () async {
                     purchaseData['product_id'] = productId;
                     buyProduct();
