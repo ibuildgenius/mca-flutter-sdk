@@ -283,7 +283,6 @@ class _FormScreenState extends State<FormScreen> {
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
-                  print(purchaseData);
                   buyProduct();
                 }),
           ),
