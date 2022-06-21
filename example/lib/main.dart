@@ -40,7 +40,7 @@ class _MyHomePageState extends State<MyHomePage> {
   initialiseSdk(context, {productId}) {
     var userId = "olakunle@mycovergenius.com";
     final mycover =
-        MyCoverLaunch(context: context, userId: userId, productId: productId);
+        MyCoverLaunch(context: context, userId: userId, productId: productId??'');
     var res = mycover.charge();
   }
 
@@ -108,7 +108,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   return ListTile(
                       title: Text(item['name']),
                       onTap: () =>
-                          initialiseSdk(context, productId: item['id']));
+                          initialiseSdk(context));
                 },
                 separatorBuilder: (c, i) => const SizedBox(height: 5),
                 itemCount: allProducts.length));

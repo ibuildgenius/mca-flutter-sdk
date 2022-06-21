@@ -9,6 +9,8 @@ const String myCover = 'assets/images/my_cover.png';
 const String mca = 'assets/images/mca.png';
 const String layer = 'assets/images/layer.png';
 const String hygeia = 'assets/images/hygeia.png';
+const String ussd = 'assets/images/ussd.png';
+const String transfer = 'assets/images/transfer.png';
 
 
 

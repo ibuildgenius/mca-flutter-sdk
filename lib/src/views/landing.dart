@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/buttons.dart';
@@ -11,16 +12,15 @@ import 'travel.dart';
 
 enum BodyType { introPage, detail, success }
 
-
 class MyCover extends StatefulWidget {
   const MyCover(
       {Key? key,
-        required this.productData,
-        required this.productId,
-        required this.email,
-        this.accentColor = PRIMARY,
-        this.primaryColor = FILL_GREEN,
-        required this.userId})
+      required this.productData,
+      required this.productId,
+      required this.email,
+      this.accentColor = PRIMARY,
+      this.primaryColor = FILL_GREEN,
+      required this.userId})
       : super(key: key);
   final String productId;
   final String userId;
@@ -33,13 +33,14 @@ class MyCover extends StatefulWidget {
   State<MyCover> createState() => _MyCoverState();
 }
 
-class _MyCoverState extends State<MyCover>   {
+class _MyCoverState extends State<MyCover> {
   var productDetail;
   String productName = '';
   String businessName = '';
   String businessId = '';
   String productCategory = '';
   String productId = '';
+  String logo = '';
   BodyType bodyType = BodyType.introPage;
 
   @override
@@ -53,36 +54,31 @@ class _MyCoverState extends State<MyCover>   {
     super.dispose();
   }
 
-
   fetchProductDetail() async {
-
     setState(() {
       productDetail = widget.productData;
 
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       productCategory = productDetail['data']['productDetails'][0]
-      ['productCategory']['name']
+              ['productCategory']['name']
           .toString()
           .toLowerCase();
 
       businessName =
           productDetail['data']['businessDetails']['trading_name'] ?? '';
+      logo = productDetail['data']['businessDetails']['logo'] ?? '';
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
-
-
     });
   }
-
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: BACKGROUND,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-
           child: Column(
             children: [
               Align(
@@ -101,29 +97,30 @@ class _MyCoverState extends State<MyCover>   {
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Image.asset(
-                    mca,
-                    width: 30,
-                      package: 'my_cover_sdk'
-                  ),
-                  const SizedBox(width: 10),
-                  Flexible(
-                    child: Text(
-                      businessName,
-                      softWrap: true,
-                      style:
-                     const  TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
-                    ),
-                  ),
+                  logo == ''
+                      ? Image.asset(mca, height: 30, package: 'my_cover_sdk')
+                      : Image.network(
+                          logo,
+                          height: 30,
+                        ),
+                  // const SizedBox(width: 10),
+                  // Flexible(
+                  //   child: Text(
+                  //     businessName,
+                  //     softWrap: true,
+                  //     style: const TextStyle(
+                  //         fontWeight: FontWeight.w600, fontSize: 16),
+                  //   ),
+                  // ),
                 ],
               ),
               const SizedBox(height: 10),
               selectBody(bodyType),
               const SizedBox(height: 10),
               Padding(
-                padding: const EdgeInsets.only(top: 10.0),
+                padding: const EdgeInsets.only(top: 5.0),
                 child: Image.asset(myCover,
-                    width: 170, fit: BoxFit.fitWidth, package:  'my_cover_sdk'),
+                    width: 170, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
               ),
             ],
           ),
@@ -137,7 +134,8 @@ class _MyCoverState extends State<MyCover>   {
       case BodyType.introPage:
         return introBodyScreen();
       case BodyType.detail:
-        return  FormScreen(productDetail: widget.productData,email: widget.email);
+        return FormScreen(
+            productDetail: widget.productData, email: widget.email);
       case BodyType.success:
         return successScreen();
     }
@@ -161,6 +159,8 @@ class _MyCoverState extends State<MyCover>   {
                   onTap: () => setState(() => bodyType = BodyType.detail)),
               smallVerticalSpace(),
               getProductName(productName),
+              smallVerticalSpace(),
+
             ],
           ),
         ),
@@ -181,7 +181,7 @@ class _MyCoverState extends State<MyCover>   {
       return const TravelScreen();
     }
     if (productType.contains('gadget')) {
-      return const  GadgetScreen();
+      return const GadgetScreen();
     } else {
       Navigator.pop(context);
     }
@@ -204,8 +204,8 @@ class _MyCoverState extends State<MyCover>   {
                           color: FILL_GREEN, shape: BoxShape.circle),
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
-                        child: Image.asset(checkOut, height: 55, width: 55,                      package: 'my_cover_sdk'
-                        ),
+                        child: Image.asset(checkOut,
+                            height: 55, width: 55, package: 'my_cover_sdk'),
                       ))),
               verticalSpace(),
               const Center(
@@ -233,5 +233,4 @@ class _MyCoverState extends State<MyCover>   {
       ),
     );
   }
-
 }

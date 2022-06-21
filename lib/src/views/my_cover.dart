@@ -7,14 +7,14 @@ import 'landing.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
 
-
 class MyCoverLaunch {
-  const MyCoverLaunch({Key? key,
-    required this.context,
-    required this.productId,
-    this.primaryColor = PRIMARY,
-    this.accentColor = FILL_GREEN,
-    required this.userId});
+  const MyCoverLaunch(
+      {Key? key,
+      required this.context,
+      required this.productId,
+      this.primaryColor = PRIMARY,
+      this.accentColor = FILL_GREEN,
+      required this.userId});
 
   final BuildContext context;
   final String productId;
@@ -24,33 +24,38 @@ class MyCoverLaunch {
 
   /// Starts Standard Transaction
 
-
   charge() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
 
-    var response = await
-    WebServices.initialiseSdk(userId: userId, productId: productId);
+    var response =
+        await WebServices.initialiseSdk(userId: userId, productId: productId);
     print(response);
     Navigator.pop(context);
 
     if (response is String) {
       Navigator.pop(context);
       print('failed to initialise');
-
-    }
-    else {
+    } else {
       return await Navigator.push(
         context,
         MaterialPageRoute(
           builder: (context) =>
+              // productId==''? AllP(
+              //   userId: userId,
+              //   email: userId,
+              //   productId: productId,
+              //   productData: response,
+              //   primaryColor: primaryColor,
+              //   accentColor: accentColor,
+              // ):
               MyCover(
-                userId: userId,
-                email: userId,
-                productId: productId,
-                productData: response,
-                primaryColor: primaryColor,
-                accentColor: accentColor,
-              ),
+            userId: userId,
+            email: userId,
+            productId: productId,
+            productData: response,
+            primaryColor: primaryColor,
+            accentColor: accentColor,
+          ),
         ),
       );
     }

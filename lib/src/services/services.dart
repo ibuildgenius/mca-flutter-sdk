@@ -1,6 +1,3 @@
-import 'dart:convert';
-import 'dart:io';
-
 import 'package:my_cover_sdk/src/services/api_scheme.dart';
 // import 'package:connectivity/connectivity.dart';
 
@@ -14,26 +11,33 @@ class WebServices {
 
   static initialiseSdk({
     required String userId,
-     String? productId,
+    String? productId,
   }) async {
-    var data = {
-      "client_id": userId,
-      "product_id": productId,
-    };
-    return await ApiScheme.initialisePostRequest(url: _initialiseSdkUrl, data: data);
+    var data;
+    if (productId == '') {
+      data = {
+        "client_id": userId,
+      };
+    } else {
+      data = {
+        "client_id": userId,
+        "product_id": productId,
+      };
+    }
+    return await ApiScheme.initialisePostRequest(
+        url: _initialiseSdkUrl, data: data);
   }
-
 
   static getListData(String url) async {
     return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url');
   }
 
-
   static buyProduct({
     required String userId,
     required String apiKey,
     String? productId,
-    payload,paymentChannel,
+    payload,
+    paymentChannel,
   }) async {
     //  payload = {
     //   "product_id": "a72c4e3c-e868-4782-bb35-df6e3344ae6c",
@@ -54,7 +58,7 @@ class WebServices {
     //   "title": "Chief"
     // };
 
-     paymentChannel = {"channel": "ussd", "bank_code": "082","amount":1000000};
+    paymentChannel = {"channel": "ussd", "bank_code": "082", "amount": 1000000};
 
     var data = {
       "payload": payload,
@@ -64,5 +68,4 @@ class WebServices {
     return await ApiScheme.initialisePostRequest(
         url: _buySdkUrl, data: data, apiKey: apiKey);
   }
-
 }

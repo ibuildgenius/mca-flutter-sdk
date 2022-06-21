@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
+import '../const.dart';
 import '../services/services.dart';
 import '../theme.dart';
 import '../validator.dart';
@@ -32,6 +33,7 @@ class _FormScreenState extends State<FormScreen> {
   String businessId = '';
   String price = '';
   var purchaseData = {};
+  String bodyType = 'form';
 
   @override
   void initState() {
@@ -54,7 +56,9 @@ class _FormScreenState extends State<FormScreen> {
       var name =
           productDetail['data']['businessDetails']['business_name'] ?? '';
       firstName = name.toString().split(' ')[0];
-      lastName = name.toString().split(' ')[1];
+      if (name.split(' ').length > 1) {
+        lastName = name.toString().split(' ')[1];
+      }
       log('Price $price');
       log('Product ID $productId');
       log('Lastname $lastName');
@@ -66,7 +70,7 @@ class _FormScreenState extends State<FormScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return inputBody();
+    return selectBody(bodyType);
   }
 
   var vehicleList;
@@ -313,7 +317,7 @@ class _FormScreenState extends State<FormScreen> {
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
-                  buyProduct();
+                  setState(() => bodyType = 'bank');
                 }),
           ),
           getProductName(productName),
@@ -322,160 +326,116 @@ class _FormScreenState extends State<FormScreen> {
     ));
   }
 
-  payment(){
+  selectBody(bodyType) {
+    switch (bodyType) {
+      case 'form':
+        return inputBody();
+      case 'bank':
+        return payment();
+    }
+  }
+
+  payment() {
     return Expanded(
-        child: Container(
-          color: WHITE,
-          padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-          child: Column(
-            children: [
-              verticalSpace(),
-              Container(
-                decoration: BoxDecoration(
-                    color: GREEN.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(3)),
-                child: Padding(
-                  padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-                  child: Column(
-                    children: const [
-                      Text(
-                          'Enter details as it appear on legal documents.',
-                          style: TextStyle(fontSize: 12))
-                    ],
-                  ),
+      child: Container(
+        color: WHITE,
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            verticalSpace(),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(email, style: const TextStyle(fontSize: 12)),
+                    RichText(
+                        text: TextSpan(children: [
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: 'NGN$price',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
+                  ],
                 ),
               ),
-              verticalSpace(),
-              Expanded(
-                child: productDetail == null
-                    ? const Center(child: CircularProgressIndicator.adaptive())
-                    : forms == null
-                    ? const Center(child: CircularProgressIndicator.adaptive())
-                    : Form(
-                  key: _formKey,
-                  child: ListView.separated(
-                      separatorBuilder: (c, i) => smallVerticalSpace(),
-                      itemCount: forms.length,
-                      shrinkWrap: true,
-                      itemBuilder: (c, i) {
-                        var item = forms[i];
-                        if (item['data_url'].toString() != 'null') {
-                          getList(item['data_url']);
-                        }
+            ),
+            verticalSpace(),
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const Text('Select Payment method',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    )),
+                const SizedBox(height: 5),
+                const Text('Choose an option to proceed',
+                    style: TextStyle(fontSize: 12, color: DARK)),
+                verticalSpace(),
+                paymentMethodCard(transfer, 'Transfer'),
+                verticalSpace(),
+                paymentMethodCard(ussd, 'USSD'),
+              ],
+            )),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: button(
+                  text: 'Proceed',
+                  onTap: () async {
+                    buyProduct();
+                  }),
+            ),
+            Center(child: getProductName(productName)),
+          ],
+        ),
+      ),
+    );
+  }
 
-                        final controller = _getControllerOf(item['name'],
-                            initValue: getInitialValue(
-                                item['label'].toString()));
-
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            textBoxTitle(item['description']),
-                            InkWell(
-                              onTap: () async {
-                                if (item['data_url'].toString() !=
-                                    'null') {
-                                  var listItem;
-                                  if (item['data_url']
-                                      .toString()
-                                      .contains('title')) {
-                                    listItem = titleList;
-                                  }
-                                  if (item['data_url']
-                                      .toString()
-                                      .contains('state')) {
-                                    listItem = stateList;
-                                  }
-                                  if (item['data_url']
-                                      .toString()
-                                      .contains('identity')) {
-                                    listItem = identityList;
-                                  }
-                                  if (item['data_url']
-                                      .toString()
-                                      .contains('category')) {
-                                    listItem = vehicleList;
-                                  }
-                                  if (item['data_url']
-                                      .toString()
-                                      .contains('year')) {
-                                    listItem = yearList;
-                                  }
-                                  if (listItem != null) {
-                                    pickItem(listItem, item['label'],
-                                        onSelect: (value) {
-                                          Navigator.pop(context);
-                                          controller.text = value;
-                                          purchaseData[item['name']] =
-                                              controller.text;
-                                        });
-                                  }
-                                } else if (item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('date')) {
-                                  var pickedDate =
-                                  await selectDate(context);
-
-                                  if (pickedDate != null) {
-                                    controller.text =
-                                        pickedDate.toString();
-                                  }
-                                }
-                              },
-                              child: InputFormField(
-                                  controller: controller,
-                                  onChanged: (value) {
-                                    purchaseData[item['name']] =
-                                        controller.text;
-                                  },
-                                  enabled: item['data_url'].toString() !=
-                                      'null' ||
-                                      item['label']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains('date')
-                                      ? false
-                                      : true,
-                                  hint: item['label'],
-                                  suffixIcon: item['data_url']
-                                      .toString() !=
-                                      'null'
-                                      ? const Icon(Icons.expand_more)
-                                      : item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('date')
-                                      ? const Icon(Icons.event_note)
-                                      : const SizedBox.shrink(),
-                                  textCapitalization:
-                                  TextCapitalization.sentences,
-                                  keyboardType: TextInputType.text,
-                                  validator: (value) {
-                                    selectValidator(item['label'],
-                                        value: value,
-                                        error: item['errorMsg']);
-                                  }),
-                            ),
-                          ],
-                        );
-                      }),
-                ),
+  Container paymentMethodCard(image, title) {
+    return Container(
+      decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(4),
+          border: Border.all(color: GREY.withOpacity(0.3))),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+        child: Row(
+          children: [
+            Image.asset(image,
+                height: 45, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
+            const SizedBox(width: 15),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(title,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      )),
+                  const SizedBox(height: 3),
+                  const Text('Send to a bank',
+                      style: TextStyle(fontSize: 12, color: DARK)),
+                ],
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: button(
-                    text: 'Get Covered',
-                    onTap: () async {
-                      buyProduct();
-                    }),
-              ),
-              getProductName(productName),
-            ],
-          ),
-        ));
-
+            )
+          ],
+        ),
+      ),
+    );
   }
 
   // a72c4e3c-e868-4782-bb35-df6e3344ae6c
@@ -487,7 +447,6 @@ class _FormScreenState extends State<FormScreen> {
     Navigator.pop(context);
     if (res is String) {
       Dialogs.failedDialog(context: context);
-
     } else {
       Dialogs.successDialog(context: context, productName: productName);
     }
