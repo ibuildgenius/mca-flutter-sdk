@@ -210,7 +210,6 @@ class _FormScreenState extends State<FormScreen> {
       File file = File(pickedFile.path);
       return file;
     }
-
     return null;
   }
 
@@ -233,7 +232,6 @@ class _FormScreenState extends State<FormScreen> {
     }
     if (response['responseText'].toString().toLowerCase().contains('title')) {
       titleList = response['data'];
-      print(titleList);
     }
     if (response['responseText'].toString().toLowerCase().contains('year')) {
       yearList = response['data'];
@@ -407,12 +405,18 @@ class _FormScreenState extends State<FormScreen> {
                                         if (pickedDate != null) {
                                           controller.text =
                                               pickedDate.toString();
+                                          purchaseData[item['name']] =
+                                              controller.text;
                                         }
                                       } else if (item['label']
                                           .toString()
                                           .toLowerCase()
                                           .contains('image')) {
                                         showImagePickers(context);
+                                        controller.text =
+                                            _image!.path.toString();
+                                        purchaseData[item['name']] =
+                                            controller.text;
                                       }
                                     },
                                     child: InputFormField(

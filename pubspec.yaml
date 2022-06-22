@@ -1,7 +1,7 @@
 name: my_cover_sdk
 description: Mycover sdk
 version: 0.0.1
-homepage:
+homepage: https://github.com/ibuildgenius/mca-flutter-sdk
 
 environment:
   sdk: ">=2.16.2 <3.0.0"
@@ -10,7 +10,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http:
+  http: ^0.13.4
   image_picker: ^0.8.1
 
 #  connectivity:
