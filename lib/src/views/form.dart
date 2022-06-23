@@ -420,7 +420,6 @@ class _FormScreenState extends State<FormScreen> {
                                           });
                                         }
                                       }
-
                                     },
                                     child: InputFormField(
                                         controller: controller,
@@ -465,11 +464,15 @@ class _FormScreenState extends State<FormScreen> {
                                         textCapitalization:
                                             TextCapitalization.sentences,
                                         keyboardType: TextInputType.text,
-                                        validator: (value) {
-                                          selectValidator(item['label'],
-                                              value: value,
-                                              error: item['errorMsg']);
-                                        }),
+                                        validator: (value) =>
+                                            FieldValidator.validate(value,
+                                                error: item['errorMsg'])
+                                        // {
+                                        // selectValidator(item['label'],
+                                        //     value: value,
+                                        //     error: item['errorMsg']);
+                                        // }
+                                        ),
                                   ),
                                 ],
                               );
@@ -481,14 +484,14 @@ class _FormScreenState extends State<FormScreen> {
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
-                  if (_image != null) {
-                    if (_formKey.currentState!.validate()) {
-                      setState(() => bodyType = 'bank');
-                    }
-                  } else {
-                    Dialogs.showErrorMessage(
-                        'Kindly select an image to upload');
+                  // if (_image != null) {
+                  if (_formKey.currentState!.validate()) {
+                    setState(() => bodyType = 'bank');
                   }
+                  // } else {
+                  //   Dialogs.showErrorMessage(
+                  //       'Kindly select an image to upload');
+                  // }
                 }),
           ),
           getProductName(productName),
