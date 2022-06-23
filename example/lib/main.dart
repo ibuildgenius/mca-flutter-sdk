@@ -38,20 +38,48 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
 
-  initialiseSdk(context, {productId}) {
+  initialiseSdk(context, {productId}) async {
     var userId = "olakunle@mycovergenius.com";
+
     final mycover =
         MyCoverAI(context: context, userId: userId, productId: productId ?? '');
-    mycover.initialise();
+   var response = await mycover.initialise();
+
+    if (response != null) {
+      showLoading('$response');
+    } else {
+      print("No Response!");
+    }
   }
 
   @override
   initState() {
+    super.initState();
+
     // initialiseSdk(context);
 
     getAllProducts();
-    super.initState();
   }
+
+
+
+  Future<void> showLoading(String message) {
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: Container(
+            margin: EdgeInsets.fromLTRB(30, 20, 30, 20),
+            width: double.infinity,
+            height: 50,
+            child: Text(message),
+          ),
+        );
+      },
+    );
+  }
+
 
   static makePostRequest({apiUrl, data, apiKey}) async {
     final uri = Uri.parse(apiUrl);

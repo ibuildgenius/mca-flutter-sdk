@@ -8,9 +8,12 @@ const String failed = 'assets/images/fail_icon.png';
 const String myCover = 'assets/images/my_cover.png';
 const String mca = 'assets/images/mca.png';
 const String layer = 'assets/images/layer.png';
-const String hygeia = 'assets/images/hygeia.png';
 const String ussd = 'assets/images/ussd.png';
 const String transfer = 'assets/images/transfer.png';
+const String auto = 'assets/images/auto.png';
+const String health = 'assets/images/health.png';
+const String gadget = 'assets/images/gadget.png';
+const String travel = 'assets/images/travel.png';
 
 
 

@@ -103,15 +103,6 @@ class _MyCoverState extends State<MyCover> {
                           logo,
                           height: 30,
                         ),
-                  // const SizedBox(width: 10),
-                  // Flexible(
-                  //   child: Text(
-                  //     businessName,
-                  //     softWrap: true,
-                  //     style: const TextStyle(
-                  //         fontWeight: FontWeight.w600, fontSize: 16),
-                  //   ),
-                  // ),
                 ],
               ),
               const SizedBox(height: 10),
@@ -144,7 +135,8 @@ class _MyCoverState extends State<MyCover> {
   Widget introBodyScreen() {
     return Expanded(
       child: Container(
-        color: WHITE,
+        decoration:
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 15.0),
           child: Column(
@@ -160,7 +152,6 @@ class _MyCoverState extends State<MyCover> {
               smallVerticalSpace(),
               getProductName(productName),
               smallVerticalSpace(),
-
             ],
           ),
         ),
@@ -171,16 +162,18 @@ class _MyCoverState extends State<MyCover> {
   openIntro(String productType) {
     print('product type - $productType');
 
-    if (productType.contains('auto')) {
+    if (productType.contains('auto') || productType.contains('life')) {
       return const AutoScreen();
     }
-    if (productType.contains('health')) {
+   else if (productType.contains('health')) {
       return const HealthScreen();
     }
-    if (productType.contains('travel')) {
+   else if (productType.contains('travel')) {
       return const TravelScreen();
     }
-    if (productType.contains('gadget')) {
+  else  if (productType.contains('gadget') ||
+        productType.contains('home') ||
+        productType.contains('content')) {
       return const GadgetScreen();
     } else {
       Navigator.pop(context);
@@ -233,6 +226,4 @@ class _MyCoverState extends State<MyCover> {
       ),
     );
   }
-
-
 }

@@ -26,17 +26,18 @@ class MyCoverAI {
   /// Starts Standard Transaction
 
   initialise() async {
-    Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
 
+    Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
+    Future.delayed(Duration(seconds: 1),() async {
     var response =
         await WebServices.initialiseSdk(userId: userId, productId: productId);
-    print(response);
     Navigator.pop(context);
 
     if (response is String) {
       Navigator.pop(context);
       print('failed to initialise');
-    } else {
+    }
+    else {
       return await Navigator.push(
         context,
         MaterialPageRoute(
@@ -60,5 +61,6 @@ class MyCoverAI {
         ),
       );
     }
+    });
   }
 }

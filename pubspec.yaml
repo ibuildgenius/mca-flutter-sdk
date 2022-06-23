@@ -13,8 +13,11 @@ dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.4
+  fluttertoast: ^8.0.8
   image_picker: ^0.8.1
 #  connectivity:
+  mockito: ^5.0.3
+
 
 
 dev_dependencies:

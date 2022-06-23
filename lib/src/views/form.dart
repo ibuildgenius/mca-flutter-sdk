@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -55,7 +54,6 @@ class _FormScreenState extends State<FormScreen> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
-
     });
   }
 
@@ -302,7 +300,8 @@ class _FormScreenState extends State<FormScreen> {
   Widget inputBody() {
     return Expanded(
         child: Container(
-      color: WHITE,
+      decoration:
+          BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
       padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
       child: Column(
         children: [
@@ -420,7 +419,6 @@ class _FormScreenState extends State<FormScreen> {
                                                 _image!.path.toString();
                                           });
                                         }
-
                                       }
                                     },
                                     child: InputFormField(
@@ -497,8 +495,10 @@ class _FormScreenState extends State<FormScreen> {
         return inputBody();
       case 'bank':
         return payment();
-      case 'confirm':
+      case 'transfer':
         return bankDetailCard();
+      case 'ussd':
+        return ussdCard();
     }
   }
 
@@ -620,7 +620,7 @@ class _FormScreenState extends State<FormScreen> {
                 const SizedBox(height: 5),
                 const Text('Send to the Account No. below',
                     style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 13,
                         color: PRIMARY,
                         fontWeight: FontWeight.w600)),
                 verticalSpace(),
@@ -643,6 +643,98 @@ class _FormScreenState extends State<FormScreen> {
                         fontWeight: FontWeight.w600)),
               ],
             )),
+            const Divider(),
+            verticalSpace(),
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 20.0),
+              child: button(
+                  text: 'I have sent the money',
+                  onTap: () async {
+                    Dialogs.successDialog(
+                        context: context, productName: productName);
+                  }),
+            ),
+            Center(child: getProductName(productName)),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ussdCard() {
+    return Expanded(
+      child: Container(
+        color: WHITE,
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            verticalSpace(),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(email, style: const TextStyle(fontSize: 12)),
+                    RichText(
+                        text: TextSpan(children: [
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: 'NGN$price',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
+                  ],
+                ),
+              ),
+            ),
+            verticalSpace(),
+            Expanded(
+                child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                InputFormField(
+                  // controller: controller,
+                    onChanged: (value) {},
+                    hint: 'Search for bank of your choice',
+                    prefixIcon: const Icon(Icons.search),
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.text),
+
+                const SizedBox(height: 5),
+                const Text('Use below USSD Code to make payment',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: PRIMARY,
+                        fontWeight: FontWeight.w600)),
+                verticalSpace(),
+
+                const Divider(),
+                verticalSpace(),
+                const Text('Access bank',
+                    style: TextStyle(
+                        fontSize: 20,
+                        color: DARK,
+                        fontWeight: FontWeight.w400)),
+                verticalSpace(),
+                const Text('*990*44834839938#',
+                    style: TextStyle(
+                        fontSize: 28,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+              ],
+            )),
+            const Divider(),
+            verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: button(
@@ -708,12 +800,16 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   // a72c4e3c-e868-4782-bb35-df6e3344ae6c
+
   buyProduct() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
     var paymentChannel = {
       "channel": paymentMethod,
       "amount": double.parse(purchaseData['amount'])
     };
+    if (paymentMethod.contains('ussd')) {
+      paymentChannel['bank_code'] = '082';
+    }
 
     var res = await WebServices.buyProduct(
         apiKey: businessId,
@@ -725,7 +821,7 @@ class _FormScreenState extends State<FormScreen> {
       Dialogs.failedDialog(context: context);
     } else {
       setState(() {
-        bodyType = 'confirm';
+        bodyType = paymentMethod.contains('transfer') ? 'transfer' : 'ussd';
         accountNumber = res['data']['account_number'];
         bankName = res['data']['bank'];
       });
@@ -734,7 +830,6 @@ class _FormScreenState extends State<FormScreen> {
 
   uploadImage() async {
     Dialogs.showLoading(context: context, text: 'Uploading Image');
-
     var res = await WebServices.uploadFile(context, businessId, _image!);
     Navigator.pop(context);
     if (res.statusCode.toString() == '200' ||
@@ -743,7 +838,6 @@ class _FormScreenState extends State<FormScreen> {
         setState(() {
           var body = jsonDecode(value);
           purchaseData['image'] = body['data']['file_url'];
-
           buyProduct();
         });
       });
