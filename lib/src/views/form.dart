@@ -467,6 +467,7 @@ class _FormScreenState extends State<FormScreen> {
                                         validator: (value) =>
                                             FieldValidator.validate(value,
                                                 error: item['errorMsg'])
+
                                         // {
                                         // selectValidator(item['label'],
                                         //     value: value,
