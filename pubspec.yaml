@@ -3,16 +3,17 @@ description: Mycover sdk
 version: 0.0.1
 homepage: https://github.com/ibuildgenius/mca-flutter-sdk
 
+
 environment:
   sdk: ">=2.16.2 <3.0.0"
   flutter: ">=1.17.0"
+
 
 dependencies:
   flutter:
     sdk: flutter
   http: ^0.13.4
   image_picker: ^0.8.1
-
 #  connectivity:
 
 
@@ -21,7 +22,7 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^1.0.0
 
-flutter:
 
+flutter:
   assets:
     - assets/images/

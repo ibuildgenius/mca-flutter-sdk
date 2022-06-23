@@ -40,8 +40,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
   initialiseSdk(context, {productId}) {
     var userId = "olakunle@mycovergenius.com";
-    final mycover = MyCoverAI(
-        context: context, userId: userId, productId: productId ?? '');
+    final mycover =
+        MyCoverAI(context: context, userId: userId, productId: productId ?? '');
     mycover.initialise();
   }
 
@@ -78,8 +78,11 @@ class _MyHomePageState extends State<MyHomePage> {
     var data = {
       "client_id": 'olakunle@mycovergenius.com',
     };
+
     try {
       var res = await makePostRequest(apiUrl: productUrl, data: data);
+      print(res.statusCode);
+      print(res.body);
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
         setState(() => allProducts = body['data']['productDetails']);
@@ -105,9 +108,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   var item = allProducts[i];
                   return ListTile(
                       title: Text(item['name']),
-                      onTap: () =>    initialiseSdk(context));
-
-                      // initialiseSdk(context, productId: item['id']));
+                      onTap: () =>
+                          initialiseSdk(context, productId: item['id']));
                 },
                 separatorBuilder: (c, i) => const SizedBox(height: 5),
                 itemCount: allProducts.length));

@@ -22,7 +22,7 @@ class WebServices {
     } else {
       data = {
         "client_id": userId,
-        "product_id": productId,
+        "product_id": [productId],
       };
     }
 
@@ -32,16 +32,18 @@ class WebServices {
         url: _initialiseSdkUrl, data: data);
   }
 
-  uploadFile(context, File image) async {
+  static uploadFile(context,businessId, File image) async {
     Map<String, String> headers = {
       "Accept": "application/json",
+      "x-api-id": "$businessId",
     };
-
+print(_uploadUrl);
     var uri = Uri.parse(_uploadUrl);
 
     var request = http.MultipartRequest("POST", uri);
 
-    request.files.add(await http.MultipartFile.fromPath('file', image.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('file', image.path));
 
     request.fields['fileType'] = 'image';
     request.headers.addAll(headers);
@@ -50,39 +52,6 @@ class WebServices {
 
     return response;
 
-    // if (response.statusCode.toString() == '200' ||
-    //     response.statusCode.toString() == '201') {
-    //   Get.back();
-    //   response.stream.transform(utf8.decoder).listen((value) {
-    //     setState(() {
-    //       var body = jsonDecode(value);
-    //       print('response body');
-    //       print(body);
-    //       claimInvoiceUrl = body['data']['file_url'];
-    //       claimDetail['claimInvoiceUrl'] = claimInvoiceUrl;
-    //       claimDetail['repairEstimate'] =
-    //           amountController.text.replaceAll(',', '');
-    //       claimDetail['claimOwnerFirstName'] = firstName;
-    //       claimDetail['claimOwnerLastName'] = lastName;
-    //       claimDetail['claimOwnerEmail'] = email;
-    //       claimDetail['claimOwnerPhone'] = phone;
-    //
-    //       Get.to(
-    //               () => Platform.isIOS
-    //               ? InspectionScreen(route: 'claim')
-    //               : AndroidInspection(route: 'claim'),
-    //           arguments: {'claimDetail': claimDetail});
-    //       // Get.to(() => InspectionScreen(route: 'claim'),
-    //       //     arguments: {'claimDetail': claimDetail});
-    //     });
-    //     // submitClaim();
-    //   });
-    //   // return response;
-    // } else {
-    //   Get.back();
-    //
-    //   Dialogs.showErrorSnackBar('Error!', 'Try again');
-    // }
   }
 
   static getListData(String url) async {
@@ -115,7 +84,7 @@ class WebServices {
     //   "title": "Chief"
     // };
 
-    paymentChannel = {"channel": "ussd", "bank_code": "082", "amount": 1000000};
+    // paymentChannel = {"channel": "ussd", "bank_code": "082", "amount": 1000000};
 
     var data = {
       "payload": payload,

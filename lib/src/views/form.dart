@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
@@ -29,10 +30,13 @@ class _FormScreenState extends State<FormScreen> {
   var forms;
   File? _image;
   String productName = '';
+  String accountNumber = '';
+  String bankName = '';
   String email = '';
   String productId = '';
   String businessId = '';
   String price = '';
+  String paymentMethod = '';
   var purchaseData = {};
   String bodyType = 'form';
 
@@ -47,18 +51,11 @@ class _FormScreenState extends State<FormScreen> {
     setState(() {
       email = widget.email;
       forms = productDetail['data']['productDetails'][0]['form_fields'];
-      log('form length ${forms.length}');
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
-      log('Product name $productName');
-
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
 
-      log('Price $price');
-      log('Product ID $productId');
-      log('Email $email');
-      log('Product ID $productId');
     });
   }
 
@@ -67,7 +64,7 @@ class _FormScreenState extends State<FormScreen> {
     return selectBody(bodyType);
   }
 
-  Future<dynamic> showImagePickers(context) {
+  Future<dynamic> showImagePickers(context, {onSelect}) {
     return showModalBottomSheet(
         backgroundColor: Colors.transparent,
         context: context,
@@ -82,7 +79,7 @@ class _FormScreenState extends State<FormScreen> {
                 child: Column(
                   children: <Widget>[
                     Container(
-                      decoration: BoxDecoration(
+                      decoration: const BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.all(Radius.circular(15))),
                       child: Padding(
@@ -119,7 +116,7 @@ class _FormScreenState extends State<FormScreen> {
                                 ),
                               ),
                             ),
-                            Divider(),
+                            const Divider(),
                             Padding(
                               padding: const EdgeInsets.all(8.0),
                               child: InkWell(
@@ -347,6 +344,8 @@ class _FormScreenState extends State<FormScreen> {
                               if (item['data_url'].toString() != 'null') {
                                 getList(item['data_url']);
                               }
+                              purchaseData['product_id'] = productId;
+                              purchaseData['amount'] = price;
 
                               final controller = _getControllerOf(item['name'],
                                   initValue: getInitialValue(
@@ -403,8 +402,9 @@ class _FormScreenState extends State<FormScreen> {
                                             await selectDate(context);
 
                                         if (pickedDate != null) {
-                                          controller.text =
-                                              pickedDate.toString();
+                                          controller.text = pickedDate
+                                              .toString()
+                                              .substring(0, 10);
                                           purchaseData[item['name']] =
                                               controller.text;
                                         }
@@ -412,11 +412,15 @@ class _FormScreenState extends State<FormScreen> {
                                           .toString()
                                           .toLowerCase()
                                           .contains('image')) {
-                                        showImagePickers(context);
-                                        controller.text =
-                                            _image!.path.toString();
-                                        purchaseData[item['name']] =
-                                            controller.text;
+                                        var selectedImage = await openGallery();
+                                        if (selectedImage != null) {
+                                          setState(() {
+                                            _image = selectedImage;
+                                            controller.text =
+                                                _image!.path.toString();
+                                          });
+                                        }
+
                                       }
                                     },
                                     child: InputFormField(
@@ -424,6 +428,12 @@ class _FormScreenState extends State<FormScreen> {
                                         onChanged: (value) {
                                           purchaseData[item['name']] =
                                               controller.text;
+                                          if (item['name']
+                                              .toString()
+                                              .contains('cost')) {
+                                            purchaseData['vehicle_cost'] =
+                                                double.parse(controller.text);
+                                          }
                                         },
                                         enabled: item['data_url'].toString() !=
                                                     'null' ||
@@ -487,6 +497,8 @@ class _FormScreenState extends State<FormScreen> {
         return inputBody();
       case 'bank':
         return payment();
+      case 'confirm':
+        return bankDetailCard();
     }
   }
 
@@ -540,9 +552,11 @@ class _FormScreenState extends State<FormScreen> {
                 const Text('Choose an option to proceed',
                     style: TextStyle(fontSize: 12, color: DARK)),
                 verticalSpace(),
-                paymentMethodCard(transfer, 'Transfer'),
+                paymentMethodCard(transfer, 'Transfer',
+                    'Send to a bank Account', 'bank transfer'),
                 verticalSpace(),
-                paymentMethodCard(ussd, 'USSD'),
+                paymentMethodCard(
+                    ussd, 'USSD', 'Select any bank to generate USSD', 'ussd'),
               ],
             )),
             Padding(
@@ -551,7 +565,8 @@ class _FormScreenState extends State<FormScreen> {
                   text: 'Proceed',
                   onTap: () async {
                     purchaseData['product_id'] = productId;
-                    buyProduct();
+                    purchaseData['email'] = email;
+                    uploadImage();
                   }),
             ),
             Center(child: getProductName(productName)),
@@ -600,20 +615,32 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Expanded(
                 child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const Text('Select to the Account No. below',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    )),
                 const SizedBox(height: 5),
-                const Text('Choose an option to proceed',
-                    style: TextStyle(fontSize: 12, color: DARK)),
+                const Text('Send to the Account No. below',
+                    style: TextStyle(
+                        fontSize: 14,
+                        color: PRIMARY,
+                        fontWeight: FontWeight.w600)),
                 verticalSpace(),
-                paymentMethodCard(transfer, 'Transfer'),
+                const Divider(),
                 verticalSpace(),
-                paymentMethodCard(ussd, 'USSD'),
+                Text(bankName,
+                    style: const TextStyle(
+                        fontSize: 28,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+                const Text('MyCover.ai',
+                    style: TextStyle(
+                        fontSize: 25,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+                Text(accountNumber,
+                    style: const TextStyle(
+                        fontSize: 28,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
               ],
             )),
             Padding(
@@ -621,8 +648,8 @@ class _FormScreenState extends State<FormScreen> {
               child: button(
                   text: 'I have sent the money',
                   onTap: () async {
-                    purchaseData['product_id'] = productId;
-                    buyProduct();
+                    Dialogs.successDialog(
+                        context: context, productName: productName);
                   }),
             ),
             Center(child: getProductName(productName)),
@@ -632,34 +659,49 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  Container paymentMethodCard(image, title) {
-    return Container(
-      decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(4),
-          border: Border.all(color: GREY.withOpacity(0.3))),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-        child: Row(
-          children: [
-            Image.asset(image,
-                height: 45, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
-            const SizedBox(width: 15),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      )),
-                  const SizedBox(height: 3),
-                  const Text('Send to a bank',
-                      style: TextStyle(fontSize: 12, color: DARK)),
-                ],
+  Widget paymentMethodCard(image, title, subtitle, value) {
+    return InkWell(
+      onTap: () => setState(() => paymentMethod = value),
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            border: paymentMethod == value
+                ? Border.all(color: PRIMARY, width: 1.5)
+                : Border.all(color: GREY.withOpacity(0.2), width: 0.7)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+          child: Row(
+            children: [
+              Image.asset(image,
+                  height: 45, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        )),
+                    const SizedBox(height: 3),
+                    Text(subtitle,
+                        style: const TextStyle(fontSize: 12, color: DARK)),
+                  ],
+                ),
               ),
-            )
-          ],
+              Container(
+                height: 12,
+                width: 12,
+                decoration: BoxDecoration(
+                    color: WHITE,
+                    shape: BoxShape.circle,
+                    border: paymentMethod == value
+                        ? Border.all(color: PRIMARY, width: 4)
+                        : Border.all(color: GREY, width: 1)),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -668,14 +710,45 @@ class _FormScreenState extends State<FormScreen> {
   // a72c4e3c-e868-4782-bb35-df6e3344ae6c
   buyProduct() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
+    var paymentChannel = {
+      "channel": paymentMethod,
+      "amount": double.parse(purchaseData['amount'])
+    };
 
     var res = await WebServices.buyProduct(
-        apiKey: businessId, userId: WebServices.userId, payload: purchaseData);
+        apiKey: businessId,
+        userId: WebServices.userId,
+        payload: purchaseData,
+        paymentChannel: paymentChannel);
     Navigator.pop(context);
     if (res is String) {
       Dialogs.failedDialog(context: context);
     } else {
-      Dialogs.successDialog(context: context, productName: productName);
+      setState(() {
+        bodyType = 'confirm';
+        accountNumber = res['data']['account_number'];
+        bankName = res['data']['bank'];
+      });
+    }
+  }
+
+  uploadImage() async {
+    Dialogs.showLoading(context: context, text: 'Uploading Image');
+
+    var res = await WebServices.uploadFile(context, businessId, _image!);
+    Navigator.pop(context);
+    if (res.statusCode.toString() == '200' ||
+        res.statusCode.toString() == '201') {
+      res.stream.transform(utf8.decoder).listen((value) {
+        setState(() {
+          var body = jsonDecode(value);
+          purchaseData['image'] = body['data']['file_url'];
+
+          buyProduct();
+        });
+      });
+    } else {
+      print('Error!');
     }
   }
 
