@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 import '../const.dart';
 import '../theme.dart';
@@ -6,6 +7,17 @@ import 'buttons.dart';
 import 'common.dart';
 
 class Dialogs {
+  static showErrorMessage(message) {
+    return Fluttertoast.showToast(
+        msg: message.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 2,
+        backgroundColor: Colors.red,
+        textColor: Colors.white,
+        fontSize: 13.0);
+  }
+
   static Future<void> showLoading({context, text}) async {
     return showDialog(
         barrierDismissible: false,

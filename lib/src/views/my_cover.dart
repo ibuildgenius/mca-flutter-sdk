@@ -28,13 +28,15 @@ class MyCoverAI {
   initialise() async {
 
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
-    Future.delayed(Duration(seconds: 1),() async {
+
     var response =
         await WebServices.initialiseSdk(userId: userId, productId: productId);
     Navigator.pop(context);
 
     if (response is String) {
       Navigator.pop(context);
+      Dialogs.showErrorMessage(response);
+
       print('failed to initialise');
     }
     else {
@@ -61,6 +63,6 @@ class MyCoverAI {
         ),
       );
     }
-    });
+
   }
 }

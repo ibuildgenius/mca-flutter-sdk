@@ -818,7 +818,7 @@ class _FormScreenState extends State<FormScreen> {
         paymentChannel: paymentChannel);
     Navigator.pop(context);
     if (res is String) {
-      Dialogs.failedDialog(context: context);
+      Dialogs.showErrorMessage(res);
     } else {
       setState(() {
         bodyType = paymentMethod.contains('transfer') ? 'transfer' : 'ussd';
