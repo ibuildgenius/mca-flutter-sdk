@@ -480,7 +480,12 @@ class _FormScreenState extends State<FormScreen> {
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
-                  setState(() => bodyType = 'bank');
+                  if (_image != null) {
+                    setState(() => bodyType = 'bank');
+                  } else {
+                    Dialogs.showErrorMessage(
+                        'Kindly select an image to upload');
+                  }
                 }),
           ),
           getProductName(productName),
@@ -564,9 +569,13 @@ class _FormScreenState extends State<FormScreen> {
               child: button(
                   text: 'Proceed',
                   onTap: () async {
-                    purchaseData['product_id'] = productId;
-                    purchaseData['email'] = email;
-                    uploadImage();
+                    if (paymentMethod != '') {
+                      purchaseData['product_id'] = productId;
+                      purchaseData['email'] = email;
+                      uploadImage();
+                    } else {
+                      Dialogs.showErrorMessage('Select a payment method');
+                    }
                   }),
             ),
             Center(child: getProductName(productName)),
@@ -703,13 +712,12 @@ class _FormScreenState extends State<FormScreen> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 InputFormField(
-                  // controller: controller,
+                    // controller: controller,
                     onChanged: (value) {},
                     hint: 'Search for bank of your choice',
                     prefixIcon: const Icon(Icons.search),
                     textCapitalization: TextCapitalization.sentences,
                     keyboardType: TextInputType.text),
-
                 const SizedBox(height: 5),
                 const Text('Use below USSD Code to make payment',
                     style: TextStyle(
@@ -717,7 +725,6 @@ class _FormScreenState extends State<FormScreen> {
                         color: PRIMARY,
                         fontWeight: FontWeight.w600)),
                 verticalSpace(),
-
                 const Divider(),
                 verticalSpace(),
                 const Text('Access bank',
@@ -842,6 +849,8 @@ class _FormScreenState extends State<FormScreen> {
         });
       });
     } else {
+      Dialogs.showErrorMessage(res);
+
       print('Error!');
     }
   }
