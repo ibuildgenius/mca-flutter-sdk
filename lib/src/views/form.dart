@@ -481,7 +481,9 @@ class _FormScreenState extends State<FormScreen> {
                 text: 'Get Covered',
                 onTap: () async {
                   if (_image != null) {
-                    setState(() => bodyType = 'bank');
+                    if (_formKey.currentState!.validate()) {
+                      setState(() => bodyType = 'bank');
+                    }
                   } else {
                     Dialogs.showErrorMessage(
                         'Kindly select an image to upload');
