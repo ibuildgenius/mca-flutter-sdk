@@ -87,7 +87,7 @@ class Dialogs {
                 child: Wrap(
                   children: <Widget>[
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      padding: const EdgeInsets.symmetric(horizontal: 15.0),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -115,7 +115,7 @@ class Dialogs {
                           ),
                           verticalSpace(),
                           Text(
-                              'You have just purchased \n$productName,\n\nKindly Check your email\nto complete your activation',
+                              'You have just purchased \n$productName,\nKindly Check your email\nto complete your activation',
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),

@@ -710,7 +710,8 @@ class _FormScreenState extends State<FormScreen> {
   payment() {
     return Expanded(
       child: Container(
-        color: WHITE,
+        decoration:
+        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -826,7 +827,8 @@ class _FormScreenState extends State<FormScreen> {
   bankDetailCard() {
     return Expanded(
       child: Container(
-        color: WHITE,
+        decoration:
+        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -910,7 +912,8 @@ class _FormScreenState extends State<FormScreen> {
   ussdCard() {
     return Expanded(
       child: Container(
-        color: WHITE,
+        decoration:
+        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
