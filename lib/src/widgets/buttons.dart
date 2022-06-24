@@ -53,6 +53,28 @@ Widget successButton({onTap, color, text}) => Padding(
   ),
 );
 
+Widget closeButton({onTap, color}) => Padding(
+  padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+  child: InkWell(
+    onTap: onTap,
+    child: Container(
+      decoration: BoxDecoration(
+        color: PRIMARY,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child:const Padding(
+        padding:  EdgeInsets.fromLTRB(0,20,0,20),
+        child:   Center(
+            child: Text(
+               'Yes, I want to',
+              style:  TextStyle(
+                  color: WHITE, fontSize: 12, fontWeight: FontWeight.w600),
+            )),
+      ),
+    ),
+  ),
+);
+
 Widget dialogButton({onTap, color, text}) => Padding(
   padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
   child: InkWell(

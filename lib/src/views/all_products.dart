@@ -61,6 +61,16 @@ class _AllProductsState extends State<AllProducts> {
                     .toLowerCase()
                     .replaceAll(' ', '')
                     .contains(searchTerm.toLowerCase().replaceAll(' ', '')) ||
+                i['description']
+                    .toString()
+                    .toLowerCase()
+                    .replaceAll(' ', '')
+                    .contains(searchTerm.toLowerCase().replaceAll(' ', '')) ||
+                i['prefix']
+                    .toString()
+                    .toLowerCase()
+                    .replaceAll(' ', '')
+                    .contains(searchTerm.toLowerCase().replaceAll(' ', '')) ||
                 i['name']
                     .toString()
                     .toLowerCase()
@@ -80,83 +90,85 @@ class _AllProductsState extends State<AllProducts> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 20.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: InkWell(
-                onTap: () => Navigator.pop(context),
-                child: Container(
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle, color: RED.withOpacity(0.2)),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(Icons.close, color: RED, size: 15),
-                    )),
+        body: GestureDetector(
+      onTap: () => FocusScope.of(context).unfocus(),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Align(
+                alignment: Alignment.topRight,
+                child: InkWell(
+                  onTap: () => Navigator.pop(context),
+                  child: Container(
+                      decoration: BoxDecoration(
+                          shape: BoxShape.circle, color: RED.withOpacity(0.2)),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(Icons.close, color: RED, size: 15),
+                      )),
+                ),
               ),
-            ),
-            const SizedBox(height: 10),
-            Container(
-              decoration: BoxDecoration(
-                  color: GREEN.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(3)),
-              child: const Padding(
-                padding: EdgeInsets.all(15),
-                child: Text('Select a product to buy',
-                    style:
-                        TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+              const SizedBox(height: 10),
+              Container(
+                decoration: BoxDecoration(
+                    color: GREEN.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(3)),
+                child: const Padding(
+                  padding: EdgeInsets.all(15),
+                  child: Text('Select a product to buy',
+                      style:
+                          TextStyle(fontSize: 15, fontWeight: FontWeight.w500)),
+                ),
               ),
-            ),
-            const SizedBox(height: 8),
-            InputFormField(
-                padding: 10.0,
-                onChanged: (value) {
-                  search(value);
-                },
-                hint: 'Search product',
-                prefixIcon: const Icon(Icons.search),
-                textCapitalization: TextCapitalization.sentences,
-                keyboardType: TextInputType.text),
-            Expanded(
-              child: Card(
-                elevation: 1,
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(5)),
-                child: searchList == null
-                    ? const Center(
-                        child: CircularProgressIndicator.adaptive(
-                            backgroundColor: Colors.green))
-                    : ListView.separated(
-                        shrinkWrap: true,
-                        itemBuilder: (c, i) {
-                          var item = searchList[i];
-                          return ListTile(
-                              leading: Image.asset(
-                                  getImages(item['productCategory']['name']),
-                                  height: 40,
-                                  width: 40,
-                                  package: 'my_cover_sdk'),
-                              title: Text(item['name']),
-                              trailing: Text(
-                                'NGN ${item['price']}',
-                                style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16,
-                                    color: DARK),
-                              ),
-                              subtitle: Text(item['productCategory']['name']),
-                              onTap: () => initialiseSdk(context,
-                                  productId: item['id']));
-                        },
-                        separatorBuilder: (c, i) => const SizedBox(height: 5),
-                        itemCount: searchList.length),
+              const SizedBox(height: 8),
+              InputFormField(
+                  padding: 10.0,
+                  onChanged: (value) => search(value),
+                  hint: 'Search product by name, category and description',
+                  prefixIcon: const Icon(Icons.search),
+                  textCapitalization: TextCapitalization.sentences,
+                  keyboardType: TextInputType.text),
+              Expanded(
+                child: Card(
+                  elevation: 1,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(5)),
+                  child: searchList == null
+                      ? const Center(
+                          child: CircularProgressIndicator.adaptive(
+                              backgroundColor: Colors.green))
+                      : ListView.separated(
+                          shrinkWrap: true,
+                          itemBuilder: (c, i) {
+                            var item = searchList[i];
+                            return ListTile(
+                                leading: Image.asset(
+                                    getImages(item['productCategory']['name']),
+                                    height: 40,
+                                    width: 40,
+                                    package: 'my_cover_sdk'),
+                                title: Text(item['name']),
+                                trailing: Text(
+                                    item['is_dynamic_pricing']
+                                        ? '${item['price']}%'
+                                        : 'NGN ${item['price']}',
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 16,
+                                        color: DARK)),
+                                subtitle: Text(item['productCategory']['name']),
+                                onTap: () => initialiseSdk(context,
+                                    productId: item['id']));
+                          },
+                          separatorBuilder: (c, i) => const SizedBox(height: 5),
+                          itemCount: searchList.length),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     ));

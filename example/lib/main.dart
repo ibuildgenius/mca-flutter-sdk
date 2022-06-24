@@ -43,8 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final mycover =
         MyCoverAI(context: context, userId: userId, productId: productId ?? '');
-   var response = await mycover.initialise();
-
+    var response = await mycover.initialise();
+    print(response);
     if (response != null) {
       showLoading('$response');
     } else {
@@ -61,8 +61,6 @@ class _MyHomePageState extends State<MyHomePage> {
     getAllProducts();
   }
 
-
-
   Future<void> showLoading(String message) {
     return showDialog(
       context: context,
@@ -70,7 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
       builder: (BuildContext context) {
         return AlertDialog(
           content: Container(
-            margin: EdgeInsets.fromLTRB(30, 20, 30, 20),
+            margin: const EdgeInsets.fromLTRB(30, 20, 30, 20),
             width: double.infinity,
             height: 50,
             child: Text(message),
@@ -79,7 +77,6 @@ class _MyHomePageState extends State<MyHomePage> {
       },
     );
   }
-
 
   static makePostRequest({apiUrl, data, apiKey}) async {
     final uri = Uri.parse(apiUrl);
@@ -136,14 +133,15 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemBuilder: (c, i) {
                     var item = allProducts[i];
                     return ListTile(
-                      leading: Icon(Icons.store_mall_directory),
+                        leading: Icon(Icons.store_mall_directory),
                         title: Text(item['name']),
                         subtitle: Text(item['productCategory']['name']),
                         trailing: Text(
-                          'NGN ${item['price']}',
+                          item['is_dynamic_pricing']
+                              ? '${item['price']}%'
+                              : 'NGN ${item['price']}',
                           style: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              fontSize: 16),
+                              fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                         onTap: () =>
                             initialiseSdk(context, productId: item['id']));

@@ -12,7 +12,7 @@ class Dialogs {
         msg: message.toString(),
         toastLength: Toast.LENGTH_LONG,
         gravity: ToastGravity.BOTTOM,
-        timeInSecForIosWeb: 2,
+        timeInSecForIosWeb: 4,
         backgroundColor: Colors.red,
         textColor: Colors.white,
         fontSize: 13.0);
@@ -127,6 +127,87 @@ class Dialogs {
                                   Navigator.pop(context);
                                   Navigator.pop(context);
                                 }),
+                          ),
+                          smallVerticalSpace(),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        });
+  }
+
+  static Future<void> confirmClose(context) async {
+    return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            elevation: 0,
+            contentPadding: const EdgeInsets.all(0),
+            backgroundColor: Colors.transparent,
+            content: Card(
+              color: WHITE,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+              child: SizedBox(
+                width: double.maxFinite,
+                child: Wrap(
+                  children: <Widget>[
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: <Widget>[
+                          verticalSpace(),
+                          Center(
+                              child: Container(
+                                  decoration: const BoxDecoration(
+                                      color: FILL_RED, shape: BoxShape.circle),
+                                  child: const Padding(
+                                    padding: EdgeInsets.all(8.0),
+                                    child: Icon(Icons.cancel,
+                                        color: RED, size: 45),
+                                  ))),
+                          verticalSpace(),
+                          const Center(
+                            child: Text('Quit Process',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.w700, fontSize: 21)),
+                          ),
+                          verticalSpace(),
+                          const Text(
+                              'You are about to quit this process,do you want to proceed with this action?',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: 14)),
+                          verticalSpace(),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(10, 35, 10, 35),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                    child: InkWell(
+                                        onTap: () => Navigator.pop(context),
+                                        child: const Center(
+                                          child: Padding(
+                                            padding: EdgeInsets.all(4.0),
+                                            child: Text('Cancel',style: TextStyle(fontWeight: FontWeight.w600),),
+                                          ),
+                                        ))),
+                                const SizedBox(width: 5),
+                                Expanded(
+                                  child: closeButton(
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        Navigator.pop(context);
+                                      }),
+                                ),
+                              ],
+                            ),
                           ),
                           smallVerticalSpace(),
                         ],

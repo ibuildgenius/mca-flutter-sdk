@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:developer';
 import 'dart:io';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
@@ -461,6 +462,24 @@ class _FormScreenState extends State<FormScreen> {
     ));
   }
 
+  void _showDialog(Widget child) {
+    showCupertinoModalPopup<void>(
+        context: context,
+        builder: (BuildContext context) => Container(
+              padding: const EdgeInsets.only(top: 6.0),
+              margin: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              decoration: BoxDecoration(
+                  color: WHITE, borderRadius: BorderRadius.circular(15)),
+              height: MediaQuery.of(context).size.height * 0.45,
+              child: SafeArea(
+                top: false,
+                child: child,
+              ),
+            ));
+  }
+
   int initialPage = 0;
   var chunks = [];
   var pageData = [];
@@ -525,12 +544,18 @@ class _FormScreenState extends State<FormScreen> {
                       .toString()
                       .toLowerCase()
                       .contains('date')) {
-                    var pickedDate = await selectDate(context);
-
-                    if (pickedDate != null) {
-                      controller.text = pickedDate.toString().substring(0, 10);
-                      purchaseData[item['name']] = controller.text;
-                    }
+                    _showDialog(CupertinoDatePicker(
+                      initialDateTime: DateTime.now(),
+                      mode: CupertinoDatePickerMode.date,
+                      use24hFormat: true,
+                      onDateTimeChanged: (DateTime newDate) {
+                        setState(() {
+                          controller.text = newDate.toString().substring(0, 10);
+                          purchaseData[item['name']] = controller.text;
+                        });
+                        print(newDate);
+                      },
+                    ));
                   } else if (item['label']
                       .toString()
                       .toLowerCase()
@@ -626,7 +651,26 @@ class _FormScreenState extends State<FormScreen> {
                                     .toString()
                                     .toLowerCase()
                                     .contains('image')
-                                ? const Icon(Icons.image)
+                                ? Row(
+                                    mainAxisAlignment: MainAxisAlignment.end,
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(3),
+                                            border: Border.all(color: GREY)
+                                          ),
+                                          child: const Padding(
+                                            padding: EdgeInsets.fromLTRB(
+                                                10, 5, 10, 5),
+                                            child: Text(
+                                              'Select Image',
+                                              style: TextStyle(fontSize: 12),
+                                            ),
+                                          )),
+                                     const SizedBox(width: 10),
+                                    ],
+                                  )
                                 : const SizedBox.shrink(),
                     validator: (value) {
                       var label = item['label'].toString().toLowerCase();
@@ -690,7 +734,10 @@ class _FormScreenState extends State<FormScreen> {
                           text: 'Pay ',
                           style: TextStyle(fontSize: 12, color: DARK)),
                       TextSpan(
-                          text: 'NGN$price',
+                          text: productDetail['data']['productDetails'][0]
+                                  ['is_dynamic_pricing']
+                              ? '$price%'
+                              : 'NGN$price',
                           style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -803,7 +850,10 @@ class _FormScreenState extends State<FormScreen> {
                           text: 'Pay ',
                           style: TextStyle(fontSize: 12, color: DARK)),
                       TextSpan(
-                          text: 'NGN$price',
+                          text: productDetail['data']['productDetails'][0]
+                                  ['is_dynamic_pricing']
+                              ? '$price%'
+                              : 'NGN$price',
                           style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -848,9 +898,8 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: button(
-                  text: 'I have sent the money',
-                  onTap:verifyPayment),
+              child:
+                  button(text: 'I have sent the money', onTap: verifyPayment),
             ),
             Center(child: getProductName(productName)),
           ],
@@ -885,7 +934,10 @@ class _FormScreenState extends State<FormScreen> {
                           text: 'Pay ',
                           style: TextStyle(fontSize: 12, color: DARK)),
                       TextSpan(
-                          text: 'NGN$price',
+                          text: productDetail['data']['productDetails'][0]
+                                  ['is_dynamic_pricing']
+                              ? '$price%'
+                              : 'NGN$price',
                           style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -900,15 +952,6 @@ class _FormScreenState extends State<FormScreen> {
                 child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                // InkWell(
-                //   onTap: openUssdProvider,
-                //   child:const  InputFormField(
-                //       enabled: false,
-                //       hint: 'Search for bank of your choice',
-                //       prefixIcon: Icon(Icons.search),
-                //       textCapitalization: TextCapitalization.sentences,
-                //       keyboardType: TextInputType.text),
-                // ),
                 const SizedBox(height: 5),
                 const Text('Use below USSD Code to make payment',
                     style: TextStyle(
@@ -1047,10 +1090,17 @@ class _FormScreenState extends State<FormScreen> {
     var res = await WebServices.verifyPayment(reference, businessId);
     print(res);
 
-    Navigator.pop(context);
     if (res is String) {
-      Dialogs.showErrorMessage(res);
+      if (res.contains('retry')) {
+        Future.delayed(const Duration(seconds: 20), () => verifyPayment());
+      } else {
+        Navigator.pop(context);
+
+        Dialogs.failedDialog(context: context);
+      }
     } else {
+      Navigator.pop(context);
+
       Dialogs.successDialog(context: context, productName: productName);
     }
   }

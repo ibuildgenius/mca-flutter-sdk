@@ -4,6 +4,7 @@ import '../const.dart';
 import '../theme.dart';
 import '../widgets/buttons.dart';
 import '../widgets/common.dart';
+import '../widgets/dialogs.dart';
 import 'auto.dart';
 import 'form.dart';
 import 'gadget.dart';
@@ -36,6 +37,7 @@ class MyCover extends StatefulWidget {
 class _MyCoverState extends State<MyCover> {
   var productDetail;
   String productName = '';
+  String provider = '';
   String businessName = '';
   String businessId = '';
   String productCategory = '';
@@ -57,8 +59,8 @@ class _MyCoverState extends State<MyCover> {
   fetchProductDetail() async {
     setState(() {
       productDetail = widget.productData;
-
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
+      provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
       productCategory = productDetail['data']['productDetails'][0]
               ['productCategory']['name']
           .toString()
@@ -77,24 +79,43 @@ class _MyCoverState extends State<MyCover> {
     return Scaffold(
       backgroundColor: BACKGROUND,
       body: GestureDetector(
-        onTap: ()=>FocusScope.of(context).unfocus(),
+        onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.topRight,
-                  child: InkWell(
-                    onTap: () => Navigator.pop(context),
-                    child: Container(
-                        decoration: BoxDecoration(
-                            shape: BoxShape.circle, color: RED.withOpacity(0.2)),
-                        child: const Padding(
-                          padding: EdgeInsets.all(8.0),
-                          child: Icon(Icons.close, color: RED, size: 15),
-                        )),
-                  ),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    InkWell(
+                      onTap: () {
+                        bodyType == BodyType.introPage
+                            ? Dialogs.confirmClose(context)
+                            : setState(() => bodyType = BodyType.introPage);
+                      },
+                      child: Container(
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: WHITE.withOpacity(0.7)),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child:
+                                Icon(Icons.arrow_back, color: BLACK, size: 15),
+                          )),
+                    ),
+                    InkWell(
+                      onTap: () => Dialogs.confirmClose(context),
+                      child: Container(
+                          decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: RED.withOpacity(0.2)),
+                          child: const Padding(
+                            padding: EdgeInsets.all(8.0),
+                            child: Icon(Icons.close, color: RED, size: 15),
+                          )),
+                    ),
+                  ],
                 ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -113,7 +134,9 @@ class _MyCoverState extends State<MyCover> {
                 Padding(
                   padding: const EdgeInsets.only(top: 5.0),
                   child: Image.asset(myCover,
-                      width: 170, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
+                      width: 170,
+                      fit: BoxFit.fitWidth,color: LIGHT_GREY,
+                      package: 'my_cover_sdk'),
                 ),
               ],
             ),
@@ -153,7 +176,7 @@ class _MyCoverState extends State<MyCover> {
                   text: 'Get Covered',
                   onTap: () => setState(() => bodyType = BodyType.detail)),
               smallVerticalSpace(),
-              getProductName(productName),
+              getProductName(provider.toUpperCase()),
               smallVerticalSpace(),
             ],
           ),
@@ -167,14 +190,11 @@ class _MyCoverState extends State<MyCover> {
 
     if (productType.contains('auto') || productType.contains('life')) {
       return const AutoScreen();
-    }
-   else if (productType.contains('health')) {
+    } else if (productType.contains('health')) {
       return const HealthScreen();
-    }
-   else if (productType.contains('travel')) {
+    } else if (productType.contains('travel')) {
       return const TravelScreen();
-    }
-  else  if (productType.contains('gadget') ||
+    } else if (productType.contains('gadget') ||
         productType.contains('home') ||
         productType.contains('content')) {
       return const GadgetScreen();
