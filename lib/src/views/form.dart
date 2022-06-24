@@ -649,7 +649,6 @@ class _FormScreenState extends State<FormScreen> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               const SizedBox(width: 10),
-
                               Container(
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(3),
@@ -662,7 +661,6 @@ class _FormScreenState extends State<FormScreen> {
                                     ),
                                   )),
                               const SizedBox(width: 10),
-
                             ],
                           )
                         : null,
@@ -709,6 +707,8 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  bool enabledUssd = false;
+
   payment() {
     return Expanded(
       child: Container(
@@ -750,7 +750,7 @@ class _FormScreenState extends State<FormScreen> {
               ),
             ),
             verticalSpace(),
-            paymentMethod == 'ussd'
+            paymentMethod == 'ussd' && enabledUssd
                 ? Expanded(
                     child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -775,9 +775,9 @@ class _FormScreenState extends State<FormScreen> {
                       verticalSpace(),
                       Text(bankName,
                           style: const TextStyle(
-                              fontSize: 25,
+                              fontSize: 23,
                               color: DARK,
-                              fontWeight: FontWeight.w400)),
+                              fontWeight: FontWeight.w600)),
                       Text('CODE - $bankCode',
                           style: const TextStyle(
                               fontSize: 20,
@@ -813,7 +813,11 @@ class _FormScreenState extends State<FormScreen> {
                   onTap: () async {
                     if (paymentMethod != '') {
                       purchaseData['product_id'] = productId;
-                      uploadImage();
+                      if (paymentMethod == 'ussd' && !enabledUssd) {
+                        setState(() => enabledUssd = true);
+                      } else {
+                        uploadImage();
+                      }
                     } else {
                       Dialogs.showErrorMessage('Select a payment method');
                     }
@@ -1050,8 +1054,6 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  // a72c4e3c-e868-4782-bb35-df6e3344ae6c
-
   buyProduct() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
     var paymentChannel = {
@@ -1115,25 +1117,26 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   uploadImage() async {
-    if(_image!=null){
-    Dialogs.showLoading(context: context, text: 'Uploading Image');
-    var res = await WebServices.uploadFile(context, businessId, _image!);
-    Navigator.pop(context);
-    if (res.statusCode.toString() == '200' ||
-        res.statusCode.toString() == '201') {
-      res.stream.transform(utf8.decoder).listen((value) {
-        setState(() {
-          var body = jsonDecode(value);
-          purchaseData['image'] = body['data']['file_url'];
-          purchaseData['identification_url'] = body['data']['file_url'];
-          buyProduct();
+    if (_image != null) {
+      Dialogs.showLoading(context: context, text: 'Uploading Image');
+      var res = await WebServices.uploadFile(context, businessId, _image!);
+      Navigator.pop(context);
+      if (res.statusCode.toString() == '200' ||
+          res.statusCode.toString() == '201') {
+        res.stream.transform(utf8.decoder).listen((value) {
+          setState(() {
+            var body = jsonDecode(value);
+            purchaseData['image'] = body['data']['file_url'];
+            purchaseData['identification_url'] = body['data']['file_url'];
+            buyProduct();
+          });
         });
-      });
-    } else {
-      Dialogs.showErrorMessage(res);
+      } else {
+        Dialogs.showErrorMessage(res);
 
-      print('Error!');
-    }}else{
+        print('Error!');
+      }
+    } else {
       buyProduct();
 
       // Dialogs.showErrorMessage('Kindly upload the required document');
