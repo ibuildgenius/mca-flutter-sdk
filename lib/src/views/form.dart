@@ -984,7 +984,6 @@ class _FormScreenState extends State<FormScreen> {
                         color: DARK,
                         fontWeight: FontWeight.w700)),
                 verticalSpace(),
-
                 const Divider(),
 
               ],
