@@ -905,6 +905,7 @@ class _FormScreenState extends State<FormScreen> {
         payload: purchaseData,
         paymentChannel: paymentChannel);
     print(res);
+
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
