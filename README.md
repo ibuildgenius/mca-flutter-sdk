@@ -28,6 +28,11 @@ start using the package.
 TODO: Include short and useful examples for package users. Add longer examples
 to `/example` folder. 
 
+
+## Add image picker to you permission on Android and iOS
+## The app depends on image picker
+
+
 ```dart
 const like = 'sample';
 ```
