@@ -880,7 +880,7 @@ class _FormScreenState extends State<FormScreen> {
                 verticalSpace(),
                 Text(bankName,
                     style: const TextStyle(
-                        fontSize: 28,
+                        fontSize: 25,
                         color: DARK,
                         fontWeight: FontWeight.w600)),
                 const Text('MyCover.ai',
@@ -892,7 +892,11 @@ class _FormScreenState extends State<FormScreen> {
                     style: const TextStyle(
                         fontSize: 28,
                         color: DARK,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w700)),
+                verticalSpace(),
+
+                const Divider(),
+
               ],
             )),
             const Divider(),
@@ -967,18 +971,22 @@ class _FormScreenState extends State<FormScreen> {
                     style: const TextStyle(
                         fontSize: 20,
                         color: DARK,
-                        fontWeight: FontWeight.w400)),
+                        fontWeight: FontWeight.w600)),
                 Text('CODE - $paymentCode',
                     style: const TextStyle(
                         fontSize: 20,
                         color: DARK,
-                        fontWeight: FontWeight.w400)),
+                        fontWeight: FontWeight.w600)),
                 verticalSpace(),
                 Text(ussdCode,
                     style: const TextStyle(
                         fontSize: 28,
                         color: DARK,
-                        fontWeight: FontWeight.w600)),
+                        fontWeight: FontWeight.w700)),
+                verticalSpace(),
+
+                const Divider(),
+
               ],
             )),
             const Divider(),
