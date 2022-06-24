@@ -16,6 +16,7 @@ Get your insurance and make payment
 2. run flutter pub get
 3. Add required permission for the image pickers
 
+
 ## Usage
 
 Initialise the sdk by
