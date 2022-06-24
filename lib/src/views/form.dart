@@ -674,7 +674,6 @@ class _FormScreenState extends State<FormScreen> {
                                 : const SizedBox.shrink(),
                     validator: (value) {
                       var label = item['label'].toString().toLowerCase();
-
                       if (label.contains('phone')) {
                         return PhoneNumberValidator.validate(value,
                             error: item['errorMsg']);
