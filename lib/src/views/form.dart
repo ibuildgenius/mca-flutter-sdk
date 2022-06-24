@@ -1115,6 +1115,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   uploadImage() async {
+    if(_image!=null){
     Dialogs.showLoading(context: context, text: 'Uploading Image');
     var res = await WebServices.uploadFile(context, businessId, _image!);
     Navigator.pop(context);
@@ -1132,6 +1133,11 @@ class _FormScreenState extends State<FormScreen> {
       Dialogs.showErrorMessage(res);
 
       print('Error!');
+    }}else{
+      buyProduct();
+
+      // Dialogs.showErrorMessage('Kindly upload the required document');
+
     }
   }
 }
