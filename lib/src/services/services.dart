@@ -1,8 +1,7 @@
 import 'dart:io';
-
-// import 'package:connectivity/connectivity.dart';
 import 'package:http/http.dart' as http;
-import 'package:my_cover_sdk/src/services/api_scheme.dart';
+
+import 'api_scheme.dart';
 
 class WebServices {
   static const String _basUrl = 'https://staging.api.mycover.ai/v1';
@@ -28,7 +27,6 @@ class WebServices {
       };
     }
 
-    print(data);
     return await ApiScheme.initialisePostRequest(
         url: _initialiseSdkUrl, data: data);
   }

@@ -1,5 +1,5 @@
-name: my_cover_sdk
-description: Mycover sdk
+name: mca_flutter_sdk
+description: The Official MyCover.ai SDK
 version: 0.0.1
 homepage: https://github.com/ibuildgenius/mca-flutter-sdk
 
@@ -15,7 +15,6 @@ dependencies:
   http: ^0.13.4
   fluttertoast: ^8.0.8
   image_picker: ^0.8.1
-#  connectivity:
   mockito: ^5.0.3
 
 

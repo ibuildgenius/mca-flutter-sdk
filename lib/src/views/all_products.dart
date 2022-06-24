@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-
-import '../../my_cover_sdk.dart';
+import '../../mca_flutter_sdk.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/input.dart';
@@ -149,7 +148,7 @@ class _AllProductsState extends State<AllProducts> {
                                     getImages(item['productCategory']['name']),
                                     height: 40,
                                     width: 40,
-                                    package: 'my_cover_sdk'),
+                                    package: 'mca_flutter_sdk'),
                                 title: Text(item['name']),
                                 trailing: Text(
                                     item['is_dynamic_pricing']

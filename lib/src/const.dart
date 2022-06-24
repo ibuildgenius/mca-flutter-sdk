@@ -1,6 +1,5 @@
 
-//Images
-
+//Images Assets
 const String insight = 'assets/images/insight.png';
 const String book = 'assets/images/book.png';
 const String checkOut = 'assets/images/check_icon.png';

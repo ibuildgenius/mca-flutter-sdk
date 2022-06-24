@@ -90,7 +90,7 @@ class _TravelScreenState extends State<TravelScreen>
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(book, height: 25,package: 'my_cover_sdk'))),
+                child: Image.asset(book, height: 25,package: 'mca_flutter_sdk'))),
         verticalSpace(),
         const Divider(),
         verticalSpace(),
@@ -115,7 +115,7 @@ class _TravelScreenState extends State<TravelScreen>
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(insight, height: 25,package: 'my_cover_sdk'))),
+                child: Image.asset(insight, height: 25,package: 'mca_flutter_sdk'))),
         verticalSpace(),
         const Divider(),
         verticalSpace(),

@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:my_cover_sdk/my_cover_sdk.dart';
+import 'package:mca_flutter_sdk/mca_flutter_sdk.dart';
 
 void main() {
   runApp(const MyApp());
@@ -21,7 +21,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: 'Mycover SDK Test'),
+      home: const MyHomePage(title: 'MyCover SDK Test'),
     );
   }
 }
@@ -38,13 +38,10 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
 
-  initialiseSdk(context, {productId}) async {
-    var userId = "olakunle@mycovergenius.com";
-
-    final mycover =
+  initialiseSdk(context, {userId, productId}) async {
+    final myCover =
         MyCoverAI(context: context, userId: userId, productId: productId);
-    var response = await mycover.initialise();
-    print(response);
+    var response = await myCover.initialise();
     if (response != null) {
       showLoading('$response');
     } else {
@@ -55,8 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   initState() {
     super.initState();
-
-    // initialiseSdk(context);
 
     getAllProducts();
   }
@@ -110,9 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
         setState(() => allProducts = body['data']['productDetails']);
-      } else {
-        print('Errororororoor CHUCKS oooooooooooo');
-      }
+      } else {}
     } catch (e) {
       print(e.toString());
       return e.toString();
@@ -133,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   itemBuilder: (c, i) {
                     var item = allProducts[i];
                     return ListTile(
-                        leading: Icon(Icons.store_mall_directory),
+                        leading: const Icon(Icons.store_mall_directory),
                         title: Text(item['name']),
                         subtitle: Text(item['productCategory']['name']),
                         trailing: Text(

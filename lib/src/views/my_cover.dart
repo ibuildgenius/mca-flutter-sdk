@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_cover_sdk/src/services/services.dart';
-import 'package:my_cover_sdk/src/views/all_products.dart';
-
+import '../../mca_flutter_sdk.dart';
 import '../widgets/dialogs.dart';
+import 'all_products.dart';
 import 'failed.dart';
 import 'landing.dart';
 

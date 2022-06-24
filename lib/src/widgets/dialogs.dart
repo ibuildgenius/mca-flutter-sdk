@@ -103,7 +103,7 @@ class Dialogs {
                                     child: Image.asset(checkOut,
                                         height: 55,
                                         width: 55,
-                                        package: 'my_cover_sdk'),
+                                        package: 'mca_flutter_sdk'),
                                   ))),
                           verticalSpace(),
                           const Center(
@@ -254,7 +254,7 @@ class Dialogs {
                                     child: Image.asset(failed,
                                         height: 55,
                                         width: 55,
-                                        package: 'my_cover_sdk'),
+                                        package: 'mca_flutter_sdk'),
                                   ))),
                           verticalSpace(),
                           const Center(

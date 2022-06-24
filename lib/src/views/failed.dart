@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import '../../my_cover_sdk.dart';
+import '../../mca_flutter_sdk.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/buttons.dart';
@@ -63,7 +63,7 @@ class Failed extends StatelessWidget {
                                       child: Image.asset(failed,
                                           height: 30,
                                           width: 30,
-                                          package: 'my_cover_sdk'),
+                                          package: 'mca_flutter_sdk'),
                                     ))),
                             verticalSpace(),
                             const Center(

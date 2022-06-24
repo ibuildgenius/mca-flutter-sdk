@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:my_cover_sdk/src/const.dart';
-
+import '../const.dart';
 import '../theme.dart';
-import '../widgets/buttons.dart';
 import '../widgets/common.dart';
-import '../widgets/input.dart';
 
 class AutoScreen extends StatefulWidget {
   const AutoScreen({Key? key}) : super(key: key);
@@ -93,7 +90,7 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(book, height: 25,                      package: 'my_cover_sdk'
+                child: Image.asset(book, height: 25,                      package: 'mca_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),
@@ -121,7 +118,7 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(insight, height: 25,                      package: 'my_cover_sdk'
+                child: Image.asset(insight, height: 25,                      package: 'mca_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),
@@ -149,7 +146,7 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(layer, height: 25,                      package: 'my_cover_sdk'
+                child: Image.asset(layer, height: 25,                      package: 'mca_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),

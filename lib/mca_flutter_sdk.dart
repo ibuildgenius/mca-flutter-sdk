@@ -1,4 +1,4 @@
-library my_cover_sdk;
+library mca_flutter_sdk;
 
 export '/src/views/my_cover.dart';
 export '/src/views/form.dart';

@@ -121,7 +121,7 @@ class _MyCoverState extends State<MyCover> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     logo == ''
-                        ? Image.asset(mca, height: 30, package: 'my_cover_sdk')
+                        ? Image.asset(mca, height: 30, package: 'mca_flutter_sdk')
                         : Image.network(
                             logo,
                             height: 30,
@@ -136,7 +136,7 @@ class _MyCoverState extends State<MyCover> {
                   child: Image.asset(myCover,
                       width: 170,
                       fit: BoxFit.fitWidth,color: LIGHT_GREY,
-                      package: 'my_cover_sdk'),
+                      package: 'mca_flutter_sdk'),
                 ),
               ],
             ),
@@ -152,7 +152,7 @@ class _MyCoverState extends State<MyCover> {
         return introBodyScreen();
       case BodyType.detail:
         return FormScreen(
-            productDetail: widget.productData, email: widget.email);
+            productDetail: widget.productData, email: widget.email, userId: widget.userId,);
       case BodyType.success:
         return successScreen();
     }
@@ -221,7 +221,7 @@ class _MyCoverState extends State<MyCover> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Image.asset(checkOut,
-                            height: 55, width: 55, package: 'my_cover_sdk'),
+                            height: 55, width: 55, package: 'mca_flutter_sdk'),
                       ))),
               verticalSpace(),
               const Center(

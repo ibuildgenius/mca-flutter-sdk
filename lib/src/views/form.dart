@@ -17,10 +17,11 @@ import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({Key? key, required this.productDetail, this.email})
+  const FormScreen({Key? key, required this.productDetail, required this.userId,required this.email})
       : super(key: key);
   final productDetail;
-  final email;
+  final String email;
+  final  String userId;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -1020,7 +1021,7 @@ class _FormScreenState extends State<FormScreen> {
           child: Row(
             children: [
               Image.asset(image,
-                  height: 45, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
+                  height: 45, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
@@ -1069,10 +1070,9 @@ class _FormScreenState extends State<FormScreen> {
     }
     var res = await WebServices.buyProduct(
         businessId: businessId,
-        userId: WebServices.userId,
+        userId: widget.userId,
         payload: purchaseData,
         paymentChannel: paymentChannel);
-    print(res);
 
     Navigator.pop(context);
     if (res is String) {
@@ -1099,7 +1099,6 @@ class _FormScreenState extends State<FormScreen> {
     Dialogs.showLoading(context: context, text: 'Verifying Payment');
 
     var res = await WebServices.verifyPayment(reference, businessId);
-    print(res);
 
     if (res is String) {
       if (res.contains('retry')) {
@@ -1134,12 +1133,10 @@ class _FormScreenState extends State<FormScreen> {
       } else {
         Dialogs.showErrorMessage(res);
 
-        print('Error!');
       }
     } else {
       buyProduct();
 
-      // Dialogs.showErrorMessage('Kindly upload the required document');
 
     }
   }

@@ -52,8 +52,6 @@ class ApiScheme{
   static _makePostRequest({apiUrl, data, token, apiKey}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-    print(apiUrl);
-    print(apiKey);
 
     var headers;
     if (token != null) {
@@ -83,12 +81,10 @@ class ApiScheme{
         required String url,
         token,
         apiKey}) async {
-    // if (await _checkConnectivity()) {
     try {
       var response = await _makePostRequest(
           apiUrl: url, data: data, token: token, apiKey: apiKey);
       var body = jsonDecode(response.body);
-      print('response.statusCode ${response.statusCode}');
       if (_isRequestSuccessful(response.statusCode)) {
         return body;
       } else {
@@ -98,19 +94,14 @@ class ApiScheme{
       print(e.toString());
       return e.toString();
     }
-    // } else {
-    //   return 'Check your internet connection';
-    // }
   }
 
 
 
   static initialiseGetRequest({required String url, token}) async {
-    // if (await _checkConnectivity()) {
     try {
       var response = await _makeGetRequest(apiUrl: url, token: token);
       var body = jsonDecode(response.body);
-      print(response.statusCode);
       if (_isRequestSuccessful(response.statusCode)) {
         return body;
       } else {
@@ -121,5 +112,4 @@ class ApiScheme{
       return e.toString();
     }
   }
-
 }
