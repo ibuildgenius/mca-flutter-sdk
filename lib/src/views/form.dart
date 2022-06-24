@@ -891,7 +891,6 @@ class _FormScreenState extends State<FormScreen> {
                         color: DARK,
                         fontWeight: FontWeight.w600)),
                 verticalSpace(height: 10.0),
-
                 Text(accountNumber,
                     style: const TextStyle(
                         fontSize: 28,
