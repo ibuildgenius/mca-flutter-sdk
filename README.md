@@ -29,6 +29,28 @@ start using the package.
 TODO: Include short and useful examples for package users. Add longer examples
 to `/example` folder. 
 
+Initialise the sdk by
+
+1. passing the client ID to fetch all products
+
+initialiseSdk(context, {productId}) async {
+var userId = "olakunle@mycovergenius.com";
+
+2. passing the client ID and also the specific product ID to 
+
+initialise the SDK
+
+initialiseSDK({String userId, String productId })async{
+final myCover =  MyCoverAI(context: context, userId: userId, productId: productId );
+  var response = await myCover.initialise();
+if (response != null) {
+    showLoading('$response');
+    } else {
+      print("No Response!");
+   }
+  }
+}
+
 
 ## Add image picker to you permission on Android and iOS
 ## The app depends on image picker

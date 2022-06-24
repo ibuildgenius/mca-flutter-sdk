@@ -42,7 +42,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var userId = "olakunle@mycovergenius.com";
 
     final mycover =
-        MyCoverAI(context: context, userId: userId, productId: productId ?? '');
+        MyCoverAI(context: context, userId: userId, productId: productId);
     var response = await mycover.initialise();
     print(response);
     if (response != null) {

@@ -12,7 +12,7 @@ class MyCoverAI {
   const MyCoverAI(
       {Key? key,
       required this.context,
-      required this.productId,
+       this.productId = '',
       required this.userId});
 
   final BuildContext context;
