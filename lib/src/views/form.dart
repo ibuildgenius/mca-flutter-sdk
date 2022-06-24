@@ -30,6 +30,7 @@ class _FormScreenState extends State<FormScreen> {
   var productDetail;
   var forms;
   File? _image;
+  String searchTerm = '';
   String productName = '';
   String accountNumber = '';
   String reference = '';
@@ -314,8 +315,6 @@ class _FormScreenState extends State<FormScreen> {
               ],
             )));
   }
-
-  String searchTerm = '';
 
   search() {
     if (searchTerm.isEmpty) {
