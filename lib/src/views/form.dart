@@ -648,6 +648,8 @@ class _FormScreenState extends State<FormScreen> {
                             mainAxisAlignment: MainAxisAlignment.start,
                             mainAxisSize: MainAxisSize.min,
                             children: [
+                              const SizedBox(width: 10),
+
                               Container(
                                   decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(3),
@@ -660,9 +662,10 @@ class _FormScreenState extends State<FormScreen> {
                                     ),
                                   )),
                               const SizedBox(width: 10),
+
                             ],
                           )
-                        : const SizedBox.shrink(),
+                        : null,
                     suffixIcon: item['data_url'].toString() != 'null'
                         ? const Icon(Icons.expand_more)
                         : item['label']
@@ -670,7 +673,7 @@ class _FormScreenState extends State<FormScreen> {
                                 .toLowerCase()
                                 .contains('date')
                             ? const Icon(Icons.event_note)
-                            : const SizedBox.shrink(),
+                            : null,
                     validator: (value) {
                       var label = item['label'].toString().toLowerCase();
                       if (label.contains('phone')) {
@@ -887,6 +890,8 @@ class _FormScreenState extends State<FormScreen> {
                         fontSize: 25,
                         color: DARK,
                         fontWeight: FontWeight.w600)),
+                verticalSpace(height: 10.0),
+
                 Text(accountNumber,
                     style: const TextStyle(
                         fontSize: 28,

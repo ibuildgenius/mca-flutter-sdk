@@ -5,7 +5,7 @@ import '../theme.dart';
 
 SizedBox smallVerticalSpace() => const SizedBox(height: 10);
 
-SizedBox verticalSpace() => const SizedBox(height: 20);
+SizedBox verticalSpace({double height=20.0}) =>  SizedBox(height: height);
 
 RichText getProductName(name) {
   return RichText(
