@@ -640,6 +640,29 @@ class _FormScreenState extends State<FormScreen> {
                         ? false
                         : true,
                     hint: item['description'],
+                    prefixIcon: item['label']
+                            .toString()
+                            .toLowerCase()
+                            .contains('image')
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(color: GREY)),
+                                  child: const Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                    child: Text(
+                                      'Select Image',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  )),
+                              const SizedBox(width: 10),
+                            ],
+                          )
+                        : const SizedBox.shrink(),
                     suffixIcon: item['data_url'].toString() != 'null'
                         ? const Icon(Icons.expand_more)
                         : item['label']
@@ -647,31 +670,7 @@ class _FormScreenState extends State<FormScreen> {
                                 .toLowerCase()
                                 .contains('date')
                             ? const Icon(Icons.event_note)
-                            : item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('image')
-                                ? Row(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(3),
-                                            border: Border.all(color: GREY)
-                                          ),
-                                          child: const Padding(
-                                            padding: EdgeInsets.fromLTRB(
-                                                10, 5, 10, 5),
-                                            child: Text(
-                                              'Select Image',
-                                              style: TextStyle(fontSize: 12),
-                                            ),
-                                          )),
-                                     const SizedBox(width: 10),
-                                    ],
-                                  )
-                                : const SizedBox.shrink(),
+                            : const SizedBox.shrink(),
                     validator: (value) {
                       var label = item['label'].toString().toLowerCase();
                       if (label.contains('phone')) {
@@ -711,7 +710,7 @@ class _FormScreenState extends State<FormScreen> {
     return Expanded(
       child: Container(
         decoration:
-        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -828,7 +827,7 @@ class _FormScreenState extends State<FormScreen> {
     return Expanded(
       child: Container(
         decoration:
-        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -894,9 +893,7 @@ class _FormScreenState extends State<FormScreen> {
                         color: DARK,
                         fontWeight: FontWeight.w700)),
                 verticalSpace(),
-
                 const Divider(),
-
               ],
             )),
             const Divider(),
@@ -917,7 +914,7 @@ class _FormScreenState extends State<FormScreen> {
     return Expanded(
       child: Container(
         decoration:
-        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -985,7 +982,6 @@ class _FormScreenState extends State<FormScreen> {
                         fontWeight: FontWeight.w700)),
                 verticalSpace(),
                 const Divider(),
-
               ],
             )),
             const Divider(),
