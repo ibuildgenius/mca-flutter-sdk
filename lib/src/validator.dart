@@ -5,7 +5,6 @@ class EmailValidator {
     if (value.isEmpty) {
       return error?? emptyEmailField;
     }
-    // Regex for email validation
     final regExp = RegExp(emailRegex);
     if (regExp.hasMatch(value)) {
       return null;
@@ -25,13 +24,27 @@ class PhoneNumberValidator {
     }
     // Regex for phone number validation
     final regExp = RegExp(phoneNumberRegex);
-    print(regExp.hasMatch(value));
     if (regExp.hasMatch(value)) {
       return null;
     }
-    return error??invalidPhoneNumberField;
+    return invalidPhoneNumberField;
   }
 }
+
+class BVNValidator {
+  static String? validate(String value,{error}) {
+    if (value.isEmpty) {
+      return error?? emptyTextField;
+    }
+
+    if (value.length != 10) {
+      return bvnLengthError;
+    }
+
+    return null;
+  }
+}
+
 
 class FieldValidator {
   static String? validate(String value, {error}) {

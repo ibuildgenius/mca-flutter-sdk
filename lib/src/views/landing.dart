@@ -76,44 +76,47 @@ class _MyCoverState extends State<MyCover> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: BACKGROUND,
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: InkWell(
-                  onTap: () => Navigator.pop(context),
-                  child: Container(
-                      decoration: BoxDecoration(
-                          shape: BoxShape.circle, color: RED.withOpacity(0.2)),
-                      child: const Padding(
-                        padding: EdgeInsets.all(8.0),
-                        child: Icon(Icons.close, color: RED, size: 15),
-                      )),
+      body: GestureDetector(
+        onTap: ()=>FocusScope.of(context).unfocus(),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: InkWell(
+                    onTap: () => Navigator.pop(context),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle, color: RED.withOpacity(0.2)),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.close, color: RED, size: 15),
+                        )),
+                  ),
                 ),
-              ),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  logo == ''
-                      ? Image.asset(mca, height: 30, package: 'my_cover_sdk')
-                      : Image.network(
-                          logo,
-                          height: 30,
-                        ),
-                ],
-              ),
-              const SizedBox(height: 10),
-              selectBody(bodyType),
-              const SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.only(top: 5.0),
-                child: Image.asset(myCover,
-                    width: 170, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
-              ),
-            ],
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    logo == ''
+                        ? Image.asset(mca, height: 30, package: 'my_cover_sdk')
+                        : Image.network(
+                            logo,
+                            height: 30,
+                          ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+                selectBody(bodyType),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.only(top: 5.0),
+                  child: Image.asset(myCover,
+                      width: 170, fit: BoxFit.fitWidth, package: 'my_cover_sdk'),
+                ),
+              ],
+            ),
           ),
         ),
       ),

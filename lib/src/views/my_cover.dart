@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:my_cover_sdk/src/services/services.dart';
 import 'package:my_cover_sdk/src/views/all_products.dart';
 
-import '../theme.dart';
 import '../widgets/dialogs.dart';
+import 'failed.dart';
 import 'landing.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
@@ -13,20 +13,13 @@ class MyCoverAI {
       {Key? key,
       required this.context,
       required this.productId,
-      this.primaryColor = PRIMARY,
-      this.accentColor = FILL_GREEN,
       required this.userId});
 
   final BuildContext context;
   final String productId;
   final String userId;
-  final accentColor;
-  final primaryColor;
-
-  /// Starts Standard Transaction
 
   initialise() async {
-
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
 
     var response =
@@ -34,35 +27,29 @@ class MyCoverAI {
     Navigator.pop(context);
 
     if (response is String) {
-      Navigator.pop(context);
       Dialogs.showErrorMessage(response);
 
-      print('failed to initialise');
-    }
-    else {
       return await Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-              productId==''? AllProducts(
-                userId: userId,
-                email: userId,
-                productId: productId,
-                productData: response['data']['productDetails'],
-                primaryColor: primaryColor,
-                accentColor: accentColor,
-              ):
-              MyCover(
-            userId: userId,
-            email: userId,
-            productId: productId,
-            productData: response,
-            primaryColor: primaryColor,
-            accentColor: accentColor,
-          ),
+          builder: (context) => const Failed(),
+        ),
+      );
+    } else {
+      return await Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => productId == ''
+              ? AllProducts(
+                  userId: userId,
+                  productData: response['data']['productDetails'])
+              : MyCover(
+                  userId: userId,
+                  email: userId,
+                  productId: productId,
+                  productData: response),
         ),
       );
     }
-
   }
 }

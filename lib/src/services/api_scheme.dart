@@ -52,7 +52,6 @@ class ApiScheme{
   static _makePostRequest({apiUrl, data, token, apiKey}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-    print(data);
     print(apiUrl);
     print(apiKey);
 
@@ -89,9 +88,7 @@ class ApiScheme{
       var response = await _makePostRequest(
           apiUrl: url, data: data, token: token, apiKey: apiKey);
       var body = jsonDecode(response.body);
-      print('response.statusCode');
-      print(response.statusCode);
-      print(response.body);
+      print('response.statusCode ${response.statusCode}');
       if (_isRequestSuccessful(response.statusCode)) {
         return body;
       } else {

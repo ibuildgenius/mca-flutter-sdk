@@ -34,6 +34,8 @@ const String phoneNumberRegex = r'0[789][01]\d{8}';
 
 const String phoneNumberLengthError = 'Phone number must be 11 digits';
 
+const String bvnLengthError = 'BVN must be 10 digits';
+
 
 const String invalidPhoneNumberField =
     "Number provided isn\'t valid.Try another phone number";

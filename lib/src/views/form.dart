@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../const.dart';
@@ -30,6 +31,9 @@ class _FormScreenState extends State<FormScreen> {
   File? _image;
   String productName = '';
   String accountNumber = '';
+  String reference = '';
+  String ussdCode = '';
+  String paymentCode = '';
   String bankName = '';
   String email = '';
   String productId = '';
@@ -54,6 +58,8 @@ class _FormScreenState extends State<FormScreen> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
+      print(forms);
+      splitList();
     });
   }
 
@@ -336,147 +342,10 @@ class _FormScreenState extends State<FormScreen> {
                         key: _formKey,
                         child: ListView.separated(
                             separatorBuilder: (c, i) => smallVerticalSpace(),
-                            itemCount: forms.length,
+                            itemCount: 1,
                             shrinkWrap: true,
                             itemBuilder: (c, i) {
-                              var item = forms[i];
-                              if (item['data_url'].toString() != 'null') {
-                                getList(item['data_url']);
-                              }
-                              purchaseData['product_id'] = productId;
-                              purchaseData['amount'] = price;
-
-                              final controller = _getControllerOf(item['name'],
-                                  initValue: getInitialValue(
-                                      item['label'].toString()));
-
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  textBoxTitle(item['label']),
-                                  InkWell(
-                                    onTap: () async {
-                                      if (item['data_url'].toString() !=
-                                          'null') {
-                                        var listItem;
-                                        if (item['data_url']
-                                            .toString()
-                                            .contains('title')) {
-                                          listItem = titleList;
-                                        }
-                                        if (item['data_url']
-                                            .toString()
-                                            .contains('state')) {
-                                          listItem = stateList;
-                                        }
-                                        if (item['data_url']
-                                            .toString()
-                                            .contains('identity')) {
-                                          listItem = identityList;
-                                        }
-                                        if (item['data_url']
-                                            .toString()
-                                            .contains('category')) {
-                                          listItem = vehicleList;
-                                        }
-                                        if (item['data_url']
-                                            .toString()
-                                            .contains('year')) {
-                                          listItem = yearList;
-                                        }
-                                        if (listItem != null) {
-                                          pickItem(listItem, item['label'],
-                                              onSelect: (value) {
-                                            Navigator.pop(context);
-                                            controller.text = value;
-                                            purchaseData[item['name']] =
-                                                controller.text;
-                                          });
-                                        }
-                                      } else if (item['label']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains('date')) {
-                                        var pickedDate =
-                                            await selectDate(context);
-
-                                        if (pickedDate != null) {
-                                          controller.text = pickedDate
-                                              .toString()
-                                              .substring(0, 10);
-                                          purchaseData[item['name']] =
-                                              controller.text;
-                                        }
-                                      } else if (item['label']
-                                          .toString()
-                                          .toLowerCase()
-                                          .contains('image')) {
-                                        var selectedImage = await openGallery();
-                                        if (selectedImage != null) {
-                                          setState(() {
-                                            _image = selectedImage;
-                                            controller.text =
-                                                _image!.path.toString();
-                                          });
-                                        }
-                                      }
-                                    },
-                                    child: InputFormField(
-                                        controller: controller,
-                                        onChanged: (value) {
-                                          purchaseData[item['name']] =
-                                              controller.text;
-                                          if (item['name']
-                                              .toString()
-                                              .contains('cost')) {
-                                            purchaseData['vehicle_cost'] =
-                                                double.parse(controller.text);
-                                          }
-                                        },
-                                        enabled: item['data_url'].toString() !=
-                                                    'null' ||
-                                                item['label']
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .contains('date') ||
-                                                item['label']
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .contains('image')
-                                            ? false
-                                            : true,
-                                        hint: item['description'],
-                                        suffixIcon: item['data_url']
-                                                    .toString() !=
-                                                'null'
-                                            ? const Icon(Icons.expand_more)
-                                            : item['label']
-                                                    .toString()
-                                                    .toLowerCase()
-                                                    .contains('date')
-                                                ? const Icon(Icons.event_note)
-                                                : item['label']
-                                                        .toString()
-                                                        .toLowerCase()
-                                                        .contains('image')
-                                                    ? const Icon(Icons.image)
-                                                    : const SizedBox.shrink(),
-                                        textCapitalization:
-                                            TextCapitalization.sentences,
-                                        keyboardType: TextInputType.text,
-                                        validator: (value) =>
-                                            FieldValidator.validate(value,
-                                                error: item['errorMsg'])
-
-                                        // {
-                                        // selectValidator(item['label'],
-                                        //     value: value,
-                                        //     error: item['errorMsg']);
-                                        // }
-                                        ),
-                                  ),
-                                ],
-                              );
+                              return form(pageData);
                             }),
                       ),
           ),
@@ -485,9 +354,17 @@ class _FormScreenState extends State<FormScreen> {
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
-                  // if (_image != null) {
                   if (_formKey.currentState!.validate()) {
-                    setState(() => bodyType = 'bank');
+                    if (initialPage < (chunks.length - 1)) {
+                      print('increase');
+                      initialPage++;
+                      print(initialPage);
+
+                      setState(() => pageData = chunks[initialPage]);
+                    } else {
+                      print(purchaseData);
+                      setState(() => bodyType = 'bank');
+                    }
                   }
                   // } else {
                   //   Dialogs.showErrorMessage(
@@ -499,6 +376,196 @@ class _FormScreenState extends State<FormScreen> {
         ],
       ),
     ));
+  }
+
+  int initialPage = 0;
+  var chunks = [];
+  var pageData = [];
+
+  void splitList() {
+    List lst = forms;
+    int chunkSize = 4;
+    for (var i = 0; i < lst.length; i += chunkSize) {
+      chunks.add(lst.sublist(
+          i, i + chunkSize > lst.length ? lst.length : i + chunkSize));
+    }
+    setState(() => pageData = chunks[initialPage]);
+  }
+
+  form(data) {
+    return ListView.separated(
+        separatorBuilder: (c, i) => smallVerticalSpace(),
+        itemCount: data.length,
+        shrinkWrap: true,
+        itemBuilder: (c, i) {
+          var item = data[i];
+          if (item['data_url'].toString() != 'null') {
+            getList(item['data_url']);
+          }
+          purchaseData['product_id'] = productId;
+          purchaseData['amount'] = price;
+
+          final controller = _getControllerOf(item['name'],
+              initValue: getInitialValue(item['label'].toString()));
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              textBoxTitle(item['label']),
+              InkWell(
+                onTap: () async {
+                  if (item['data_url'].toString() != 'null') {
+                    var listItem;
+                    if (item['data_url'].toString().contains('title')) {
+                      listItem = titleList;
+                    }
+                    if (item['data_url'].toString().contains('state')) {
+                      listItem = stateList;
+                    }
+                    if (item['data_url'].toString().contains('identity')) {
+                      listItem = identityList;
+                    }
+                    if (item['data_url'].toString().contains('category')) {
+                      listItem = vehicleList;
+                    }
+                    if (item['data_url'].toString().contains('year')) {
+                      listItem = yearList;
+                    }
+                    if (listItem != null) {
+                      pickItem(listItem, item['label'], onSelect: (value) {
+                        Navigator.pop(context);
+                        controller.text = value;
+                        purchaseData[item['name']] = controller.text;
+                      });
+                    }
+                  } else if (item['label']
+                      .toString()
+                      .toLowerCase()
+                      .contains('date')) {
+                    var pickedDate = await selectDate(context);
+
+                    if (pickedDate != null) {
+                      controller.text = pickedDate.toString().substring(0, 10);
+                      purchaseData[item['name']] = controller.text;
+                    }
+                  } else if (item['label']
+                      .toString()
+                      .toLowerCase()
+                      .contains('image')) {
+                    var selectedImage = await openGallery();
+                    if (selectedImage != null) {
+                      setState(() {
+                        _image = selectedImage;
+                        controller.text = _image!.path.toString();
+                      });
+                    }
+                  }
+                },
+                child: InputFormField(
+                    controller: controller,
+                    onChanged: (value) {
+                      purchaseData[item['name']] = controller.text;
+                      if (item['name'].toString().contains('cost')) {
+                        purchaseData['vehicle_cost'] =
+                            double.parse(controller.text);
+                      }
+                      if (item['name'].toString().contains('email')) {
+                        purchaseData['vehicle_cost'] =
+                            double.parse(controller.text);
+                        email = controller.text;
+                      }
+                    },
+                    keyboardType: (item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('phone') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('cost') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('price') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('bvn'))
+                        ? TextInputType.phone
+                        : TextInputType.text,
+                    textCapitalization: item['label']
+                            .toString()
+                            .toLowerCase()
+                            .contains('number')
+                        ? TextCapitalization.characters
+                        : TextCapitalization.sentences,
+                    inputFormatters: <TextInputFormatter>[
+                      (item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('phone') ||
+                              item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('cost') ||
+                              item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('price') ||
+                              item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('bvn'))
+                          ? FilteringTextInputFormatter.digitsOnly
+                          : FilteringTextInputFormatter.allow(
+                              RegExp('[a-zA-Z0-9. ]'))
+                    ],
+                    enabled: item['data_url'].toString() != 'null' ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('date') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('image')
+                        ? false
+                        : true,
+                    hint: item['description'],
+                    suffixIcon: item['data_url'].toString() != 'null'
+                        ? const Icon(Icons.expand_more)
+                        : item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('date')
+                            ? const Icon(Icons.event_note)
+                            : item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('image')
+                                ? const Icon(Icons.image)
+                                : const SizedBox.shrink(),
+                    validator: (value) {
+                      var label = item['label'].toString().toLowerCase();
+
+                      if (label.contains('phone')) {
+                        return PhoneNumberValidator.validate(value,
+                            error: item['errorMsg']);
+                      } else if (label.contains('email')) {
+                        return EmailValidator.validate(value,
+                            error: item['errorMsg']);
+                      } else if (label.contains('bvn')) {
+                        return BVNValidator.validate(value,
+                            error: item['errorMsg']);
+                      } else {
+                        return FieldValidator.validate(value,
+                            error: item['errorMsg']);
+                      }
+                    }),
+              ),
+            ],
+          );
+        });
   }
 
   selectBody(bodyType) {
@@ -578,7 +645,6 @@ class _FormScreenState extends State<FormScreen> {
                   onTap: () async {
                     if (paymentMethod != '') {
                       purchaseData['product_id'] = productId;
-                      purchaseData['email'] = email;
                       uploadImage();
                     } else {
                       Dialogs.showErrorMessage('Select a payment method');
@@ -739,9 +805,14 @@ class _FormScreenState extends State<FormScreen> {
                         fontSize: 20,
                         color: DARK,
                         fontWeight: FontWeight.w400)),
+                Text('CODE - $paymentCode',
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: DARK,
+                        fontWeight: FontWeight.w400)),
                 verticalSpace(),
-                const Text('*990*44834839938#',
-                    style: TextStyle(
+                Text(ussdCode,
+                    style: const TextStyle(
                         fontSize: 28,
                         color: DARK,
                         fontWeight: FontWeight.w600)),
@@ -825,19 +896,32 @@ class _FormScreenState extends State<FormScreen> {
       paymentChannel['bank_code'] = '082';
     }
 
+    if (purchaseData['email'] == null || purchaseData['email'] == '') {
+      purchaseData['email'] = email;
+    }
     var res = await WebServices.buyProduct(
         apiKey: businessId,
         userId: WebServices.userId,
         payload: purchaseData,
         paymentChannel: paymentChannel);
+    print(res);
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
       setState(() {
-        bodyType = paymentMethod.contains('transfer') ? 'transfer' : 'ussd';
-        accountNumber = res['data']['account_number'];
-        bankName = res['data']['bank'];
+        if (paymentMethod.contains('transfer')) {
+          bodyType = 'transfer';
+          accountNumber = res['data']['account_number'];
+          bankName = res['data']['bank'];
+          reference = res['data']['reference'];
+        }
+        if (paymentMethod.contains('ussd')) {
+          bodyType = 'ussd';
+          ussdCode = res['data']['ussd_code'];
+          paymentCode = res['data']['payment_code'];
+          reference = res['data']['reference'];
+        }
       });
     }
   }
@@ -852,6 +936,7 @@ class _FormScreenState extends State<FormScreen> {
         setState(() {
           var body = jsonDecode(value);
           purchaseData['image'] = body['data']['file_url'];
+          purchaseData['identification_url'] = body['data']['file_url'];
           buyProduct();
         });
       });
@@ -859,16 +944,6 @@ class _FormScreenState extends State<FormScreen> {
       Dialogs.showErrorMessage(res);
 
       print('Error!');
-    }
-  }
-
-  selectValidator(type, {value, error}) {
-    if (type.contains('phone')) {
-      return PhoneNumberValidator.validate(value, error: error);
-    } else if (type.contains('phone')) {
-      EmailValidator.validate(value, error: error);
-    } else {
-      FieldValidator.validate(value, error: error);
     }
   }
 }

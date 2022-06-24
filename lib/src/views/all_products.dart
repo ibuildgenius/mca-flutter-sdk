@@ -9,15 +9,11 @@ class AllProducts extends StatefulWidget {
   const AllProducts(
       {Key? key,
       required this.productData,
-      required this.productId,
-      required this.email,
       this.accentColor = PRIMARY,
       this.primaryColor = FILL_GREEN,
       required this.userId})
       : super(key: key);
-  final String productId;
   final String userId;
-  final String email;
   final productData;
   final primaryColor;
   final accentColor;
@@ -28,9 +24,8 @@ class AllProducts extends StatefulWidget {
 
 class _AllProductsState extends State<AllProducts> {
   initialiseSdk(context, {productId}) {
-    var userId = "olakunle@mycovergenius.com";
     final mycover =
-        MyCoverAI(context: context, userId: userId, productId: productId ?? '');
+        MyCoverAI(context: context, userId: widget.userId, productId: productId ?? '');
     var res = mycover.initialise();
   }
 

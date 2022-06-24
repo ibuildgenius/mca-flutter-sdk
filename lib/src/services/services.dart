@@ -26,7 +26,6 @@ class WebServices {
       };
     }
 
-    print('Input data');
     print(data);
     return await ApiScheme.initialisePostRequest(
         url: _initialiseSdkUrl, data: data);
