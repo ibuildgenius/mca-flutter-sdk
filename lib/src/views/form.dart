@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:developer';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -40,6 +41,7 @@ class _FormScreenState extends State<FormScreen> {
   String businessId = '';
   String price = '';
   String paymentMethod = '';
+  String bankCode = '';
   var purchaseData = {};
   String bodyType = 'form';
 
@@ -58,8 +60,10 @@ class _FormScreenState extends State<FormScreen> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
-      print(forms);
+      paymentMethod = '';
+
       splitList();
+      getUssdProvider();
     });
   }
 
@@ -219,6 +223,8 @@ class _FormScreenState extends State<FormScreen> {
   var titleList;
   var identityList;
   var stateList;
+  var ussdProviders = [];
+  var searchList = [];
 
   getList(url) async {
     var response = await WebServices.getListData(url);
@@ -242,6 +248,22 @@ class _FormScreenState extends State<FormScreen> {
         .toLowerCase()
         .contains('identity')) {
       identityList = response['data'];
+    }
+  }
+
+  getUssdProvider() async {
+    var response = await WebServices.getUssdProvider();
+    print(response);
+    if (response is String) {
+      log(response);
+    } else {
+      setState(() {
+        ussdProviders = response['data'];
+        searchList = ussdProviders;
+
+        bankName = searchList[0]['bank_name'];
+        bankCode = searchList[0]['type'];
+      });
     }
   }
 
@@ -292,6 +314,74 @@ class _FormScreenState extends State<FormScreen> {
               ],
             )));
   }
+
+  String searchTerm = '';
+
+  search() {
+    if (searchTerm.isEmpty) {
+      setState(() => searchList = ussdProviders);
+    }
+    if (mounted) {
+      setState(() {
+        searchList = ussdProviders
+            .where((i) => i['bank_name']
+                .toString()
+                .toLowerCase()
+                .replaceAll(' ', '')
+                .contains(searchTerm.toLowerCase().replaceAll(' ', '')))
+            .toList();
+      });
+    }
+  }
+
+  void openUssdProvider() => showModalBottomSheet(
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        context: context,
+        builder: (_) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 22),
+            decoration: BoxDecoration(
+                color: WHITE, borderRadius: BorderRadius.circular(15)),
+            height: MediaQuery.of(context).size.height * 0.85,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 20),
+                InputFormField(
+                    padding: 10.0,
+                    onChanged: (value) {
+                      searchTerm = value;
+                      search();
+                    },
+                    hint: 'Search for bank of your choice',
+                    prefixIcon: const Icon(Icons.search),
+                    textCapitalization: TextCapitalization.sentences,
+                    keyboardType: TextInputType.text),
+                Expanded(
+                    child: ListView.builder(
+                        itemCount: searchList.length,
+                        shrinkWrap: true,
+                        itemBuilder: (c, i) {
+                          var item = searchList[i];
+                          return ListTile(
+                            title: Text(item['bank_name'],
+                                style: const TextStyle(
+                                    fontWeight: FontWeight.w500, fontSize: 16)),
+                            onTap: () {
+                              Navigator.pop(context);
+                              setState(() {
+                                bankName = item['bank_name'];
+                                bankCode = item['type'];
+                              });
+                            },
+                          );
+                        })),
+              ],
+            ),
+          );
+        },
+      );
 
   getInitialValue(String title) {
     if (title.toLowerCase().contains('email')) {
@@ -356,9 +446,7 @@ class _FormScreenState extends State<FormScreen> {
                 onTap: () async {
                   if (_formKey.currentState!.validate()) {
                     if (initialPage < (chunks.length - 1)) {
-                      print('increase');
                       initialPage++;
-                      print(initialPage);
 
                       setState(() => pageData = chunks[initialPage]);
                     } else {
@@ -366,10 +454,6 @@ class _FormScreenState extends State<FormScreen> {
                       setState(() => bodyType = 'bank');
                     }
                   }
-                  // } else {
-                  //   Dialogs.showErrorMessage(
-                  //       'Kindly select an image to upload');
-                  // }
                 }),
           ),
           getProductName(productName),
@@ -618,26 +702,62 @@ class _FormScreenState extends State<FormScreen> {
               ),
             ),
             verticalSpace(),
-            Expanded(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                const Text('Select Payment method',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    )),
-                const SizedBox(height: 5),
-                const Text('Choose an option to proceed',
-                    style: TextStyle(fontSize: 12, color: DARK)),
-                verticalSpace(),
-                paymentMethodCard(transfer, 'Transfer',
-                    'Send to a bank Account', 'bank transfer'),
-                verticalSpace(),
-                paymentMethodCard(
-                    ussd, 'USSD', 'Select any bank to generate USSD', 'ussd'),
-              ],
-            )),
+            paymentMethod == 'ussd'
+                ? Expanded(
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      InkWell(
+                        onTap: openUssdProvider,
+                        child: const InputFormField(
+                            enabled: false,
+                            hint: 'Search for bank of your choice',
+                            prefixIcon: Icon(Icons.search),
+                            textCapitalization: TextCapitalization.sentences,
+                            keyboardType: TextInputType.text),
+                      ),
+                      const SizedBox(height: 5),
+                      const Text('You want to make payment with USSD',
+                          style: TextStyle(
+                              fontSize: 13,
+                              color: PRIMARY,
+                              fontWeight: FontWeight.w600)),
+                      verticalSpace(),
+                      const Divider(),
+                      verticalSpace(),
+                      Text(bankName,
+                          style: const TextStyle(
+                              fontSize: 25,
+                              color: DARK,
+                              fontWeight: FontWeight.w400)),
+                      Text('CODE - $bankCode',
+                          style: const TextStyle(
+                              fontSize: 20,
+                              color: DARK,
+                              fontWeight: FontWeight.w400)),
+                      verticalSpace(),
+                    ],
+                  ))
+                : Expanded(
+                    child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const Text('Select Payment method',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          )),
+                      const SizedBox(height: 5),
+                      const Text('Choose an option to proceed',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      verticalSpace(),
+                      paymentMethodCard(transfer, 'Transfer',
+                          'Send to a bank Account', 'bank transfer'),
+                      verticalSpace(),
+                      paymentMethodCard(ussd, 'USSD',
+                          'Select any bank to generate USSD', 'ussd'),
+                    ],
+                  )),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: button(
@@ -731,10 +851,7 @@ class _FormScreenState extends State<FormScreen> {
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: button(
                   text: 'I have sent the money',
-                  onTap: () async {
-                    Dialogs.successDialog(
-                        context: context, productName: productName);
-                  }),
+                  onTap:verifyPayment),
             ),
             Center(child: getProductName(productName)),
           ],
@@ -784,13 +901,15 @@ class _FormScreenState extends State<FormScreen> {
                 child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                InputFormField(
-                    // controller: controller,
-                    onChanged: (value) {},
-                    hint: 'Search for bank of your choice',
-                    prefixIcon: const Icon(Icons.search),
-                    textCapitalization: TextCapitalization.sentences,
-                    keyboardType: TextInputType.text),
+                // InkWell(
+                //   onTap: openUssdProvider,
+                //   child:const  InputFormField(
+                //       enabled: false,
+                //       hint: 'Search for bank of your choice',
+                //       prefixIcon: Icon(Icons.search),
+                //       textCapitalization: TextCapitalization.sentences,
+                //       keyboardType: TextInputType.text),
+                // ),
                 const SizedBox(height: 5),
                 const Text('Use below USSD Code to make payment',
                     style: TextStyle(
@@ -800,8 +919,8 @@ class _FormScreenState extends State<FormScreen> {
                 verticalSpace(),
                 const Divider(),
                 verticalSpace(),
-                const Text('Access bank',
-                    style: TextStyle(
+                Text(bankName,
+                    style: const TextStyle(
                         fontSize: 20,
                         color: DARK,
                         fontWeight: FontWeight.w400)),
@@ -822,12 +941,8 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: button(
-                  text: 'I have sent the money',
-                  onTap: () async {
-                    Dialogs.successDialog(
-                        context: context, productName: productName);
-                  }),
+              child:
+                  button(text: 'I have sent the money', onTap: verifyPayment),
             ),
             Center(child: getProductName(productName)),
           ],
@@ -893,14 +1008,14 @@ class _FormScreenState extends State<FormScreen> {
       "amount": double.parse(purchaseData['amount'])
     };
     if (paymentMethod.contains('ussd')) {
-      paymentChannel['bank_code'] = '082';
+      paymentChannel['bank_code'] = bankCode;
     }
 
     if (purchaseData['email'] == null || purchaseData['email'] == '') {
       purchaseData['email'] = email;
     }
     var res = await WebServices.buyProduct(
-        apiKey: businessId,
+        businessId: businessId,
         userId: WebServices.userId,
         payload: purchaseData,
         paymentChannel: paymentChannel);
@@ -924,6 +1039,20 @@ class _FormScreenState extends State<FormScreen> {
           reference = res['data']['reference'];
         }
       });
+    }
+  }
+
+  verifyPayment() async {
+    Dialogs.showLoading(context: context, text: 'Verifying Payment');
+
+    var res = await WebServices.verifyPayment(reference, businessId);
+    print(res);
+
+    Navigator.pop(context);
+    if (res is String) {
+      Dialogs.showErrorMessage(res);
+    } else {
+      Dialogs.successDialog(context: context, productName: productName);
     }
   }
 

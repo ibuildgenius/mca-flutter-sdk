@@ -19,6 +19,7 @@ class InputFormField extends StatelessWidget {
     this.hint,
     this.textCapitalization = TextCapitalization.none,
     this.maxLines = 1,
+    this.padding,
     this.keyboardType,
     this.maxLength,
     this.inputFormatters,
@@ -33,6 +34,7 @@ class InputFormField extends StatelessWidget {
   final obscure;
   final label;
   final hint;
+  final padding;
   final textCapitalization;
   final keyboardType;
   final inputFormatters;
@@ -86,7 +88,7 @@ class InputFormField extends StatelessWidget {
           labelStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4)),
           hintStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4)),
           contentPadding:
-          const EdgeInsets.symmetric(vertical: 15.0, horizontal: 15.0),
+           EdgeInsets.symmetric(vertical: padding??15.0, horizontal: 15.0),
         ),
       ),
     );

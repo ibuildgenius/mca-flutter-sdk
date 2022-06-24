@@ -23,9 +23,12 @@ class AllProducts extends StatefulWidget {
 }
 
 class _AllProductsState extends State<AllProducts> {
+  final searchController = TextEditingController();
+  var searchList;
+
   initialiseSdk(context, {productId}) {
-    final mycover =
-        MyCoverAI(context: context, userId: widget.userId, productId: productId ?? '');
+    final mycover = MyCoverAI(
+        context: context, userId: widget.userId, productId: productId ?? '');
     var res = mycover.initialise();
   }
 
@@ -44,6 +47,34 @@ class _AllProductsState extends State<AllProducts> {
     } else {
       return auto;
     }
+  }
+
+  search(searchTerm) {
+    if (searchTerm.isEmpty) {
+      setState(() => searchList = widget.productData);
+    }
+    if (mounted) {
+      setState(() {
+        searchList = widget.productData
+            .where((i) => (i['productCategory']['name']
+                    .toString()
+                    .toLowerCase()
+                    .replaceAll(' ', '')
+                    .contains(searchTerm.toLowerCase().replaceAll(' ', '')) ||
+                i['name']
+                    .toString()
+                    .toLowerCase()
+                    .replaceAll(' ', '')
+                    .contains(searchTerm.toLowerCase().replaceAll(' ', ''))))
+            .toList();
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    searchList = widget.productData;
+    super.initState();
   }
 
   @override
@@ -82,8 +113,10 @@ class _AllProductsState extends State<AllProducts> {
             ),
             const SizedBox(height: 8),
             InputFormField(
-                // controller: controller,
-                onChanged: (value) {},
+                padding: 10.0,
+                onChanged: (value) {
+                  search(value);
+                },
                 hint: 'Search product',
                 prefixIcon: const Icon(Icons.search),
                 textCapitalization: TextCapitalization.sentences,
@@ -93,13 +126,14 @@ class _AllProductsState extends State<AllProducts> {
                 elevation: 1,
                 shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(5)),
-                child: widget.productData == null
+                child: searchList == null
                     ? const Center(
                         child: CircularProgressIndicator.adaptive(
                             backgroundColor: Colors.green))
                     : ListView.separated(
+                        shrinkWrap: true,
                         itemBuilder: (c, i) {
-                          var item = widget.productData[i];
+                          var item = searchList[i];
                           return ListTile(
                               leading: Image.asset(
                                   getImages(item['productCategory']['name']),
@@ -119,7 +153,7 @@ class _AllProductsState extends State<AllProducts> {
                                   productId: item['id']));
                         },
                         separatorBuilder: (c, i) => const SizedBox(height: 5),
-                        itemCount: widget.productData.length),
+                        itemCount: searchList.length),
               ),
             ),
           ],

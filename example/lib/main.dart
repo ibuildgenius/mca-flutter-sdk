@@ -109,8 +109,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       var res = await makePostRequest(apiUrl: productUrl, data: data);
-      print(res.statusCode);
-      print(res.body);
+
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
         setState(() => allProducts = body['data']['productDetails']);
@@ -126,20 +125,31 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('All products')),
-        body: allProducts == null
-            ? const Center(
-                child: CircularProgressIndicator.adaptive(
-                    backgroundColor: Colors.green))
-            : ListView.separated(
-                itemBuilder: (c, i) {
-                  var item = allProducts[i];
-                  return ListTile(
-                      title: Text(item['name']),
-                      onTap: () =>
-                          initialiseSdk(context, productId: item['id']));
-                },
-                separatorBuilder: (c, i) => const SizedBox(height: 5),
-                itemCount: allProducts.length));
+        appBar: AppBar(title: const Text('Buy our products')),
+        body: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: allProducts == null
+              ? const Center(
+                  child: CircularProgressIndicator.adaptive(
+                      backgroundColor: Colors.green))
+              : ListView.separated(
+                  itemBuilder: (c, i) {
+                    var item = allProducts[i];
+                    return ListTile(
+                      leading: Icon(Icons.store_mall_directory),
+                        title: Text(item['name']),
+                        subtitle: Text(item['productCategory']['name']),
+                        trailing: Text(
+                          'NGN ${item['price']}',
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w600,
+                              fontSize: 16),
+                        ),
+                        onTap: () =>
+                            initialiseSdk(context, productId: item['id']));
+                  },
+                  separatorBuilder: (c, i) => const SizedBox(height: 5),
+                  itemCount: allProducts.length),
+        ));
   }
 }

@@ -9,6 +9,8 @@ class WebServices {
   static const String _initialiseSdkUrl = '$_basUrl/sdk/initialize';
   static const String _buySdkUrl = '$_basUrl/sdk/buy';
   static const String _uploadUrl = '$_basUrl/sdk/upload-file';
+  static const String _ussdProviderUrl = '$_basUrl/sdk/ussd-providers';
+  static const String _verifyPaymentUrl = '$_basUrl/sdk/verify-transaction';
 
   static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
   static const String userId = 'olakunle@mycovergenius.com';
@@ -31,18 +33,26 @@ class WebServices {
         url: _initialiseSdkUrl, data: data);
   }
 
-  static uploadFile(context,businessId, File image) async {
+  static verifyPayment(String reference,businessId) async {
+    var data = {
+      "transaction_reference": reference,
+    };
+    print(data);
+    return await ApiScheme.initialisePostRequest(
+        url: _verifyPaymentUrl, data: data,apiKey: businessId);
+  }
+
+  static uploadFile(context, businessId, File image) async {
     Map<String, String> headers = {
       "Accept": "application/json",
       "x-api-id": "$businessId",
     };
-print(_uploadUrl);
+    print(_uploadUrl);
     var uri = Uri.parse(_uploadUrl);
 
     var request = http.MultipartRequest("POST", uri);
 
-    request.files
-        .add(await http.MultipartFile.fromPath('file', image.path));
+    request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
     request.fields['fileType'] = 'image';
     request.headers.addAll(headers);
@@ -50,47 +60,29 @@ print(_uploadUrl);
     var response = await request.send();
 
     return response;
-
   }
 
   static getListData(String url) async {
     return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url');
   }
 
+  static getUssdProvider() async {
+    return await ApiScheme.initialiseGetRequest(url: _ussdProviderUrl);
+  }
+
   static buyProduct({
     required String userId,
-    required String apiKey,
+    required String businessId,
     String? productId,
     payload,
     paymentChannel,
   }) async {
-    //  payload = {
-    //   "product_id": "a72c4e3c-e868-4782-bb35-df6e3344ae6c",
-    //   "first_name": "Azeez",
-    //   "last_name": "Bolu",
-    //   "email": "azeez32365@gmail.com",
-    //   "phone_number": "09044556744",
-    //   "date_of_birth": "1990-12-12",
-    //   "address": "Adeolu str Abuja ",
-    //   "state": "Federal Capital Territory",
-    //   "identification_name": "NIMC Card",
-    //   "identification_url": "http://www.mycover.ai",
-    //   "bvn": "12345678900",
-    //   "registration_number": "jjj74hb",
-    //   "vehicle_category": "Car",
-    //   "vehicle_cost": 1000000,
-    //   "year_of_manufacture": "2007",
-    //   "title": "Chief"
-    // };
-
-    // paymentChannel = {"channel": "ussd", "bank_code": "082", "amount": 1000000};
-
     var data = {
       "payload": payload,
       "payment_channel": paymentChannel,
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: _buySdkUrl, data: data, apiKey: apiKey);
+        url: _buySdkUrl, data: data, apiKey: businessId);
   }
 }
