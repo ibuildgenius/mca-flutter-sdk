@@ -31,7 +31,7 @@ class ApiScheme{
     return statusCode! >= 200 && statusCode < 300;
   }
 
-  static _makeGetRequest({apiUrl, token}) async {
+  static _makeGetRequest({apiUrl, token,apiKey}) async {
     final uri = Uri.parse(apiUrl);
     print(apiUrl);
 
@@ -40,10 +40,19 @@ class ApiScheme{
       headers = {
         HttpHeaders.contentTypeHeader: 'application/json',
         HttpHeaders.authorizationHeader: 'Bearer $token',
+        'x-api-id': '$apiKey',
       };
-    } else {
+    }
+    else if (apiKey == null) {
       headers = {
         HttpHeaders.contentTypeHeader: 'application/json',
+      };
+    }
+    else {
+      headers = {
+        HttpHeaders.contentTypeHeader: 'application/json',
+        'x-api-id': '$apiKey',
+
       };
     }
     return await http.get(uri, headers: headers);
@@ -52,7 +61,7 @@ class ApiScheme{
   static _makePostRequest({apiUrl, data, token, apiKey}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-
+print(apiUrl);
     var headers;
     if (token != null) {
       headers = {
@@ -60,11 +69,13 @@ class ApiScheme{
         HttpHeaders.authorizationHeader: 'Bearer $token',
         'x-api-id': '$apiKey',
       };
-    } else if (apiKey == null) {
+    }
+    else if (apiKey == null) {
       headers = {
         HttpHeaders.contentTypeHeader: 'application/json',
       };
-    } else {
+    }
+    else {
       headers = {
         HttpHeaders.contentTypeHeader: 'application/json',
         'x-api-id': '$apiKey',
@@ -98,9 +109,9 @@ class ApiScheme{
 
 
 
-  static initialiseGetRequest({required String url, token}) async {
+  static initialiseGetRequest({required String url, token,apiKey}) async {
     try {
-      var response = await _makeGetRequest(apiUrl: url, token: token);
+      var response = await _makeGetRequest(apiUrl: url, token: token, apiKey: apiKey);
       var body = jsonDecode(response.body);
       if (_isRequestSuccessful(response.statusCode)) {
         return body;

@@ -1,21 +1,23 @@
 import 'package:flutter/material.dart';
+
 import '../../mca_flutter_sdk.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/input.dart';
+import 'landing.dart';
 
 class AllProducts extends StatefulWidget {
   const AllProducts(
       {Key? key,
       required this.productData,
-      this.accentColor = PRIMARY,
-      this.primaryColor = FILL_GREEN,
+        required this.reference,
+        required  this.typeOfTransaction,
       required this.userId})
       : super(key: key);
   final String userId;
   final productData;
-  final primaryColor;
-  final accentColor;
+  final PurchaseStage ?typeOfTransaction;
+  final String ?reference;
 
   @override
   State<AllProducts> createState() => _AllProductsState();
@@ -27,7 +29,11 @@ class _AllProductsState extends State<AllProducts> {
 
   initialiseSdk(context, {productId}) {
     final mycover = MyCoverAI(
-        context: context, userId: widget.userId, productId: productId ?? '');
+        context: context,
+        userId: widget.userId,
+        productId: productId ?? '',
+        typeOfTransaction: widget.typeOfTransaction,
+        reference: widget.reference);
     var res = mycover.initialise();
   }
 

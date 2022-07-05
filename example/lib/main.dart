@@ -38,9 +38,17 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
 
-  initialiseSdk(context, {userId, productId}) async {
-    final myCover =
-        MyCoverAI(context: context, userId: userId, productId: productId);
+  initialiseSdk(context,
+      {userId = 'olakunle@mycovergenius.com',
+      productId,
+      typeOfTransaction,
+      reference}) async {
+    final myCover = MyCoverAI(
+        context: context,
+        userId: userId,
+        productId: productId,
+        typeOfTransaction: typeOfTransaction,
+        reference: reference);
     var response = await myCover.initialise();
     if (response != null) {
       showLoading('$response');

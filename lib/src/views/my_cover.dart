@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../mca_flutter_sdk.dart';
 import '../widgets/dialogs.dart';
 import 'all_products.dart';
@@ -11,11 +12,16 @@ class MyCoverAI {
   const MyCoverAI(
       {Key? key,
       required this.context,
-       this.productId = '',
+      this.productId = '',
+      this.reference = '',
+      this.typeOfTransaction = PurchaseStage.payment,
       required this.userId});
 
   final BuildContext context;
-  final String productId;
+  final PurchaseStage? typeOfTransaction;
+  final String ? reference;
+
+  final String? productId;
   final String userId;
 
   initialise() async {
@@ -41,12 +47,16 @@ class MyCoverAI {
           builder: (context) => productId == ''
               ? AllProducts(
                   userId: userId,
-                  productData: response['data']['productDetails'])
+                  productData: response['data']['productDetails'],
+                  reference: reference,
+                  typeOfTransaction: typeOfTransaction)
               : MyCover(
                   userId: userId,
                   email: userId,
                   productId: productId,
-                  productData: response),
+                  productData: response,
+                  reference: reference,
+                  typeOfTransaction: typeOfTransaction),
         ),
       );
     }

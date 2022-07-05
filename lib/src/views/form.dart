@@ -15,13 +15,22 @@ import '../widgets/buttons.dart';
 import '../widgets/common.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
+import 'landing.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({Key? key, required this.productDetail, required this.userId,required this.email})
+  const FormScreen(
+      {Key? key,
+      required this.productDetail,
+      required this.userId,
+      required this.reference,
+      required this.typeOfTransaction,
+      required this.email})
       : super(key: key);
   final productDetail;
   final String email;
-  final  String userId;
+  final String userId;
+  final PurchaseStage? typeOfTransaction;
+  final String? reference;
 
   @override
   State<FormScreen> createState() => _FormScreenState();
@@ -35,7 +44,7 @@ class _FormScreenState extends State<FormScreen> {
   String searchTerm = '';
   String productName = '';
   String accountNumber = '';
-  String reference = '';
+  String? reference = '';
   String ussdCode = '';
   String paymentCode = '';
   String bankName = '';
@@ -47,6 +56,7 @@ class _FormScreenState extends State<FormScreen> {
   String bankCode = '';
   var purchaseData = {};
   String bodyType = 'form';
+  PurchaseStage? stage;
 
   @override
   void initState() {
@@ -56,8 +66,11 @@ class _FormScreenState extends State<FormScreen> {
 
   setData() {
     productDetail = widget.productDetail;
+
     setState(() {
       email = widget.email;
+      stage = widget.typeOfTransaction ?? PurchaseStage.payment;
+      reference = widget.reference ?? '';
       forms = productDetail['data']['productDetails'][0]['form_fields'];
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
@@ -256,14 +269,12 @@ class _FormScreenState extends State<FormScreen> {
 
   getUssdProvider() async {
     var response = await WebServices.getUssdProvider();
-    print(response);
     if (response is String) {
       log(response);
     } else {
       setState(() {
         ussdProviders = response['data'];
         searchList = ussdProviders;
-
         bankName = searchList[0]['bank_name'];
         bankCode = searchList[0]['type'];
       });
@@ -448,11 +459,13 @@ class _FormScreenState extends State<FormScreen> {
                   if (_formKey.currentState!.validate()) {
                     if (initialPage < (chunks.length - 1)) {
                       initialPage++;
-
                       setState(() => pageData = chunks[initialPage]);
                     } else {
-                      print(purchaseData);
-                      setState(() => bodyType = 'bank');
+                      if (stage == PurchaseStage.payment) {
+                        setState(() => bodyType = 'bank');
+                      } else {
+                        uploadImage();
+                      }
                     }
                   }
                 }),
@@ -486,13 +499,20 @@ class _FormScreenState extends State<FormScreen> {
   var pageData = [];
 
   void splitList() {
-    List lst = forms;
-    int chunkSize = 4;
-    for (var i = 0; i < lst.length; i += chunkSize) {
-      chunks.add(lst.sublist(
-          i, i + chunkSize > lst.length ? lst.length : i + chunkSize));
+    if (forms.isNotEmpty) {
+      var paymentList = forms.where((i) => i['show_first'] == true).toList();
+      var purchaseList = forms.where((i) => i['show_first'] != true).toList();
+      List lst = stage == PurchaseStage.payment ? paymentList : purchaseList;
+      int chunkSize = 4;
+      for (var i = 0; i < lst.length; i += chunkSize) {
+        chunks.add(lst.sublist(
+            i, i + chunkSize > lst.length ? lst.length : i + chunkSize));
+      }
+
+      setState(() => pageData = chunks[initialPage]);
+    } else {
+      pageData = [];
     }
-    setState(() => pageData = chunks[initialPage]);
   }
 
   form(data) {
@@ -554,7 +574,6 @@ class _FormScreenState extends State<FormScreen> {
                           controller.text = newDate.toString().substring(0, 10);
                           purchaseData[item['name']] = controller.text;
                         });
-                        print(newDate);
                       },
                     ));
                   } else if (item['label']
@@ -812,15 +831,19 @@ class _FormScreenState extends State<FormScreen> {
               child: button(
                   text: 'Proceed',
                   onTap: () async {
-                    if (paymentMethod != '') {
-                      purchaseData['product_id'] = productId;
-                      if (paymentMethod == 'ussd' && !enabledUssd) {
-                        setState(() => enabledUssd = true);
+                    if (stage == PurchaseStage.payment) {
+                      if (paymentMethod != '') {
+                        purchaseData['product_id'] = productId;
+                        if (paymentMethod == 'ussd' && !enabledUssd) {
+                          setState(() => enabledUssd = true);
+                        } else {
+                          makePayment();
+                        }
                       } else {
-                        uploadImage();
+                        Dialogs.showErrorMessage('Select a payment method');
                       }
                     } else {
-                      Dialogs.showErrorMessage('Select a payment method');
+                      uploadImage();
                     }
                   }),
             ),
@@ -909,8 +932,9 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child:
-                  button(text: 'I have sent the money', onTap: verifyPayment),
+              child: button(
+                  text: 'I have sent the money',
+                  onTap: () => verifyPayment(true)),
             ),
             Center(child: getProductName(productName)),
           ],
@@ -997,8 +1021,9 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child:
-                  button(text: 'I have sent the money', onTap: verifyPayment),
+              child: button(
+                  text: 'I have sent the money',
+                  onTap: () => verifyPayment(true)),
             ),
             Center(child: getProductName(productName)),
           ],
@@ -1055,8 +1080,8 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  buyProduct() async {
-    Dialogs.showLoading(context: context, text: 'Submitting Purchase');
+  makePayment() async {
+    Dialogs.showLoading(context: context, text: 'Submitting Payment');
     var paymentChannel = {
       "channel": paymentMethod,
       "amount": double.parse(purchaseData['amount'])
@@ -1068,11 +1093,12 @@ class _FormScreenState extends State<FormScreen> {
     if (purchaseData['email'] == null || purchaseData['email'] == '') {
       purchaseData['email'] = email;
     }
-    var res = await WebServices.buyProduct(
+    var res = await WebServices.initiatePurchase(
         businessId: businessId,
         userId: widget.userId,
         payload: purchaseData,
         paymentChannel: paymentChannel);
+    print(res);
 
     Navigator.pop(context);
     if (res is String) {
@@ -1095,23 +1121,87 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
-  verifyPayment() async {
-    Dialogs.showLoading(context: context, text: 'Verifying Payment');
+  completePurchase() async {
+    Dialogs.showLoading(context: context, text: 'Submitting Purchase');
+    print(reference);
+    purchaseData['registration_number'] = 'SOJ003';
 
-    var res = await WebServices.verifyPayment(reference, businessId);
+    var res = await WebServices.completePurchase(
+        businessId: businessId,
+        userId: widget.userId,
+        payload: purchaseData,
+        reference: reference);
 
+    Navigator.pop(context);
     if (res is String) {
-      if (res.contains('retry')) {
-        Future.delayed(const Duration(seconds: 20), () => verifyPayment());
+      Dialogs.showErrorMessage(res);
+    } else {
+      Dialogs.successDialog(
+          context: context,
+          title: 'Purchase Successful',
+          message:
+              'You have just purchased \n$productName,\nKindly Check your email\nto complete your activation',
+          productName: productName,
+          onTap: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          });
+    }
+  }
+
+  verifyPayment(showLoading) async {
+    if (showLoading) {
+      Dialogs.showLoading(context: context, text: 'Verifying Payment');
+    }
+
+    var res = await WebServices.verifyPayment(reference!, businessId);
+    print('Verify');
+    print(res);
+    if (res is String) {
+      if (res.contains('retry') || res.contains('failed')) {
+        Future.delayed(const Duration(seconds: 20), () => verifyPayment(false));
       } else {
         Navigator.pop(context);
 
         Dialogs.failedDialog(context: context);
       }
     } else {
+      getPurchaseInfo();
+    }
+  }
+
+  getPurchaseInfo() async {
+    var res = await WebServices.getPurchaseInfo(businessId, reference);
+
+    if (res is String) {
       Navigator.pop(context);
 
-      Dialogs.successDialog(context: context, productName: productName);
+      Dialogs.failedDialog(context: context);
+    } else {
+      Navigator.pop(context);
+
+      Dialogs.successDialog(
+          context: context,
+          productName: productName,
+          onTap: () {
+            Navigator.pop(context);
+            setState(() {
+              stage = PurchaseStage.purchase;
+              purchaseData['amount'] = res['data']['amount'];
+              purchaseData['vehicle_category'] =
+                  res['data']['vehicle_category'];
+              purchaseData['date_of_birth'] = res['data']['date_of_birth'];
+              purchaseData['phone_number'] = res['data']['phone_number'];
+              purchaseData['last_name'] = res['data']['last_name'];
+              purchaseData['first_name'] = res['data']['first_name'];
+              purchaseData['email'] = res['data']['email'];
+              initialPage = 0;
+              chunks = [];
+              pageData = [];
+              splitList();
+              bodyType = 'form';
+            });
+          });
     }
   }
 
@@ -1119,6 +1209,7 @@ class _FormScreenState extends State<FormScreen> {
     if (_image != null) {
       Dialogs.showLoading(context: context, text: 'Uploading Image');
       var res = await WebServices.uploadFile(context, businessId, _image!);
+      print(res);
       Navigator.pop(context);
       if (res.statusCode.toString() == '200' ||
           res.statusCode.toString() == '201') {
@@ -1127,17 +1218,14 @@ class _FormScreenState extends State<FormScreen> {
             var body = jsonDecode(value);
             purchaseData['image'] = body['data']['file_url'];
             purchaseData['identification_url'] = body['data']['file_url'];
-            buyProduct();
+            completePurchase();
           });
         });
       } else {
         Dialogs.showErrorMessage(res);
-
       }
     } else {
-      buyProduct();
-
-
+      completePurchase();
     }
   }
 }

@@ -10,6 +10,9 @@ class WebServices {
   static const String _uploadUrl = '$_basUrl/sdk/upload-file';
   static const String _ussdProviderUrl = '$_basUrl/sdk/ussd-providers';
   static const String _verifyPaymentUrl = '$_basUrl/sdk/verify-transaction';
+  static const String _initiatePurchaseUrl = '$_basUrl/sdk/initiate-purchase';
+  static const String _completePurchaseUrl = '$_basUrl/sdk/complete-purchase';
+  static const String _purchaseInfoUrl = '$_basUrl/sdk/purchase-info';
 
   static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
   static const String userId = 'olakunle@mycovergenius.com';
@@ -63,6 +66,13 @@ class WebServices {
   static getListData(String url) async {
     return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url');
   }
+  static getPurchaseInfo(businessId,reference) async {
+    String queryString = 'reference=$reference';
+
+    var requestUrl = _purchaseInfoUrl + '?' + queryString;
+
+    return await ApiScheme.initialiseGetRequest(url: requestUrl, apiKey: businessId);
+  }
 
   static getUssdProvider() async {
     return await ApiScheme.initialiseGetRequest(url: _ussdProviderUrl);
@@ -82,5 +92,36 @@ class WebServices {
 
     return await ApiScheme.initialisePostRequest(
         url: _buySdkUrl, data: data, apiKey: businessId);
+  }
+
+  static initiatePurchase({
+    required String userId,
+    required String businessId,
+    String? productId,
+    payload,
+    paymentChannel,
+  }) async {
+    var data = {
+      "payload": payload,
+      "payment_channel": paymentChannel,
+    };
+
+    return await ApiScheme.initialisePostRequest(
+        url: _initiatePurchaseUrl, data: data, apiKey: businessId);
+  }
+
+  static completePurchase({
+    required String userId,
+    required String businessId,
+    String? reference,
+    payload,
+  }) async {
+    var data = {
+      "payload": payload,
+      "reference": reference,
+    };
+print(data);
+    return await ApiScheme.initialisePostRequest(
+        url: _completePurchaseUrl, data: data, apiKey: businessId);
   }
 }

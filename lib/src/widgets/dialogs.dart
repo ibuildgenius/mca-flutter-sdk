@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
 import '../const.dart';
 import '../theme.dart';
 import 'buttons.dart';
@@ -69,7 +68,7 @@ class Dialogs {
         });
   }
 
-  static Future<void> successDialog({context, productName}) async {
+  static Future<void> successDialog({context,title,message, productName,onTap}) async {
     return showDialog(
         barrierDismissible: false,
         context: context,
@@ -106,27 +105,25 @@ class Dialogs {
                                         package: 'mca_flutter_sdk'),
                                   ))),
                           verticalSpace(),
-                          const Center(
+                           Center(
                             child: Text(
-                              'Purchase Successful',
-                              style: TextStyle(
+                              title??'Payment Successful',
+                              style: const TextStyle(
                                   fontWeight: FontWeight.w700, fontSize: 21),
                             ),
                           ),
                           verticalSpace(),
                           Text(
-                              'You have just purchased \n$productName,\nKindly Check your email\nto complete your activation',
+
+                           message??   'You have just made payment for \n$productName,\nKindly fill the form to complete your purchase',
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
                           Padding(
                             padding: const EdgeInsets.all(35.0),
                             child: successButton(
-                                text: 'Done',
-                                onTap: () {
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                }),
+                                text: 'Continue',
+                                onTap: onTap),
                           ),
                           smallVerticalSpace(),
                         ],

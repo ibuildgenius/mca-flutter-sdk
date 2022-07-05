@@ -13,22 +13,24 @@ import 'travel.dart';
 
 enum BodyType { introPage, detail, success }
 
+enum PurchaseStage { payment, purchase }
+
 class MyCover extends StatefulWidget {
   const MyCover(
       {Key? key,
       required this.productData,
       required this.productId,
       required this.email,
-      this.accentColor = PRIMARY,
-      this.primaryColor = FILL_GREEN,
+      required this.reference,
+      required this.typeOfTransaction,
       required this.userId})
       : super(key: key);
-  final String productId;
+  final String? productId;
   final String userId;
   final String email;
+  final PurchaseStage? typeOfTransaction;
+  final String? reference;
   final productData;
-  final primaryColor;
-  final accentColor;
 
   @override
   State<MyCover> createState() => _MyCoverState();
@@ -59,6 +61,7 @@ class _MyCoverState extends State<MyCover> {
   fetchProductDetail() async {
     setState(() {
       productDetail = widget.productData;
+
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
       productCategory = productDetail['data']['productDetails'][0]
@@ -121,7 +124,8 @@ class _MyCoverState extends State<MyCover> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     logo == ''
-                        ? Image.asset(mca, height: 30, package: 'mca_flutter_sdk')
+                        ? Image.asset(mca,
+                            height: 30, package: 'mca_flutter_sdk')
                         : Image.network(
                             logo,
                             height: 30,
@@ -135,7 +139,8 @@ class _MyCoverState extends State<MyCover> {
                   padding: const EdgeInsets.only(top: 5.0),
                   child: Image.asset(myCover,
                       width: 170,
-                      fit: BoxFit.fitWidth,color: LIGHT_GREY,
+                      fit: BoxFit.fitWidth,
+                      color: LIGHT_GREY,
                       package: 'mca_flutter_sdk'),
                 ),
               ],
@@ -152,7 +157,12 @@ class _MyCoverState extends State<MyCover> {
         return introBodyScreen();
       case BodyType.detail:
         return FormScreen(
-            productDetail: widget.productData, email: widget.email, userId: widget.userId,);
+          productDetail: widget.productData,
+          email: widget.email,
+          userId: widget.userId,
+          typeOfTransaction: widget.typeOfTransaction,
+          reference: widget.reference,
+        );
       case BodyType.success:
         return successScreen();
     }
