@@ -13,8 +13,8 @@ class MyCoverAI {
       {Key? key,
       required this.context,
       this.productId = '',
-      this.reference = '',
-      this.typeOfTransaction = PurchaseStage.payment,
+      this.reference,
+      this.typeOfTransaction,
       required this.userId});
 
   final BuildContext context;
@@ -26,7 +26,6 @@ class MyCoverAI {
 
   initialise() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
-
     var response =
         await WebServices.initialiseSdk(userId: userId, productId: productId);
     Navigator.pop(context);

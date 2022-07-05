@@ -57,6 +57,17 @@ class _FormScreenState extends State<FormScreen> {
   var purchaseData = {};
   String bodyType = 'form';
   PurchaseStage? stage;
+  int initialPage = 0;
+  var chunks = [];
+  var pageData = [];
+  bool enabledUssd = false;
+  var vehicleList;
+  var yearList;
+  var titleList;
+  var identityList;
+  var stateList;
+  var ussdProviders = [];
+  var searchList = [];
 
   @override
   void initState() {
@@ -66,10 +77,11 @@ class _FormScreenState extends State<FormScreen> {
 
   setData() {
     productDetail = widget.productDetail;
-
     setState(() {
       email = widget.email;
       stage = widget.typeOfTransaction ?? PurchaseStage.payment;
+      print('stage   ====> ');
+      print(stage);
       reference = widget.reference ?? '';
       forms = productDetail['data']['productDetails'][0]['form_fields'];
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
@@ -77,146 +89,19 @@ class _FormScreenState extends State<FormScreen> {
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
       paymentMethod = '';
-
+      if (stage == PurchaseStage.purchase) {
+        getPurchaseInfo(false);
+      }
       splitList();
+
       getUssdProvider();
+
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return selectBody(bodyType);
-  }
-
-  Future<dynamic> showImagePickers(context, {onSelect}) {
-    return showModalBottomSheet(
-        backgroundColor: Colors.transparent,
-        context: context,
-        isDismissible: true,
-        isScrollControlled: true,
-        builder: (context) {
-          return SizedBox(
-            // height: height(context) * 0.3,
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  children: <Widget>[
-                    Container(
-                      decoration: const BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.all(Radius.circular(15))),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: InkWell(
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  var selectedImage = await openCamera();
-                                  if (selectedImage != null) {
-                                    setState(() {
-                                      _image = selectedImage;
-                                    });
-                                    print(_image);
-                                  }
-                                },
-                                child: Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceBetween,
-                                  children: const <Widget>[
-                                    Expanded(child: Text("Take a Photo")),
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 10),
-                                      child: Icon(
-                                        Icons.camera_alt,
-                                        size: 25,
-                                        color: PRIMARY,
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const Divider(),
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: InkWell(
-                                onTap: () async {
-                                  Navigator.pop(context);
-
-                                  var selectedImage = await openGallery();
-                                  if (selectedImage != null) {
-                                    setState(() {
-                                      // iDImage = selectedImage.path;
-                                      _image = selectedImage;
-                                    });
-                                    print(_image);
-                                  }
-                                },
-                                child: Row(
-                                  children: const <Widget>[
-                                    Expanded(child: Text("Photo Library")),
-                                    Padding(
-                                      padding: EdgeInsets.only(right: 10),
-                                      child: Icon(
-                                        Icons.collections,
-                                        size: 25,
-                                        color: PRIMARY,
-                                      ),
-                                    )
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.of(context).pop();
-                      },
-                      child: Container(
-                        height: 65,
-                        decoration: const BoxDecoration(
-                            color: WHITE,
-                            borderRadius:
-                                BorderRadius.all(Radius.circular(15))),
-                        child: const Center(
-                          child: Text(
-                            "Cancel",
-                            style: TextStyle(
-                                fontWeight: FontWeight.w600, fontSize: 18),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          );
-        });
-  }
-
-  openCamera() async {
-    ImagePicker imagePicker = ImagePicker();
-    XFile? pickedFile = await imagePicker.pickImage(
-        source: ImageSource.camera,
-        imageQuality: 50,
-        maxHeight: 612,
-        maxWidth: 816);
-
-    if (pickedFile != null) {
-      File file = File(pickedFile.path);
-      return file;
-    }
-
-    return null;
   }
 
   openGallery() async {
@@ -233,14 +118,6 @@ class _FormScreenState extends State<FormScreen> {
     }
     return null;
   }
-
-  var vehicleList;
-  var yearList;
-  var titleList;
-  var identityList;
-  var stateList;
-  var ussdProviders = [];
-  var searchList = [];
 
   getList(url) async {
     var response = await WebServices.getListData(url);
@@ -457,10 +334,15 @@ class _FormScreenState extends State<FormScreen> {
                 text: 'Get Covered',
                 onTap: () async {
                   if (_formKey.currentState!.validate()) {
+
                     if (initialPage < (chunks.length - 1)) {
+                      // print(ind);
+                      print(chunks.length);
                       initialPage++;
                       setState(() => pageData = chunks[initialPage]);
-                    } else {
+                    }
+                    //
+                    else {
                       if (stage == PurchaseStage.payment) {
                         setState(() => bodyType = 'bank');
                       } else {
@@ -482,8 +364,7 @@ class _FormScreenState extends State<FormScreen> {
         builder: (BuildContext context) => Container(
               padding: const EdgeInsets.only(top: 6.0),
               margin: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom,
-              ),
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
               decoration: BoxDecoration(
                   color: WHITE, borderRadius: BorderRadius.circular(15)),
               height: MediaQuery.of(context).size.height * 0.45,
@@ -493,10 +374,6 @@ class _FormScreenState extends State<FormScreen> {
               ),
             ));
   }
-
-  int initialPage = 0;
-  var chunks = [];
-  var pageData = [];
 
   void splitList() {
     if (forms.isNotEmpty) {
@@ -508,7 +385,6 @@ class _FormScreenState extends State<FormScreen> {
         chunks.add(lst.sublist(
             i, i + chunkSize > lst.length ? lst.length : i + chunkSize));
       }
-
       setState(() => pageData = chunks[initialPage]);
     } else {
       pageData = [];
@@ -726,8 +602,6 @@ class _FormScreenState extends State<FormScreen> {
         return ussdCard();
     }
   }
-
-  bool enabledUssd = false;
 
   payment() {
     return Expanded(
@@ -1124,7 +998,6 @@ class _FormScreenState extends State<FormScreen> {
   completePurchase() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
     print(reference);
-    purchaseData['registration_number'] = 'SOJ003';
 
     var res = await WebServices.completePurchase(
         businessId: businessId,
@@ -1166,11 +1039,11 @@ class _FormScreenState extends State<FormScreen> {
         Dialogs.failedDialog(context: context);
       }
     } else {
-      getPurchaseInfo();
+      getPurchaseInfo(true);
     }
   }
 
-  getPurchaseInfo() async {
+  getPurchaseInfo(isLoading) async {
     var res = await WebServices.getPurchaseInfo(businessId, reference);
 
     if (res is String) {
@@ -1178,13 +1051,15 @@ class _FormScreenState extends State<FormScreen> {
 
       Dialogs.failedDialog(context: context);
     } else {
-      Navigator.pop(context);
+      if(isLoading){
+        Navigator.pop(context);
 
-      Dialogs.successDialog(
-          context: context,
-          productName: productName,
-          onTap: () {
-            Navigator.pop(context);
+      }
+      // Dialogs.successDialog(
+      //     context: context,
+      //     productName: productName,
+      //     onTap: () {
+      //       Navigator.pop(context);
             setState(() {
               stage = PurchaseStage.purchase;
               purchaseData['amount'] = res['data']['amount'];
@@ -1201,7 +1076,6 @@ class _FormScreenState extends State<FormScreen> {
               splitList();
               bodyType = 'form';
             });
-          });
     }
   }
 

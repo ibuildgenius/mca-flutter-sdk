@@ -145,7 +145,9 @@ class _MyHomePageState extends State<MyHomePage> {
                               fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                         onTap: () =>
-                            initialiseSdk(context, productId: item['id']));
+                            initialiseSdk(context, productId: item['id']
+                                // ,typeOfTransaction: PurchaseStage.purchase,reference: 'BUY-BWBJMPABGFWKB'
+                            ));
                   },
                   separatorBuilder: (c, i) => const SizedBox(height: 5),
                   itemCount: allProducts.length),
