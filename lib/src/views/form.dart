@@ -95,7 +95,6 @@ class _FormScreenState extends State<FormScreen> {
       splitList();
 
       getUssdProvider();
-
     });
   }
 
@@ -334,7 +333,6 @@ class _FormScreenState extends State<FormScreen> {
                 text: 'Get Covered',
                 onTap: () async {
                   if (_formKey.currentState!.validate()) {
-
                     if (initialPage < (chunks.length - 1)) {
                       // print(ind);
                       print(chunks.length);
@@ -1051,31 +1049,29 @@ class _FormScreenState extends State<FormScreen> {
 
       Dialogs.failedDialog(context: context);
     } else {
-      if(isLoading){
+      if (isLoading) {
         Navigator.pop(context);
-
       }
       // Dialogs.successDialog(
       //     context: context,
       //     productName: productName,
       //     onTap: () {
       //       Navigator.pop(context);
-            setState(() {
-              stage = PurchaseStage.purchase;
-              purchaseData['amount'] = res['data']['amount'];
-              purchaseData['vehicle_category'] =
-                  res['data']['vehicle_category'];
-              purchaseData['date_of_birth'] = res['data']['date_of_birth'];
-              purchaseData['phone_number'] = res['data']['phone_number'];
-              purchaseData['last_name'] = res['data']['last_name'];
-              purchaseData['first_name'] = res['data']['first_name'];
-              purchaseData['email'] = res['data']['email'];
-              initialPage = 0;
-              chunks = [];
-              pageData = [];
-              splitList();
-              bodyType = 'form';
-            });
+      setState(() {
+        stage = PurchaseStage.purchase;
+        purchaseData['amount'] = res['data']['amount'];
+        purchaseData['vehicle_category'] = res['data']['vehicle_category'];
+        purchaseData['date_of_birth'] = res['data']['date_of_birth'];
+        purchaseData['phone_number'] = res['data']['phone_number'];
+        purchaseData['last_name'] = res['data']['last_name'];
+        purchaseData['first_name'] = res['data']['first_name'];
+        purchaseData['email'] = res['data']['email'];
+        initialPage = 0;
+        chunks = [];
+        pageData = [];
+        splitList();
+        bodyType = 'form';
+      });
     }
   }
 
