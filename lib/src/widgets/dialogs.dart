@@ -161,6 +161,7 @@ class Dialogs {
         });
   }
 
+
   static Future<void> confirmClose(context) async {
     return showDialog(
         barrierDismissible: false,
