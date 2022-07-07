@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
 import '../const.dart';
 import '../theme.dart';
 import 'buttons.dart';
@@ -68,7 +69,14 @@ class Dialogs {
         });
   }
 
-  static Future<void> successDialog({context,title,message, productName,onTap}) async {
+  static Future<void> successDialog(
+      {context,
+      title,
+      message,
+      reference,
+      productName,
+      onTap,
+      isContinue = false}) async {
     return showDialog(
         barrierDismissible: false,
         context: context,
@@ -105,27 +113,43 @@ class Dialogs {
                                         package: 'mca_flutter_sdk'),
                                   ))),
                           verticalSpace(),
-                           Center(
+                          Center(
                             child: Text(
-                              title??'Payment Successful',
+                              title ?? 'Payment Successful',
                               style: const TextStyle(
                                   fontWeight: FontWeight.w700, fontSize: 21),
                             ),
                           ),
                           verticalSpace(),
                           Text(
-
-                           message??   'You have just made payment for \n$productName,\nKindly fill the form to complete your purchase',
+                              message ??
+                                  'You paid for \n$productName with payment reference $reference,\nKindly fill the form to complete your purchase',
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
                           Padding(
                             padding: const EdgeInsets.all(35.0),
-                            child: successButton(
-                                text: 'Continue',
-                                onTap: onTap),
+                            child:
+                                successButton(text: 'Continue', onTap: onTap),
                           ),
                           smallVerticalSpace(),
+                          if (isContinue)
+                            InkWell(
+                              onTap: () {
+                                Navigator.pop(context);
+                                Navigator.pop(context);
+                              },
+                              child: const Padding(
+                                padding: EdgeInsets.all(8.0),
+                                child: Text(
+                                  'Later',
+                                  style: TextStyle(
+                                      color: PRIMARY,
+                                      fontWeight: FontWeight.w600),
+                                ),
+                              ),
+                            ),
+                          if (isContinue) smallVerticalSpace(),
                         ],
                       ),
                     ),
@@ -192,16 +216,19 @@ class Dialogs {
                                         child: const Center(
                                           child: Padding(
                                             padding: EdgeInsets.all(4.0),
-                                            child: Text('Cancel',style: TextStyle(fontWeight: FontWeight.w600),),
+                                            child: Text(
+                                              'Cancel',
+                                              style: TextStyle(
+                                                  fontWeight: FontWeight.w600),
+                                            ),
                                           ),
                                         ))),
                                 const SizedBox(width: 5),
                                 Expanded(
-                                  child: closeButton(
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        Navigator.pop(context);
-                                      }),
+                                  child: closeButton(onTap: () {
+                                    Navigator.pop(context);
+                                    Navigator.pop(context);
+                                  }),
                                 ),
                               ],
                             ),

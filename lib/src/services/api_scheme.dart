@@ -33,7 +33,6 @@ class ApiScheme{
 
   static _makeGetRequest({apiUrl, token,apiKey}) async {
     final uri = Uri.parse(apiUrl);
-    print(apiUrl);
 
     var headers;
     if (token != null) {
@@ -61,7 +60,6 @@ class ApiScheme{
   static _makePostRequest({apiUrl, data, token, apiKey}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-print(apiUrl);
     var headers;
     if (token != null) {
       headers = {
@@ -102,7 +100,6 @@ print(apiUrl);
         return _handleError(response);
       }
     } catch (e) {
-      print(e.toString());
       return e.toString();
     }
   }
@@ -119,7 +116,6 @@ print(apiUrl);
         return _handleError(response);
       }
     } catch (e) {
-      print(e.toString());
       return e.toString();
     }
   }

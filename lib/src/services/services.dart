@@ -38,7 +38,6 @@ class WebServices {
     var data = {
       "transaction_reference": reference,
     };
-    print(data);
     return await ApiScheme.initialisePostRequest(
         url: _verifyPaymentUrl, data: data,apiKey: businessId);
   }
@@ -48,7 +47,6 @@ class WebServices {
       "Accept": "application/json",
       "x-api-id": "$businessId",
     };
-    print(_uploadUrl);
     var uri = Uri.parse(_uploadUrl);
 
     var request = http.MultipartRequest("POST", uri);
@@ -120,7 +118,6 @@ class WebServices {
       "payload": payload,
       "reference": reference,
     };
-print(data);
     return await ApiScheme.initialisePostRequest(
         url: _completePurchaseUrl, data: data, apiKey: businessId);
   }

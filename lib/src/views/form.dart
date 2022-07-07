@@ -80,8 +80,6 @@ class _FormScreenState extends State<FormScreen> {
     setState(() {
       email = widget.email;
       stage = widget.typeOfTransaction ?? PurchaseStage.payment;
-      print('stage   ====> ');
-      print(stage);
       reference = widget.reference ?? '';
       forms = productDetail['data']['productDetails'][0]['form_fields'];
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
@@ -334,8 +332,6 @@ class _FormScreenState extends State<FormScreen> {
                 onTap: () async {
                   if (_formKey.currentState!.validate()) {
                     if (initialPage < (chunks.length - 1)) {
-                      // print(ind);
-                      print(chunks.length);
                       initialPage++;
                       setState(() => pageData = chunks[initialPage]);
                     }
@@ -970,7 +966,6 @@ class _FormScreenState extends State<FormScreen> {
         userId: widget.userId,
         payload: purchaseData,
         paymentChannel: paymentChannel);
-    print(res);
 
     Navigator.pop(context);
     if (res is String) {
@@ -995,7 +990,6 @@ class _FormScreenState extends State<FormScreen> {
 
   completePurchase() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
-    print(reference);
 
     var res = await WebServices.completePurchase(
         businessId: businessId,
@@ -1026,8 +1020,6 @@ class _FormScreenState extends State<FormScreen> {
     }
 
     var res = await WebServices.verifyPayment(reference!, businessId);
-    print('Verify');
-    print(res);
     if (res is String) {
       if (res.contains('retry') || res.contains('failed')) {
         Future.delayed(const Duration(seconds: 20), () => verifyPayment(false));
@@ -1037,7 +1029,15 @@ class _FormScreenState extends State<FormScreen> {
         Dialogs.failedDialog(context: context);
       }
     } else {
-      getPurchaseInfo(true);
+      Dialogs.successDialog(
+          context: context,
+          productName: productName,
+          reference: reference,
+          isContinue: true,
+          onTap: () {
+            Navigator.pop(context);
+            getPurchaseInfo(true);
+          });
     }
   }
 
@@ -1052,11 +1052,7 @@ class _FormScreenState extends State<FormScreen> {
       if (isLoading) {
         Navigator.pop(context);
       }
-      // Dialogs.successDialog(
-      //     context: context,
-      //     productName: productName,
-      //     onTap: () {
-      //       Navigator.pop(context);
+
       setState(() {
         stage = PurchaseStage.purchase;
         purchaseData['amount'] = res['data']['amount'];
@@ -1079,7 +1075,6 @@ class _FormScreenState extends State<FormScreen> {
     if (_image != null) {
       Dialogs.showLoading(context: context, text: 'Uploading Image');
       var res = await WebServices.uploadFile(context, businessId, _image!);
-      print(res);
       Navigator.pop(context);
       if (res.statusCode.toString() == '200' ||
           res.statusCode.toString() == '201') {

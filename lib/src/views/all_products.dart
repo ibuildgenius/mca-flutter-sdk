@@ -4,7 +4,6 @@ import '../../mca_flutter_sdk.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/input.dart';
-import 'landing.dart';
 
 class AllProducts extends StatefulWidget {
   const AllProducts(
@@ -34,7 +33,8 @@ class _AllProductsState extends State<AllProducts> {
         productId: productId ?? '',
         typeOfTransaction: widget.typeOfTransaction,
         reference: widget.reference);
-    var res = mycover.initialise();
+     mycover.initialise();
+
   }
 
   getImages(String category) {

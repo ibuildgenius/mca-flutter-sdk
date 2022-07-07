@@ -196,7 +196,6 @@ class _MyCoverState extends State<MyCover> {
   }
 
   openIntro(String productType) {
-    print('product type - $productType');
 
     if (productType.contains('auto') || productType.contains('life')) {
       return const AutoScreen();

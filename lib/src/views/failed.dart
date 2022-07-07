@@ -1,8 +1,5 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 
-import '../../mca_flutter_sdk.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/buttons.dart';
