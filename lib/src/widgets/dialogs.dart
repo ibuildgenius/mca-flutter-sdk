@@ -123,33 +123,50 @@ class Dialogs {
                           verticalSpace(),
                           Text(
                               message ??
-                                  'You paid for \n$productName with payment reference $reference,\nKindly fill the form to complete your purchase',
+                                  'You paid for $productName,\nKindly fill the form to complete your purchase',
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
+                          if (isContinue)
+                            RichText(
+                              textAlign: TextAlign.center,
+                                text: TextSpan(
+                                    style: const TextStyle(
+                                        color: BLACK,
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 16),
+                                    children: [
+                                  const TextSpan(text: 'Payment Reference\n'),
+                                  TextSpan(
+                                    text: reference,
+                                    style: const TextStyle(color: PRIMARY),
+                                  ),
+                                ])),
                           Padding(
-                            padding: const EdgeInsets.all(35.0),
+                            padding: const EdgeInsets.fromLTRB(35,28,35,15),
                             child:
                                 successButton(text: 'Continue', onTap: onTap),
                           ),
-                          smallVerticalSpace(),
                           if (isContinue)
-                            InkWell(
-                              onTap: () {
-                                Navigator.pop(context);
-                                Navigator.pop(context);
-                              },
-                              child: const Padding(
-                                padding: EdgeInsets.all(8.0),
-                                child: Text(
-                                  'Later',
-                                  style: TextStyle(
-                                      color: PRIMARY,
-                                      fontWeight: FontWeight.w600),
+                            Center(
+                              child: InkWell(
+                                onTap: () {
+                                  Navigator.pop(context);
+                                  Navigator.pop(context);
+                                },
+                                child: const Padding(
+                                  padding: EdgeInsets.all(8.0),
+                                  child: Text(
+                                    'Later',
+                                    style: TextStyle(
+                                        color: PRIMARY,
+                                        fontWeight: FontWeight.w600,
+                                        fontSize: 15),
+                                  ),
                                 ),
                               ),
                             ),
-                          if (isContinue) smallVerticalSpace(),
+                          smallVerticalSpace(),
                         ],
                       ),
                     ),
@@ -160,7 +177,6 @@ class Dialogs {
           );
         });
   }
-
 
   static Future<void> confirmClose(context) async {
     return showDialog(

@@ -37,9 +37,10 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
+  String userEmail='olakunle@mycovergenius.com';
 
   initialiseSdk(context,
-      {userId = 'olakunle@mycovergenius.com',
+      {userId,
       productId,
       typeOfTransaction,
       reference}) async {
@@ -60,8 +61,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   initState() {
     super.initState();
-
-    getAllProducts();
+    getAllProducts(userEmail);
   }
 
   Future<void> showLoading(String message) {
@@ -102,9 +102,9 @@ class _MyHomePageState extends State<MyHomePage> {
   static const String productUrl =
       'https://staging.api.mycover.ai/v1/sdk/initialize';
 
-  getAllProducts() async {
+  getAllProducts(clientId) async {
     var data = {
-      "client_id": 'olakunle@mycovergenius.com',
+      "client_id": clientId,
     };
 
     try {
@@ -145,8 +145,7 @@ class _MyHomePageState extends State<MyHomePage> {
                               fontWeight: FontWeight.w600, fontSize: 16),
                         ),
                         onTap: () =>
-                            initialiseSdk(context, productId: item['id']
-                                // ,typeOfTransaction: PurchaseStage.purchase,reference: 'BUY-BWBJMPABGFWKB'
+                            initialiseSdk(context, userId:userEmail,productId: item['id']
                             ));
                   },
                   separatorBuilder: (c, i) => const SizedBox(height: 5),
