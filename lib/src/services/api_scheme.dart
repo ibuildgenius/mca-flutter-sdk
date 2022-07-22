@@ -91,6 +91,7 @@ class ApiScheme{
         token,
         apiKey}) async {
     try {
+      print(url);
       var response = await _makePostRequest(
           apiUrl: url, data: data, token: token, apiKey: apiKey);
       var body = jsonDecode(response.body);
@@ -107,6 +108,7 @@ class ApiScheme{
 
 
   static initialiseGetRequest({required String url, token,apiKey}) async {
+    print(url);
     try {
       var response = await _makeGetRequest(apiUrl: url, token: token, apiKey: apiKey);
       var body = jsonDecode(response.body);

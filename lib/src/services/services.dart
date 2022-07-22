@@ -1,4 +1,5 @@
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 
 import 'api_scheme.dart';
@@ -17,29 +18,36 @@ class WebServices {
   static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
   static const String userId = 'olakunle@mycovergenius.com';
 
-  static initialiseSdk({required String userId, String? productId}) async {
+  static initialiseSdk(
+      {required String userId,
+      String? productId,
+      paymentOption,
+      reference}) async {
     var data;
-    if (productId == '') {
-      data = {
-        "client_id": userId,
-      };
+    if (paymentOption == 'wallet' && (reference == '' || reference == null)) {
+      return 'Reference must not be empty for a wallet payment option';
     } else {
-      data = {
-        "client_id": userId,
-        "product_id": [productId],
-      };
+      if (productId == '') {
+        data = {"client_id": userId, "payment_option": paymentOption};
+      } else {
+        data = {
+          "client_id": userId,
+          "product_id": [productId],
+          "payment_option": paymentOption
+        };
+      }
+      print(data);
+      return await ApiScheme.initialisePostRequest(
+          url: _initialiseSdkUrl, data: data);
     }
-
-    return await ApiScheme.initialisePostRequest(
-        url: _initialiseSdkUrl, data: data);
   }
 
-  static verifyPayment(String reference,businessId) async {
+  static verifyPayment(String reference, businessId) async {
     var data = {
       "transaction_reference": reference,
     };
     return await ApiScheme.initialisePostRequest(
-        url: _verifyPaymentUrl, data: data,apiKey: businessId);
+        url: _verifyPaymentUrl, data: data, apiKey: businessId);
   }
 
   static uploadFile(context, businessId, File image) async {
@@ -64,12 +72,14 @@ class WebServices {
   static getListData(String url) async {
     return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url');
   }
-  static getPurchaseInfo(businessId,reference) async {
+
+  static getPurchaseInfo(businessId, reference) async {
     String queryString = 'reference=$reference';
 
     var requestUrl = _purchaseInfoUrl + '?' + queryString;
 
-    return await ApiScheme.initialiseGetRequest(url: requestUrl, apiKey: businessId);
+    return await ApiScheme.initialiseGetRequest(
+        url: requestUrl, apiKey: businessId);
   }
 
   static getUssdProvider() async {
@@ -97,10 +107,11 @@ class WebServices {
     required String businessId,
     String? productId,
     payload,
-    paymentChannel,
+    paymentChannel,debitWalletReference,
   }) async {
     var data = {
       "payload": payload,
+      'debit_wallet_reference':debitWalletReference,
       "payment_channel": paymentChannel,
     };
 

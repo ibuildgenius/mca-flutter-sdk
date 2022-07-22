@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import '../const.dart';
 import '../theme.dart';
-import '../widgets/buttons.dart';
 import '../widgets/common.dart';
-import '../widgets/input.dart';
 
 class HealthScreen extends StatefulWidget {
   const HealthScreen({Key? key}) : super(key: key);

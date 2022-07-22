@@ -2,9 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../const.dart';
 import '../theme.dart';
-import '../widgets/buttons.dart';
 import '../widgets/common.dart';
-import '../widgets/input.dart';
 
 class TravelScreen extends StatefulWidget {
   const TravelScreen({Key? key}) : super(key: key);

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 
 import '../const.dart';
@@ -123,7 +124,7 @@ class Dialogs {
                           verticalSpace(),
                           Text(
                               message ??
-                                  'You paid for $productName,\nKindly fill the form to complete your purchase',
+                                  'You paid for $productName,\nKindly proceed to complete your purchase',
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
@@ -151,11 +152,12 @@ class Dialogs {
                             Center(
                               child: InkWell(
                                 onTap: () {
+                                  Clipboard.setData(ClipboardData(text: "Your payment reference number is $reference"));
                                   Navigator.pop(context);
                                   Navigator.pop(context);
                                 },
                                 child: const Padding(
-                                  padding: EdgeInsets.all(8.0),
+                                  padding: EdgeInsets.all(5.0),
                                   child: Text(
                                     'Later',
                                     style: TextStyle(
@@ -166,7 +168,9 @@ class Dialogs {
                                 ),
                               ),
                             ),
-                          smallVerticalSpace(),
+                          if (isContinue)const Center(child:  Text('* Keep the Reference number safe, you will need it later',textAlign:TextAlign.center,style: TextStyle(color: Colors.orange,fontSize: 12),)),
+
+                            smallVerticalSpace(),
                         ],
                       ),
                     ),

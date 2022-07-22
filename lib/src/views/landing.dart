@@ -13,6 +13,8 @@ import 'travel.dart';
 
 enum BodyType { introPage, detail, success }
 
+enum PaymentOption { wallet, gateway }
+
 enum PurchaseStage { payment, purchase }
 
 class MyCover extends StatefulWidget {
@@ -22,13 +24,13 @@ class MyCover extends StatefulWidget {
       required this.productId,
       required this.email,
       required this.reference,
-      required this.typeOfTransaction,
+      required this.paymentOption,
       required this.userId})
       : super(key: key);
   final String? productId;
   final String userId;
   final String email;
-  final PurchaseStage? typeOfTransaction;
+  final PaymentOption? paymentOption;
   final String? reference;
   final productData;
 
@@ -59,6 +61,8 @@ class _MyCoverState extends State<MyCover> {
   }
 
   fetchProductDetail() async {
+
+    print(widget.paymentOption);
     setState(() {
       productDetail = widget.productData;
 
@@ -68,7 +72,6 @@ class _MyCoverState extends State<MyCover> {
               ['productCategory']['name']
           .toString()
           .toLowerCase();
-
       businessName =
           productDetail['data']['businessDetails']['trading_name'] ?? '';
       logo = productDetail['data']['businessDetails']['logo'] ?? '';
@@ -160,7 +163,7 @@ class _MyCoverState extends State<MyCover> {
           productDetail: widget.productData,
           email: widget.email,
           userId: widget.userId,
-          typeOfTransaction: widget.typeOfTransaction,
+          paymentOption: widget.paymentOption,
           reference: widget.reference,
         );
       case BodyType.success:

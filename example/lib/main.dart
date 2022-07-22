@@ -37,18 +37,14 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
-  String userEmail='olakunle@mycovergenius.com';
+  String userEmail = 'olakunle@mycovergenius.com';
 
-  initialiseSdk(context,
-      {userId,
-      productId,
-      typeOfTransaction,
-      reference}) async {
+  initialiseSdk(context, {userId, productId, paymentOption, reference}) async {
     final myCover = MyCoverAI(
         context: context,
         userId: userId,
         productId: productId,
-        typeOfTransaction: typeOfTransaction,
+        paymentOption: paymentOption,
         reference: reference);
     var response = await myCover.initialise();
     if (response != null) {
@@ -105,17 +101,17 @@ class _MyHomePageState extends State<MyHomePage> {
   getAllProducts(clientId) async {
     var data = {
       "client_id": clientId,
+      "payment_option": 'gateway',
     };
 
     try {
       var res = await makePostRequest(apiUrl: productUrl, data: data);
-
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
+
         setState(() => allProducts = body['data']['productDetails']);
       } else {}
     } catch (e) {
-      print(e.toString());
       return e.toString();
     }
   }
@@ -144,9 +140,10 @@ class _MyHomePageState extends State<MyHomePage> {
                           style: const TextStyle(
                               fontWeight: FontWeight.w600, fontSize: 16),
                         ),
-                        onTap: () =>
-                            initialiseSdk(context, userId:userEmail,productId: item['id']
-                            ));
+                        onTap: () => initialiseSdk(context,
+                            userId: userEmail,
+                            productId: item['id'],
+                            paymentOption: PaymentOption.gateway));
                   },
                   separatorBuilder: (c, i) => const SizedBox(height: 5),
                   itemCount: allProducts.length),

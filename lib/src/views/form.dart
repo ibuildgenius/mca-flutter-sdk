@@ -23,13 +23,13 @@ class FormScreen extends StatefulWidget {
       required this.productDetail,
       required this.userId,
       required this.reference,
-      required this.typeOfTransaction,
+      required this.paymentOption,
       required this.email})
       : super(key: key);
   final productDetail;
   final String email;
   final String userId;
-  final PurchaseStage? typeOfTransaction;
+  final PaymentOption? paymentOption;
   final String? reference;
 
   @override
@@ -56,16 +56,14 @@ class _FormScreenState extends State<FormScreen> {
   String bankCode = '';
   var purchaseData = {};
   String bodyType = 'form';
+  PaymentOption? paymentOption;
   PurchaseStage? stage;
   int initialPage = 0;
   var chunks = [];
   var pageData = [];
   bool enabledUssd = false;
-  var vehicleList;
-  var yearList;
-  var titleList;
-  var identityList;
-  var stateList;
+  var identityList,titleList,stateList,yearList,vehicleList, genderList;
+
   var ussdProviders = [];
   var searchList = [];
 
@@ -79,7 +77,7 @@ class _FormScreenState extends State<FormScreen> {
     productDetail = widget.productDetail;
     setState(() {
       email = widget.email;
-      stage = widget.typeOfTransaction ?? PurchaseStage.payment;
+      paymentOption = widget.paymentOption;
       reference = widget.reference ?? '';
       forms = productDetail['data']['productDetails'][0]['form_fields'];
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
@@ -87,13 +85,22 @@ class _FormScreenState extends State<FormScreen> {
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
       paymentMethod = '';
-      if (stage == PurchaseStage.purchase) {
+      print(reference);
+      print(paymentOption);
+      if (paymentOption == PaymentOption.gateway && reference != '') {
+        stage = PurchaseStage.purchase;
         getPurchaseInfo(false);
+      } else {
+        stage = PurchaseStage.payment;
       }
+      print('stage==>$stage');
+
       splitList();
 
       getUssdProvider();
     });
+
+    print('Stage =====> $stage');
   }
 
   @override
@@ -116,28 +123,36 @@ class _FormScreenState extends State<FormScreen> {
     return null;
   }
 
-  getList(url) async {
-    var response = await WebServices.getListData(url);
-    if (response['responseText']
-        .toString()
-        .toLowerCase()
-        .contains('vehicle category')) {
-      vehicleList = response['data'];
-    }
-    if (response['responseText'].toString().toLowerCase().contains('state')) {
-      stateList = response['data'];
-    }
-    if (response['responseText'].toString().toLowerCase().contains('title')) {
-      titleList = response['data'];
-    }
-    if (response['responseText'].toString().toLowerCase().contains('year')) {
-      yearList = response['data'];
-    }
-    if (response['responseText']
-        .toString()
-        .toLowerCase()
-        .contains('identity')) {
-      identityList = response['data'];
+  getList(url,{listName}) async {
+    if (url != null) {
+      var response = await WebServices.getListData(url);
+      print(response);
+      if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('vehicle category')) {
+        vehicleList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('state')) {
+        stateList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('title')) {
+        titleList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('year')) {
+        yearList = response['data'];
+      }
+      if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('identity')) {
+        identityList = response['data'];
+      }  if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('gender')) {
+        genderList = response['data'];
+      }
     }
   }
 
@@ -165,6 +180,7 @@ class _FormScreenState extends State<FormScreen> {
     }
     return controller;
   }
+
 
   void pickItem(list, title, {onSelect}) {
     showModalBottomSheet(
@@ -330,14 +346,14 @@ class _FormScreenState extends State<FormScreen> {
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
+                  FocusScope.of(context).unfocus();
                   if (_formKey.currentState!.validate()) {
                     if (initialPage < (chunks.length - 1)) {
                       initialPage++;
                       setState(() => pageData = chunks[initialPage]);
-                    }
-                    //
-                    else {
-                      if (stage == PurchaseStage.payment) {
+                    } else {
+                      if (stage == PurchaseStage.payment &&
+                          paymentOption == PaymentOption.gateway) {
                         setState(() => bodyType = 'bank');
                       } else {
                         uploadImage();
@@ -385,6 +401,13 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  // [ image_url must be an URL address. image_url should not be empty.
+  // buyer_first_name should not be empty.
+  // buyer_last_name should not be empty.
+  // buyer_email must be an email. buyer_email should not be empty.
+  // buyer_phone should not be empty.
+  // buyer_gender must be one of the following values: m, f. buyer_gender should not be empty ]
+
   form(data) {
     return ListView.separated(
         separatorBuilder: (c, i) => smallVerticalSpace(),
@@ -392,6 +415,8 @@ class _FormScreenState extends State<FormScreen> {
         shrinkWrap: true,
         itemBuilder: (c, i) {
           var item = data[i];
+          print(item['data_source']);
+          print(item['name']);
           if (item['data_url'].toString() != 'null') {
             getList(item['data_url']);
           }
@@ -423,6 +448,9 @@ class _FormScreenState extends State<FormScreen> {
                     }
                     if (item['data_url'].toString().contains('year')) {
                       listItem = yearList;
+                    }
+                    if (item['data_url'].toString().toLowerCase().contains('gender')) {
+                      listItem = genderList;
                     }
                     if (listItem != null) {
                       pickItem(listItem, item['label'], onSelect: (value) {
@@ -526,7 +554,11 @@ class _FormScreenState extends State<FormScreen> {
                             item['label']
                                 .toString()
                                 .toLowerCase()
-                                .contains('image')
+                                .contains('image') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('product')
                         ? false
                         : true,
                     hint: item['description'],
@@ -949,15 +981,21 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   makePayment() async {
+    print(purchaseData);
     Dialogs.showLoading(context: context, text: 'Submitting Payment');
-    var paymentChannel = {
-      "channel": paymentMethod,
-      "amount": double.parse(purchaseData['amount'])
-    };
-    if (paymentMethod.contains('ussd')) {
-      paymentChannel['bank_code'] = bankCode;
+    var paymentChannel;
+    var debitWalletReference;
+    if (paymentOption == PaymentOption.gateway) {
+       paymentChannel = {
+        "channel": paymentMethod,
+        "amount": double.parse(purchaseData['amount'])
+      };
+      if (paymentMethod.contains('ussd')) {
+        paymentChannel['bank_code'] = bankCode;
+      }
+    } else {
+       debitWalletReference = widget.reference;
     }
-
     if (purchaseData['email'] == null || purchaseData['email'] == '') {
       purchaseData['email'] = email;
     }
@@ -965,6 +1003,7 @@ class _FormScreenState extends State<FormScreen> {
         businessId: businessId,
         userId: widget.userId,
         payload: purchaseData,
+        debitWalletReference: debitWalletReference,
         paymentChannel: paymentChannel);
 
     Navigator.pop(context);
@@ -990,12 +1029,17 @@ class _FormScreenState extends State<FormScreen> {
 
   completePurchase() async {
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
+    if (purchaseData['title'] == null || purchaseData['title'] == '') {
+      purchaseData['title'] = 'Chief';
+    }
+    print(purchaseData);
 
     var res = await WebServices.completePurchase(
         businessId: businessId,
         userId: widget.userId,
         payload: purchaseData,
         reference: reference);
+    print(res);
 
     Navigator.pop(context);
     if (res is String) {
@@ -1020,9 +1064,10 @@ class _FormScreenState extends State<FormScreen> {
     }
 
     var res = await WebServices.verifyPayment(reference!, businessId);
+    print(res);
     if (res is String) {
       if (res.contains('retry') || res.contains('failed')) {
-        Future.delayed(const Duration(seconds: 20), () => verifyPayment(false));
+        Future.delayed(const Duration(seconds: 15), () => verifyPayment(false));
       } else {
         Navigator.pop(context);
 
@@ -1043,11 +1088,15 @@ class _FormScreenState extends State<FormScreen> {
 
   getPurchaseInfo(isLoading) async {
     var res = await WebServices.getPurchaseInfo(businessId, reference);
-
+    print('Res=====>  $res');
     if (res is String) {
       Navigator.pop(context);
 
       Dialogs.failedDialog(context: context);
+    } else if (res['responseText'] == 'purchase has been completed' ||
+        res['data'].isEmpty) {
+      Navigator.pop(context);
+      Dialogs.showErrorMessage(res['responseText']);
     } else {
       if (isLoading) {
         Navigator.pop(context);
@@ -1083,6 +1132,7 @@ class _FormScreenState extends State<FormScreen> {
             var body = jsonDecode(value);
             purchaseData['image'] = body['data']['file_url'];
             purchaseData['identification_url'] = body['data']['file_url'];
+            purchaseData['image_url'] = body['data']['file_url'];
             completePurchase();
           });
         });

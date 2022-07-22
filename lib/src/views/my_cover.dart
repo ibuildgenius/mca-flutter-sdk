@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 
 import '../../mca_flutter_sdk.dart';
+import '../services/services.dart';
 import '../widgets/dialogs.dart';
 import 'all_products.dart';
 import 'failed.dart';
-import 'landing.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
 
@@ -14,20 +14,27 @@ class MyCoverAI {
       required this.context,
       this.productId = '',
       this.reference,
-      this.typeOfTransaction,
+      this.paymentOption,
       required this.userId});
 
   final BuildContext context;
-  final PurchaseStage? typeOfTransaction;
-  final String ? reference;
+  final PaymentOption? paymentOption;
+  final String? reference;
 
   final String? productId;
   final String userId;
 
   initialise() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
-    var response =
-        await WebServices.initialiseSdk(userId: userId, productId: productId);
+    print(paymentOption);
+    var payOption = paymentOption??PaymentOption.gateway;
+    print(payOption);
+    var response = await WebServices.initialiseSdk(
+        userId: userId,
+        productId: productId,
+        reference:reference,
+        paymentOption:
+        payOption.toString().replaceAll('PaymentOption.', ''));
     Navigator.pop(context);
 
     if (response is String) {
@@ -48,14 +55,14 @@ class MyCoverAI {
                   userId: userId,
                   productData: response['data']['productDetails'],
                   reference: reference,
-                  typeOfTransaction: typeOfTransaction)
+              paymentOption: payOption)
               : MyCover(
                   userId: userId,
                   email: userId,
                   productId: productId,
                   productData: response,
                   reference: reference,
-                  typeOfTransaction: typeOfTransaction),
+              paymentOption: payOption),
         ),
       );
     }

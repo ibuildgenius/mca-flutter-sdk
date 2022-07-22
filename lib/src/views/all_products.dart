@@ -9,14 +9,14 @@ class AllProducts extends StatefulWidget {
   const AllProducts(
       {Key? key,
       required this.productData,
-        required this.reference,
-        required  this.typeOfTransaction,
+      required this.reference,
+      required this.paymentOption,
       required this.userId})
       : super(key: key);
   final String userId;
   final productData;
-  final PurchaseStage ?typeOfTransaction;
-  final String ?reference;
+  final PaymentOption? paymentOption;
+  final String? reference;
 
   @override
   State<AllProducts> createState() => _AllProductsState();
@@ -26,15 +26,14 @@ class _AllProductsState extends State<AllProducts> {
   final searchController = TextEditingController();
   var searchList;
 
-  initialiseSdk(context, {productId}) {
+  initialiseSdk(context, productId) {
     final mycover = MyCoverAI(
         context: context,
         userId: widget.userId,
-        productId: productId ?? '',
-        typeOfTransaction: widget.typeOfTransaction,
+        productId: productId,
+        paymentOption: widget.paymentOption,
         reference: widget.reference);
-     mycover.initialise();
-
+    mycover.initialise();
   }
 
   getImages(String category) {
@@ -165,8 +164,8 @@ class _AllProductsState extends State<AllProducts> {
                                         fontSize: 16,
                                         color: DARK)),
                                 subtitle: Text(item['productCategory']['name']),
-                                onTap: () => initialiseSdk(context,
-                                    productId: item['id']));
+                                onTap: () =>
+                                    initialiseSdk(context, item['id']));
                           },
                           separatorBuilder: (c, i) => const SizedBox(height: 5),
                           itemCount: searchList.length),
