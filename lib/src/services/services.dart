@@ -106,12 +106,15 @@ class WebServices {
     required String userId,
     required String businessId,
     String? productId,
+    instanceId,
     payload,
-    paymentChannel,debitWalletReference,
+    paymentChannel,
+    debitWalletReference,
   }) async {
     var data = {
       "payload": payload,
-      'debit_wallet_reference':debitWalletReference,
+      'debit_wallet_reference': debitWalletReference,
+      'instance_id': instanceId,
       "payment_channel": paymentChannel,
     };
 

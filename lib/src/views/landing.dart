@@ -47,6 +47,7 @@ class _MyCoverState extends State<MyCover> {
   String productCategory = '';
   String productId = '';
   String logo = '';
+  String instanceId = '';
   BodyType bodyType = BodyType.introPage;
 
   @override
@@ -75,6 +76,7 @@ class _MyCoverState extends State<MyCover> {
       businessName =
           productDetail['data']['businessDetails']['trading_name'] ?? '';
       logo = productDetail['data']['businessDetails']['logo'] ?? '';
+      instanceId = productDetail['data']['businessDetails']['instance_id'] ?? '';
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
     });
@@ -165,6 +167,7 @@ class _MyCoverState extends State<MyCover> {
           userId: widget.userId,
           paymentOption: widget.paymentOption,
           reference: widget.reference,
+          instanceId: instanceId,
         );
       case BodyType.success:
         return successScreen();

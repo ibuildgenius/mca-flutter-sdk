@@ -21,6 +21,7 @@ class FormScreen extends StatefulWidget {
   const FormScreen(
       {Key? key,
       required this.productDetail,
+      required this.instanceId,
       required this.userId,
       required this.reference,
       required this.paymentOption,
@@ -29,6 +30,7 @@ class FormScreen extends StatefulWidget {
   final productDetail;
   final String email;
   final String userId;
+  final String instanceId;
   final PaymentOption? paymentOption;
   final String? reference;
 
@@ -1001,6 +1003,7 @@ class _FormScreenState extends State<FormScreen> {
     }
     var res = await WebServices.initiatePurchase(
         businessId: businessId,
+        instanceId: widget.instanceId,
         userId: widget.userId,
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
@@ -1062,11 +1065,9 @@ class _FormScreenState extends State<FormScreen> {
     if (showLoading) {
       Dialogs.showLoading(context: context, text: 'Verifying Payment');
     }
-
     var res = await WebServices.verifyPayment(reference!, businessId);
-    print(res);
     if (res is String) {
-      if (res.contains('retry') || res.contains('failed')) {
+      if (res.contains('retry') || res.contains('failed')|| res.contains('error')) {
         Future.delayed(const Duration(seconds: 15), () => verifyPayment(false));
       } else {
         Navigator.pop(context);

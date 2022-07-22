@@ -26,15 +26,15 @@ class MyCoverAI {
 
   initialise() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
-    print(paymentOption);
     var payOption = paymentOption??PaymentOption.gateway;
-    print(payOption);
     var response = await WebServices.initialiseSdk(
         userId: userId,
         productId: productId,
         reference:reference,
         paymentOption:
         payOption.toString().replaceAll('PaymentOption.', ''));
+    print(response);
+
     Navigator.pop(context);
 
     if (response is String) {
