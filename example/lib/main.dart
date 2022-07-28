@@ -43,7 +43,8 @@ class _MyHomePageState extends State<MyHomePage> {
     final myCover = MyCoverAI(
         context: context,
         userId: userId,
-        productId: productId,
+        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
+        productId: [productId],
         paymentOption: paymentOption,
         reference: reference);
     var response = await myCover.initialise();
@@ -77,21 +78,13 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  static makePostRequest({apiUrl, data, apiKey}) async {
+  static makePostRequest({apiUrl, data, token}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-
-    var headers;
-    if (apiKey == null) {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-      };
-    } else {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-        'x-api-id': '$apiKey',
-      };
-    }
+    var headers = {
+      HttpHeaders.contentTypeHeader: 'application/json',
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+    };
     return await http.post(uri, body: jsonString, headers: headers);
   }
 
@@ -99,18 +92,17 @@ class _MyHomePageState extends State<MyHomePage> {
       'https://staging.api.mycover.ai/v1/sdk/initialize';
 
   getAllProducts(clientId) async {
-    var data = {
-      "client_id": clientId,
-      "payment_option": 'gateway',
-    };
-
+    var data = {"client_id": clientId, "payment_option": 'gateway'};
     try {
-      var res = await makePostRequest(apiUrl: productUrl, data: data);
+      // Bearer 575b0498-24b1-4a75-9446-546640b778c6
+      var res = await makePostRequest(
+          apiUrl: productUrl,
+          data: data,
+          token: '2aa4f6ec-0111-42f4-88f9-466c7ef41727');
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
-
         setState(() => allProducts = body['data']['productDetails']);
-      } else {}
+      }
     } catch (e) {
       return e.toString();
     }
@@ -119,7 +111,7 @@ class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(title: const Text('Buy our products')),
+        appBar: AppBar(title: const Text('Buy products')),
         body: Padding(
           padding: const EdgeInsets.all(8.0),
           child: allProducts == null

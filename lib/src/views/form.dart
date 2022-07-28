@@ -24,6 +24,7 @@ class FormScreen extends StatefulWidget {
       required this.instanceId,
       required this.userId,
       required this.reference,
+      required this.publicKey,
       required this.paymentOption,
       required this.email})
       : super(key: key);
@@ -31,6 +32,7 @@ class FormScreen extends StatefulWidget {
   final String email;
   final String userId;
   final String instanceId;
+  final String publicKey;
   final PaymentOption? paymentOption;
   final String? reference;
 
@@ -127,7 +129,7 @@ class _FormScreenState extends State<FormScreen> {
 
   getList(url,{listName}) async {
     if (url != null) {
-      var response = await WebServices.getListData(url);
+      var response = await WebServices.getListData(url,widget.publicKey);
       print(response);
       if (response['responseText']
           .toString()
@@ -159,7 +161,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   getUssdProvider() async {
-    var response = await WebServices.getUssdProvider();
+    var response = await WebServices.getUssdProvider(widget.publicKey);
     if (response is String) {
       log(response);
     } else {
@@ -403,13 +405,6 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
-  // [ image_url must be an URL address. image_url should not be empty.
-  // buyer_first_name should not be empty.
-  // buyer_last_name should not be empty.
-  // buyer_email must be an email. buyer_email should not be empty.
-  // buyer_phone should not be empty.
-  // buyer_gender must be one of the following values: m, f. buyer_gender should not be empty ]
-
   form(data) {
     return ListView.separated(
         separatorBuilder: (c, i) => smallVerticalSpace(),
@@ -417,8 +412,6 @@ class _FormScreenState extends State<FormScreen> {
         shrinkWrap: true,
         itemBuilder: (c, i) {
           var item = data[i];
-          print(item['data_source']);
-          print(item['name']);
           if (item['data_url'].toString() != 'null') {
             getList(item['data_url']);
           }
@@ -673,61 +666,59 @@ class _FormScreenState extends State<FormScreen> {
             ),
             verticalSpace(),
             paymentMethod == 'ussd' && enabledUssd
-                ? Expanded(
-                    child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      InkWell(
-                        onTap: openUssdProvider,
-                        child: const InputFormField(
-                            enabled: false,
-                            hint: 'Search for bank of your choice',
-                            prefixIcon: Icon(Icons.search),
-                            textCapitalization: TextCapitalization.sentences,
-                            keyboardType: TextInputType.text),
-                      ),
-                      const SizedBox(height: 5),
-                      const Text('You want to make payment with USSD',
-                          style: TextStyle(
-                              fontSize: 13,
-                              color: PRIMARY,
-                              fontWeight: FontWeight.w600)),
-                      verticalSpace(),
-                      const Divider(),
-                      verticalSpace(),
-                      Text(bankName,
-                          style: const TextStyle(
-                              fontSize: 23,
-                              color: DARK,
-                              fontWeight: FontWeight.w600)),
-                      Text('CODE - $bankCode',
-                          style: const TextStyle(
-                              fontSize: 20,
-                              color: DARK,
-                              fontWeight: FontWeight.w400)),
-                      verticalSpace(),
-                    ],
-                  ))
-                : Expanded(
-                    child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Text('Select Payment method',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          )),
-                      const SizedBox(height: 5),
-                      const Text('Choose an option to proceed',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      verticalSpace(),
-                      paymentMethodCard(transfer, 'Transfer',
-                          'Send to a bank Account', 'bank transfer'),
-                      verticalSpace(),
-                      paymentMethodCard(ussd, 'USSD',
-                          'Select any bank to generate USSD', 'ussd'),
-                    ],
-                  )),
+                ? Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  InkWell(
+                    onTap: openUssdProvider,
+                    child: const InputFormField(
+                        enabled: false,
+                        hint: 'Search for bank of your choice',
+                        prefixIcon: Icon(Icons.search),
+                        textCapitalization: TextCapitalization.sentences,
+                        keyboardType: TextInputType.text),
+                  ),
+                  const SizedBox(height: 5),
+                  const Text('You want to make payment with USSD',
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: PRIMARY,
+                          fontWeight: FontWeight.w600)),
+                  verticalSpace(),
+                  const Divider(),
+                  verticalSpace(),
+                  Text(bankName,
+                      style: const TextStyle(
+                          fontSize: 23,
+                          color: DARK,
+                          fontWeight: FontWeight.w600)),
+                  Text('CODE - $bankCode',
+                      style: const TextStyle(
+                          fontSize: 20,
+                          color: DARK,
+                          fontWeight: FontWeight.w400)),
+                  verticalSpace(),
+                ],
+                  )
+                : Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Text('Select Payment method',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      )),
+                  const SizedBox(height: 5),
+                  const Text('Choose an option to proceed',
+                      style: TextStyle(fontSize: 12, color: DARK)),
+                  verticalSpace(),
+                  paymentMethodCard(transfer, 'Transfer',
+                      'Send to a bank Account', 'bank transfer'),
+                  verticalSpace(),
+                  paymentMethodCard(ussd, 'USSD',
+                      'Select any bank to generate USSD', 'ussd'),
+                ],
+                  ),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
               child: button(
@@ -983,7 +974,6 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   makePayment() async {
-    print(purchaseData);
     Dialogs.showLoading(context: context, text: 'Submitting Payment');
     var paymentChannel;
     var debitWalletReference;
@@ -1002,6 +992,7 @@ class _FormScreenState extends State<FormScreen> {
       purchaseData['email'] = email;
     }
     var res = await WebServices.initiatePurchase(
+        publicKey:widget.publicKey,
         businessId: businessId,
         instanceId: widget.instanceId,
         userId: widget.userId,
@@ -1035,11 +1026,12 @@ class _FormScreenState extends State<FormScreen> {
     if (purchaseData['title'] == null || purchaseData['title'] == '') {
       purchaseData['title'] = 'Chief';
     }
-    print(purchaseData);
+
 
     var res = await WebServices.completePurchase(
         businessId: businessId,
         userId: widget.userId,
+        publicKey:widget.publicKey,
         payload: purchaseData,
         reference: reference);
     print(res);
@@ -1065,7 +1057,8 @@ class _FormScreenState extends State<FormScreen> {
     if (showLoading) {
       Dialogs.showLoading(context: context, text: 'Verifying Payment');
     }
-    var res = await WebServices.verifyPayment(reference!, businessId);
+    var res = await WebServices.verifyPayment(reference!, businessId,widget.publicKey);
+    print(res);
     if (res is String) {
       if (res.contains('retry') || res.contains('failed')|| res.contains('error')) {
         Future.delayed(const Duration(seconds: 15), () => verifyPayment(false));
@@ -1088,7 +1081,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   getPurchaseInfo(isLoading) async {
-    var res = await WebServices.getPurchaseInfo(businessId, reference);
+    var res = await WebServices.getPurchaseInfo(businessId, reference,widget.publicKey);
     print('Res=====>  $res');
     if (res is String) {
       Navigator.pop(context);

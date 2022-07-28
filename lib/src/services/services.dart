@@ -19,35 +19,38 @@ class WebServices {
   static const String userId = 'olakunle@mycovergenius.com';
 
   static initialiseSdk(
-      {required String userId,
-      String? productId,
+      {required String userId,required String publicKey,
+      List? productId,
       paymentOption,
       reference}) async {
     var data;
     if (paymentOption == 'wallet' && (reference == '' || reference == null)) {
       return 'Reference must not be empty for a wallet payment option';
     } else {
-      if (productId == '') {
-        data = {"client_id": userId, "payment_option": paymentOption};
+      if (productId!.isEmpty) {
+        data = {"client_id": userId, "payment_option": paymentOption,
+          "debit_wallet_reference": reference
+        };
       } else {
         data = {
           "client_id": userId,
-          "product_id": [productId],
-          "payment_option": paymentOption
+          "product_id": productId,
+          "payment_option": paymentOption,
+          "debit_wallet_reference": reference
+
         };
       }
-      print(data);
       return await ApiScheme.initialisePostRequest(
-          url: _initialiseSdkUrl, data: data);
+          url: _initialiseSdkUrl, data: data,token: publicKey);
     }
   }
 
-  static verifyPayment(String reference, businessId) async {
+  static verifyPayment(String reference, businessId, publicKey) async {
     var data = {
       "transaction_reference": reference,
     };
     return await ApiScheme.initialisePostRequest(
-        url: _verifyPaymentUrl, data: data, apiKey: businessId);
+        url: _verifyPaymentUrl, data: data, apiKey: businessId,token: publicKey);
   }
 
   static uploadFile(context, businessId, File image) async {
@@ -69,26 +72,27 @@ class WebServices {
     return response;
   }
 
-  static getListData(String url) async {
-    return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url');
+  static getListData(String url,publicKey) async {
+    return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url',token: publicKey);
   }
 
-  static getPurchaseInfo(businessId, reference) async {
+  static getPurchaseInfo(businessId, reference,publicKey) async {
     String queryString = 'reference=$reference';
 
     var requestUrl = _purchaseInfoUrl + '?' + queryString;
 
     return await ApiScheme.initialiseGetRequest(
-        url: requestUrl, apiKey: businessId);
+        url: requestUrl, apiKey: businessId,token: publicKey);
   }
 
-  static getUssdProvider() async {
-    return await ApiScheme.initialiseGetRequest(url: _ussdProviderUrl);
+  static getUssdProvider(publicKey) async {
+    return await ApiScheme.initialiseGetRequest(url: _ussdProviderUrl,token: publicKey);
   }
 
   static buyProduct({
     required String userId,
     required String businessId,
+    required String publicKey,
     String? productId,
     payload,
     paymentChannel,
@@ -99,12 +103,13 @@ class WebServices {
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: _buySdkUrl, data: data, apiKey: businessId);
+        url: _buySdkUrl, data: data, apiKey: businessId,token: publicKey);
   }
 
   static initiatePurchase({
     required String userId,
     required String businessId,
+    required String publicKey,
     String? productId,
     instanceId,
     payload,
@@ -119,20 +124,21 @@ class WebServices {
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: _initiatePurchaseUrl, data: data, apiKey: businessId);
+        url: _initiatePurchaseUrl, data: data, apiKey: businessId, token: publicKey);
   }
 
   static completePurchase({
     required String userId,
     required String businessId,
+    required String publicKey,
     String? reference,
-    payload,
+    payload
   }) async {
     var data = {
       "payload": payload,
       "reference": reference,
     };
     return await ApiScheme.initialisePostRequest(
-        url: _completePurchaseUrl, data: data, apiKey: businessId);
+        url: _completePurchaseUrl, data: data, apiKey: businessId,token: publicKey);
   }
 }

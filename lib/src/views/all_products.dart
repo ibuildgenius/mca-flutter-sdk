@@ -11,9 +11,11 @@ class AllProducts extends StatefulWidget {
       required this.productData,
       required this.reference,
       required this.paymentOption,
+      required this.publicKey,
       required this.userId})
       : super(key: key);
   final String userId;
+  final String publicKey;
   final productData;
   final PaymentOption? paymentOption;
   final String? reference;
@@ -30,7 +32,8 @@ class _AllProductsState extends State<AllProducts> {
     final mycover = MyCoverAI(
         context: context,
         userId: widget.userId,
-        productId: productId,
+        productId: [productId],
+        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
         paymentOption: widget.paymentOption,
         reference: widget.reference);
     mycover.initialise();

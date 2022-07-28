@@ -23,13 +23,15 @@ class MyCover extends StatefulWidget {
       required this.productData,
       required this.productId,
       required this.email,
+      required this.publicKey,
       required this.reference,
       required this.paymentOption,
       required this.userId})
       : super(key: key);
-  final String? productId;
+  final List? productId;
   final String userId;
   final String email;
+  final String publicKey;
   final PaymentOption? paymentOption;
   final String? reference;
   final productData;
@@ -63,7 +65,6 @@ class _MyCoverState extends State<MyCover> {
 
   fetchProductDetail() async {
 
-    print(widget.paymentOption);
     setState(() {
       productDetail = widget.productData;
 
@@ -89,6 +90,7 @@ class _MyCoverState extends State<MyCover> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
+          bottom: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
             child: Column(
@@ -163,6 +165,7 @@ class _MyCoverState extends State<MyCover> {
       case BodyType.detail:
         return FormScreen(
           productDetail: widget.productData,
+          publicKey:widget.publicKey,
           email: widget.email,
           userId: widget.userId,
           paymentOption: widget.paymentOption,
