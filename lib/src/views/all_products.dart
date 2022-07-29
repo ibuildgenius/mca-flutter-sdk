@@ -12,11 +12,13 @@ class AllProducts extends StatefulWidget {
       required this.reference,
       required this.paymentOption,
       required this.publicKey,
-      required this.userId})
+      required this.email,
+      required this.form})
       : super(key: key);
-  final String userId;
   final String publicKey;
+  final String email;
   final productData;
+  final form;
   final PaymentOption? paymentOption;
   final String? reference;
 
@@ -31,11 +33,11 @@ class _AllProductsState extends State<AllProducts> {
   initialiseSdk(context, productId) {
     final mycover = MyCoverAI(
         context: context,
-        userId: widget.userId,
+        form: widget.form,
         productId: [productId],
         publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
         paymentOption: widget.paymentOption,
-        reference: widget.reference);
+        reference: widget.reference, transactionType: TransactionType.purchase, email: widget.email);
     mycover.initialise();
   }
 

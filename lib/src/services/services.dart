@@ -5,43 +5,51 @@ import 'package:http/http.dart' as http;
 import 'api_scheme.dart';
 
 class WebServices {
-  static const String _basUrl = 'https://staging.api.mycover.ai/v1';
-  static const String _initialiseSdkUrl = '$_basUrl/sdk/initialize';
-  static const String _buySdkUrl = '$_basUrl/sdk/buy';
-  static const String _uploadUrl = '$_basUrl/sdk/upload-file';
-  static const String _ussdProviderUrl = '$_basUrl/sdk/ussd-providers';
-  static const String _verifyPaymentUrl = '$_basUrl/sdk/verify-transaction';
-  static const String _initiatePurchaseUrl = '$_basUrl/sdk/initiate-purchase';
-  static const String _completePurchaseUrl = '$_basUrl/sdk/complete-purchase';
-  static const String _purchaseInfoUrl = '$_basUrl/sdk/purchase-info';
+  static const String _baseUrl = 'https://staging.api.mycover.ai/v1';
+  static const String _initialiseSdkUrl = '$_baseUrl/sdk/initialize';
+  static const String _buySdkUrl = '$_baseUrl/sdk/buy';
+  static const String _uploadUrl = '$_baseUrl/sdk/upload-file';
+  static const String _ussdProviderUrl = '$_baseUrl/sdk/ussd-providers';
+  static const String _verifyPaymentUrl = '$_baseUrl/sdk/verify-transaction';
+  static const String _initiatePurchaseUrl = '$_baseUrl/sdk/initiate-purchase';
+  static const String _completePurchaseUrl = '$_baseUrl/sdk/complete-purchase';
+  static const String _purchaseInfoUrl = '$_baseUrl/sdk/purchase-info';
+  static const String submitInspectionUrl = '$_baseUrl/inspections/vehicle';
+  static const String makeClaimsUrl = '$_baseUrl/claims/vehicle';
+
 
   static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
   static const String userId = 'olakunle@mycovergenius.com';
 
   static initialiseSdk(
-      {required String userId,required String publicKey,
+      {
+      required String publicKey,
       List? productId,
       paymentOption,
       reference}) async {
+
+
+
     var data;
     if (paymentOption == 'wallet' && (reference == '' || reference == null)) {
       return 'Reference must not be empty for a wallet payment option';
     } else {
       if (productId!.isEmpty) {
-        data = {"client_id": userId, "payment_option": paymentOption,
+        data = {
+          "payment_option": paymentOption,
           "debit_wallet_reference": reference
         };
       } else {
         data = {
-          "client_id": userId,
           "product_id": productId,
           "payment_option": paymentOption,
           "debit_wallet_reference": reference
-
         };
       }
+
+
       return await ApiScheme.initialisePostRequest(
-          url: _initialiseSdkUrl, data: data,token: publicKey);
+          url: _initialiseSdkUrl, data: data, token: publicKey);
     }
   }
 
@@ -49,14 +57,23 @@ class WebServices {
     var data = {
       "transaction_reference": reference,
     };
+    print(_verifyPaymentUrl);
+    print(reference);
+    print(publicKey);
+    print(businessId);
     return await ApiScheme.initialisePostRequest(
-        url: _verifyPaymentUrl, data: data, apiKey: businessId,token: publicKey);
+        url: _verifyPaymentUrl,
+        data: data,
+        apiKey: businessId,
+        token: publicKey);
   }
 
-  static uploadFile(context, businessId, File image) async {
+  static uploadFile(context, businessId, File image,token,{fileType}) async {
     Map<String, String> headers = {
       "Accept": "application/json",
       "x-api-id": "$businessId",
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+
     };
     var uri = Uri.parse(_uploadUrl);
 
@@ -64,7 +81,7 @@ class WebServices {
 
     request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
-    request.fields['fileType'] = 'image';
+    request.fields['fileType'] = fileType??'image';
     request.headers.addAll(headers);
 
     var response = await request.send();
@@ -72,21 +89,24 @@ class WebServices {
     return response;
   }
 
-  static getListData(String url,publicKey) async {
-    return await ApiScheme.initialiseGetRequest(url: '$_basUrl$url',token: publicKey);
+  static getListData(String url, publicKey) async {
+    return await ApiScheme.initialiseGetRequest(
+        url: '$_baseUrl$url', token: publicKey);
   }
 
-  static getPurchaseInfo(businessId, reference,publicKey) async {
+  static getPurchaseInfo(businessId, reference, publicKey) async {
     String queryString = 'reference=$reference';
 
     var requestUrl = _purchaseInfoUrl + '?' + queryString;
 
     return await ApiScheme.initialiseGetRequest(
-        url: requestUrl, apiKey: businessId,token: publicKey);
+        url: requestUrl, apiKey: businessId, token: publicKey);
   }
 
+
   static getUssdProvider(publicKey) async {
-    return await ApiScheme.initialiseGetRequest(url: _ussdProviderUrl,token: publicKey);
+    return await ApiScheme.initialiseGetRequest(
+        url: _ussdProviderUrl, token: publicKey);
   }
 
   static buyProduct({
@@ -103,11 +123,10 @@ class WebServices {
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: _buySdkUrl, data: data, apiKey: businessId,token: publicKey);
+        url: _buySdkUrl, data: data, apiKey: businessId, token: publicKey);
   }
 
   static initiatePurchase({
-    required String userId,
     required String businessId,
     required String publicKey,
     String? productId,
@@ -124,21 +143,95 @@ class WebServices {
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: _initiatePurchaseUrl, data: data, apiKey: businessId, token: publicKey);
+        url: _initiatePurchaseUrl,
+        data: data,
+        apiKey: businessId,
+        token: publicKey);
   }
 
-  static completePurchase({
-    required String userId,
-    required String businessId,
-    required String publicKey,
-    String? reference,
-    payload
-  }) async {
+  static completePurchase(
+      {
+      required String businessId,
+      required String publicKey,
+      String? reference,
+      payload}) async {
     var data = {
       "payload": payload,
       "reference": reference,
     };
     return await ApiScheme.initialisePostRequest(
-        url: _completePurchaseUrl, data: data, apiKey: businessId,token: publicKey);
+        url: _completePurchaseUrl,
+        data: data,
+        apiKey: businessId,
+        token: publicKey);
+  }
+
+
+  static inspection(
+      {token,
+        required String policyId,
+        required String    timeStamp,
+        required File interior,
+        required File dashboard,
+        required File frontSide,
+        required File backSide,
+        required File leftSide,
+        required File rightSide,
+        required File chassisNumber,
+        required String   address,
+        required String   reference,
+        required String   lon,
+        required String   lat,
+        required String   inspectionType,
+        required String    videoUrl}) async {
+    Map<String, String> headers = {
+      "Accept": "application/json",
+      "Authorization": "Bearer " + token
+    };
+
+
+    var uri = Uri.parse(submitInspectionUrl);
+
+    var request = http.MultipartRequest("POST", uri);
+
+    request.files
+        .add(await http.MultipartFile.fromPath('interior', interior.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('front_side', frontSide.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('back_side', backSide.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('left_side', leftSide.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('right_side', rightSide.path));
+    request.files
+        .add(await http.MultipartFile.fromPath('dashboard', dashboard.path));
+    request.files.add(
+        await http.MultipartFile.fromPath('chasis_number', chassisNumber.path));
+
+    request.headers.addAll(headers);
+
+    // "policy_id": "string",
+    // "inspection_type": "string",
+    // "timestamp": "string",
+    // "address": "string",
+    // "longitude": "string",
+    // "latitude": "string",
+    // "video_url": "string"
+
+    request.fields['policy_id'] = policyId;
+    request.fields['inspection_type'] = inspectionType;
+    request.fields['reference'] = reference;
+    request.fields['timestamp'] = timeStamp;
+    request.fields['address'] = address;
+    request.fields['video_url'] = videoUrl;
+    request.fields['longitude'] = lon.toString();
+    request.fields['latitude'] = lat.toString();
+
+    var response = await request.send();
+    print(response.statusCode);
+    print(response.reasonPhrase);
+
+    return response;
   }
 }

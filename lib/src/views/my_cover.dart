@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 import '../../mca_flutter_sdk.dart';
+import '../inspection/demo.dart';
+import '../inspection/inspection.dart';
 import '../services/services.dart';
 import '../widgets/dialogs.dart';
 import 'all_products.dart';
 import 'failed.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
+enum TransactionType { purchase, inspection }
 
 class MyCoverAI {
   const MyCoverAI(
@@ -14,57 +17,79 @@ class MyCoverAI {
       required this.context,
       this.productId,
       this.reference,
+      this.policyId,
+      required this.email,
+      this.form,
+      this.typeOfInspection,
       required this.publicKey,
-      this.paymentOption,
-      required this.userId});
+      required this.transactionType,
+      this.paymentOption});
 
   final BuildContext context;
   final PaymentOption? paymentOption;
+  final TransactionType? transactionType;
+  final InspectionType? typeOfInspection;
   final String? reference;
+  final String? policyId;
   final String publicKey;
+  final String email;
   final List? productId;
-  final String userId;
+  final form;
 
   initialise() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
     var payOption = paymentOption ?? PaymentOption.gateway;
+    var inspectionOption = typeOfInspection ?? InspectionType.vehicle;
 
-    var response = await WebServices.initialiseSdk(
-        userId: userId,
-        productId: productId ?? [],
-        publicKey: publicKey,
-        reference: reference,
-        paymentOption: payOption.toString().replaceAll('PaymentOption.', ''));
+    if (transactionType == TransactionType.inspection) {
+      await Navigator.push(
+          context,
+          MaterialPageRoute(
+              builder: (context) => DemoScreen(
+                    token: publicKey,
+                    email: email,
+                    reference: reference.toString(),
+                    policyId: policyId.toString(),
+                    typeOfInspection: inspectionOption,
+                  )));
+    }
+    if (transactionType == TransactionType.purchase) {
+      var response = await WebServices.initialiseSdk(
+          productId: productId ?? [],
+          publicKey: publicKey,
+          reference: reference,
+          paymentOption: payOption.toString().replaceAll('PaymentOption.', ''));
+      Navigator.pop(context);
 
-    Navigator.pop(context);
-
-    if (response is String) {
-      Dialogs.showErrorMessage(response);
-      return await Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const Failed()),
-      );
-    } else {
-      return await Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => (productId == null || productId == [])
-              ? AllProducts(
-                  userId: userId,
-                  productData: response['data']['productDetails'],
-                  reference: reference,
-                  publicKey: publicKey,
-                  paymentOption: payOption)
-              : MyCover(
-                  userId: userId,
-                  email: userId,
-                  publicKey: publicKey,
-                  productId: productId,
-                  productData: response,
-                  reference: reference,
-                  paymentOption: payOption),
-        ),
-      );
+      if (response is String) {
+        Dialogs.showErrorMessage(response);
+        return await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => const Failed()),
+        );
+      } else {
+        return await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => (productId == null || productId == [])
+                ? AllProducts(
+                    productData: response['data']['productDetails'],
+                    reference: reference,
+                    email: email,
+                    publicKey: publicKey,
+                    form: form,
+                    paymentOption: payOption)
+                : MyCover(
+                    form: form,
+                    email: email,
+                    publicKey: publicKey,
+                    productId: productId,
+                    productData: response,
+                    reference: reference,
+                    paymentOption: payOption),
+          ),
+        );
+      }
     }
   }
 }

@@ -1,5 +1,7 @@
 
 //Images Assets
+import 'package:flutter/material.dart';
+
 const String insight = 'assets/images/insight.png';
 const String book = 'assets/images/book.png';
 const String checkOut = 'assets/images/check_icon.png';
@@ -38,3 +40,8 @@ const String bvnLengthError = 'BVN must be 10 digits';
 
 const String invalidPhoneNumberField =
     "Number provided isn\'t valid.Try another phone number";
+
+double width(BuildContext context) => MediaQuery.of(context).size.width;
+
+//MediaQuery Height
+double height(BuildContext context) => MediaQuery.of(context).size.height;

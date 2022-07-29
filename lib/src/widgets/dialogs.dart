@@ -19,6 +19,137 @@ class Dialogs {
         fontSize: 13.0);
   }
 
+
+  static showNoticeSnackBar(message) {
+    return Fluttertoast.showToast(
+        msg: message.toString(),
+        toastLength: Toast.LENGTH_LONG,
+        gravity: ToastGravity.BOTTOM,
+        timeInSecForIosWeb: 4,
+        backgroundColor: BLUE,
+        textColor: Colors.white,
+        fontSize: 13.0);
+  }
+
+
+  static Future<void> showConfirmSubmitDialog(context,
+      {okAction, cancelAction}) async {
+    return showDialog(
+        barrierDismissible: false,
+        context: context,
+        builder: (context) {
+          return AlertDialog(
+            elevation: 0,
+            contentPadding: const EdgeInsets.all(0),
+            backgroundColor: Colors.transparent,
+            content: Card(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              child: Wrap(
+                children: <Widget>[
+                  Container(height: 30),
+                  Center(
+                    child: Image.asset(
+                      'assets/images/checkout.png',
+                      width: width(context) * 0.2,
+                      package: 'mca_flutter_sdk',
+                    ),
+                  ),
+                  const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(15.0),
+                      child: Text(
+                        'Completed !',
+                        style: TextStyle(
+                            fontSize: 22.0,
+                            fontWeight: FontWeight.w600,
+                            color: PRIMARY),
+                      ),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 0, 15, 20),
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          width: double.infinity,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: const <Widget>[
+                              Padding(
+                                padding: EdgeInsets.only(
+                                  left: 20.0,
+                                  right: 20.0,
+                                  bottom: 15.0,
+                                ),
+                                child: Text(
+                                  'Great! You have Completed\nyour Inspection, would you like\nto submit?',
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                      height: 1.5, fontSize: 16.0, color: GREY),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Divider(
+                          color: GREY,
+                          thickness: 0.2,
+                        ),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: InkWell(
+                                onTap: cancelAction,
+                                child: Container(
+                                  padding:
+                                  const EdgeInsets.fromLTRB(5, 12, 5, 12),
+                                  child: const Center(
+                                    child: Text(
+                                      'Restart',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                          color: GREY),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 15),
+                            Expanded(
+                              child: InkWell(
+                                onTap: okAction,
+                                child: Container(
+                                  padding:
+                                  const EdgeInsets.fromLTRB(5, 12, 5, 12),
+                                  child: const Center(
+                                    child: Text(
+                                      'Review',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 16,
+                                          color: PRIMARY),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 3,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   static Future<void> showLoading({context, text}) async {
     return showDialog(
         barrierDismissible: false,
@@ -76,6 +207,7 @@ class Dialogs {
       message,
       reference,
       productName,
+        onCancel,
       onTap,
       isContinue = false}) async {
     return showDialog(
@@ -128,21 +260,7 @@ class Dialogs {
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
-                          if (isContinue)
-                            RichText(
-                              textAlign: TextAlign.center,
-                                text: TextSpan(
-                                    style: const TextStyle(
-                                        color: BLACK,
-                                        fontWeight: FontWeight.w500,
-                                        fontSize: 16),
-                                    children: [
-                                  const TextSpan(text: 'Payment Reference\n'),
-                                  TextSpan(
-                                    text: reference,
-                                    style: const TextStyle(color: PRIMARY),
-                                  ),
-                                ])),
+
                           Padding(
                             padding: const EdgeInsets.fromLTRB(35,28,35,15),
                             child:
@@ -151,11 +269,13 @@ class Dialogs {
                           if (isContinue)
                             Center(
                               child: InkWell(
-                                onTap: () {
-                                  Clipboard.setData(ClipboardData(text: "Your payment reference number is $reference"));
-                                  Navigator.pop(context);
-                                  Navigator.pop(context);
-                                },
+                                onTap: onCancel,
+
+                                //     () {
+                                //   Clipboard.setData(ClipboardData(text: "Your payment reference number is $reference"));
+                                //   Navigator.pop(context);
+                                //   Navigator.pop(context);
+                                // },
                                 child: const Padding(
                                   padding: EdgeInsets.all(5.0),
                                   child: Text(
@@ -168,7 +288,6 @@ class Dialogs {
                                 ),
                               ),
                             ),
-                          if (isContinue)const Center(child:  Text('* Keep the Reference number safe, you will need it later',textAlign:TextAlign.center,style: TextStyle(color: Colors.orange,fontSize: 12),)),
 
                             smallVerticalSpace(),
                         ],
@@ -266,7 +385,7 @@ class Dialogs {
         });
   }
 
-  static Future<void> failedDialog({context}) async {
+  static Future<void> failedDialog({context,message}) async {
     return showDialog(
         barrierDismissible: false,
         context: context,
@@ -310,8 +429,8 @@ class Dialogs {
                             ),
                           ),
                           verticalSpace(),
-                          const Text(
-                              'Your Payment is Unsuccessfully,\nRetry so you can continue',
+                           Text(
+                             message??'',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 14)),
                           verticalSpace(),

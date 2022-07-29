@@ -42,11 +42,17 @@ class _MyHomePageState extends State<MyHomePage> {
   initialiseSdk(context, {userId, productId, paymentOption, reference}) async {
     final myCover = MyCoverAI(
         context: context,
-        userId: userId,
         publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
+        email: userEmail,
         productId: [productId],
+        form: {
+          'email': userEmail,
+          'name': 'Damilare Peter',
+          'phone': '08108257228'
+        },
         paymentOption: paymentOption,
-        reference: reference);
+        reference: reference,
+        transactionType: TransactionType.purchase);
     var response = await myCover.initialise();
     if (response != null) {
       showLoading('$response');
@@ -91,6 +97,18 @@ class _MyHomePageState extends State<MyHomePage> {
   static const String productUrl =
       'https://staging.api.mycover.ai/v1/sdk/initialize';
 
+  static const String _generateRefUrl =
+      'https://staging.api.mycover.ai/v1/distributors/create-debit-wallet-reference';
+
+  // static getRef(businessId, reference) async {
+  //   var requestUrl = _generateRefUrl;
+  //   return await ApiScheme.initialiseGetRequest(
+  //       url: requestUrl,
+  //       apiKey: businessId,
+  //       token: '575b0498-24b1-4a75-9446-546640b778c6'
+  //   );
+  // }
+
   getAllProducts(clientId) async {
     var data = {"client_id": clientId, "payment_option": 'gateway'};
     try {
@@ -99,6 +117,23 @@ class _MyHomePageState extends State<MyHomePage> {
           apiUrl: productUrl,
           data: data,
           token: '2aa4f6ec-0111-42f4-88f9-466c7ef41727');
+      if (res.statusCode! >= 200 && res.statusCode < 300) {
+        var body = jsonDecode(res.body);
+        setState(() => allProducts = body['data']['productDetails']);
+      }
+    } catch (e) {
+      return e.toString();
+    }
+  }
+
+  getRef(clientId) async {
+    var data = {"client_id": clientId, "payment_option": 'gateway'};
+    try {
+      // Bearer 575b0498-24b1-4a75-9446-546640b778c6
+      var res = await makePostRequest(
+          apiUrl: _generateRefUrl,
+          data: data,
+          token: '575b0498-24b1-4a75-9446-546640b778c6');
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
         setState(() => allProducts = body['data']['productDetails']);

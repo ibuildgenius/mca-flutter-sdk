@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../../mca_flutter_sdk.dart';
 import '../const.dart';
 import '../services/services.dart';
 import '../theme.dart';
@@ -15,24 +16,27 @@ import '../widgets/buttons.dart';
 import '../widgets/common.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
-import 'landing.dart';
+
+//inspectable
 
 class FormScreen extends StatefulWidget {
   const FormScreen(
       {Key? key,
       required this.productDetail,
       required this.instanceId,
-      required this.userId,
+      required this.form,
       required this.reference,
+      required this.inspectable,
+      required this.email,
       required this.publicKey,
-      required this.paymentOption,
-      required this.email})
+      required this.paymentOption})
       : super(key: key);
   final productDetail;
-  final String email;
-  final String userId;
+  final form;
   final String instanceId;
+  final String email;
   final String publicKey;
+  final bool inspectable;
   final PaymentOption? paymentOption;
   final String? reference;
 
@@ -46,13 +50,16 @@ class _FormScreenState extends State<FormScreen> {
   var forms;
   File? _image;
   String searchTerm = '';
+  String firstName = '';
+  String lastName = '';
+  String email = '';
+  String phone = '';
   String productName = '';
   String accountNumber = '';
   String? reference = '';
   String ussdCode = '';
   String paymentCode = '';
   String bankName = '';
-  String email = '';
   String productId = '';
   String businessId = '';
   String price = '';
@@ -66,7 +73,7 @@ class _FormScreenState extends State<FormScreen> {
   var chunks = [];
   var pageData = [];
   bool enabledUssd = false;
-  var identityList,titleList,stateList,yearList,vehicleList, genderList;
+  var identityList, titleList, stateList, yearList, vehicleList, genderList;
 
   var ussdProviders = [];
   var searchList = [];
@@ -80,7 +87,6 @@ class _FormScreenState extends State<FormScreen> {
   setData() {
     productDetail = widget.productDetail;
     setState(() {
-      email = widget.email;
       paymentOption = widget.paymentOption;
       reference = widget.reference ?? '';
       forms = productDetail['data']['productDetails'][0]['form_fields'];
@@ -88,28 +94,46 @@ class _FormScreenState extends State<FormScreen> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
+      email = widget.email;
+
       paymentMethod = '';
-      print(reference);
-      print(paymentOption);
+      if (widget.form != null) {
+        var inputForm = widget.form;
+        phone = inputForm['phone'] ?? '';
+        var name = inputForm['name'] ?? '';
+        firstName = name.split(' ').first;
+        lastName = name.split(' ')[1];
+      }
+
       if (paymentOption == PaymentOption.gateway && reference != '') {
         stage = PurchaseStage.purchase;
         getPurchaseInfo(false);
       } else {
         stage = PurchaseStage.payment;
       }
-      print('stage==>$stage');
 
       splitList();
 
       getUssdProvider();
     });
-
-    print('Stage =====> $stage');
   }
 
   @override
   Widget build(BuildContext context) {
     return selectBody(bodyType);
+  }
+
+  initialiseSdk(context) {
+    final mycover = MyCoverAI(
+        context: context,
+        form: widget.form,
+        productId: [productId],
+        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
+        paymentOption: widget.paymentOption,
+        reference: widget.reference,
+        transactionType: TransactionType.inspection,
+        email: widget.email);
+    mycover.initialise();
   }
 
   openGallery() async {
@@ -127,10 +151,9 @@ class _FormScreenState extends State<FormScreen> {
     return null;
   }
 
-  getList(url,{listName}) async {
+  getList(url, {listName}) async {
     if (url != null) {
-      var response = await WebServices.getListData(url,widget.publicKey);
-      print(response);
+      var response = await WebServices.getListData(url, widget.publicKey);
       if (response['responseText']
           .toString()
           .toLowerCase()
@@ -151,7 +174,8 @@ class _FormScreenState extends State<FormScreen> {
           .toLowerCase()
           .contains('identity')) {
         identityList = response['data'];
-      }  if (response['responseText']
+      }
+      if (response['responseText']
           .toString()
           .toLowerCase()
           .contains('gender')) {
@@ -184,7 +208,6 @@ class _FormScreenState extends State<FormScreen> {
     }
     return controller;
   }
-
 
   void pickItem(list, title, {onSelect}) {
     showModalBottomSheet(
@@ -294,6 +317,14 @@ class _FormScreenState extends State<FormScreen> {
       return email;
     } else if (title.toLowerCase().contains('product')) {
       return productId;
+    } else if (title.toLowerCase().contains('first') &&
+        title.toLowerCase().contains('name')) {
+      return firstName;
+    } else if (title.toLowerCase().contains('last') &&
+        title.toLowerCase().contains('name')) {
+      return lastName;
+    } else if (title.toLowerCase().contains('phone')) {
+      return phone;
     } else {
       return '';
     }
@@ -391,6 +422,8 @@ class _FormScreenState extends State<FormScreen> {
 
   void splitList() {
     if (forms.isNotEmpty) {
+      forms.sort((a, b) => (b['position'] < a['position'] ? 1 : 0));
+
       var paymentList = forms.where((i) => i['show_first'] == true).toList();
       var purchaseList = forms.where((i) => i['show_first'] != true).toList();
       List lst = stage == PurchaseStage.payment ? paymentList : purchaseList;
@@ -444,7 +477,10 @@ class _FormScreenState extends State<FormScreen> {
                     if (item['data_url'].toString().contains('year')) {
                       listItem = yearList;
                     }
-                    if (item['data_url'].toString().toLowerCase().contains('gender')) {
+                    if (item['data_url']
+                        .toString()
+                        .toLowerCase()
+                        .contains('gender')) {
                       listItem = genderList;
                     }
                     if (listItem != null) {
@@ -491,9 +527,22 @@ class _FormScreenState extends State<FormScreen> {
                             double.parse(controller.text);
                       }
                       if (item['name'].toString().contains('email')) {
-                        purchaseData['vehicle_cost'] =
-                            double.parse(controller.text);
                         email = controller.text;
+                      }
+                      if (item['name'].toString().contains('first_name')) {
+                        firstName = controller.text;
+                      }
+                      if (item['name'].toString().contains('phone')) {
+                        phone = controller.text;
+                      }
+                      if (item['name'].toString().contains('last_name')) {
+                        lastName = controller.text;
+                      }
+                      if (item['data_type'] == 'number') {
+                        if (controller.text.isNotEmpty) {
+                          purchaseData['payment_plan'] =
+                              int.parse(controller.text);
+                        }
                       }
                     },
                     keyboardType: (item['label']
@@ -508,6 +557,10 @@ class _FormScreenState extends State<FormScreen> {
                                 .toString()
                                 .toLowerCase()
                                 .contains('price') ||
+                            item['data_type']
+                                .toString()
+                                .toLowerCase()
+                                .contains('number') ||
                             item['label']
                                 .toString()
                                 .toLowerCase()
@@ -538,8 +591,7 @@ class _FormScreenState extends State<FormScreen> {
                                   .toLowerCase()
                                   .contains('bvn'))
                           ? FilteringTextInputFormatter.digitsOnly
-                          : FilteringTextInputFormatter.allow(
-                              RegExp('[a-zA-Z0-9. ]'))
+                          : FilteringTextInputFormatter.deny(RegExp(r'[/\\]'))
                     ],
                     enabled: item['data_url'].toString() != 'null' ||
                             item['label']
@@ -583,10 +635,7 @@ class _FormScreenState extends State<FormScreen> {
                         : null,
                     suffixIcon: item['data_url'].toString() != 'null'
                         ? const Icon(Icons.expand_more)
-                        : item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('date')
+                        : item['label'].toString().toLowerCase().contains('date')
                             ? const Icon(Icons.event_note)
                             : null,
                     validator: (value) {
@@ -630,118 +679,120 @@ class _FormScreenState extends State<FormScreen> {
         decoration:
             BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            verticalSpace(),
-            Container(
-              decoration: BoxDecoration(
-                  color: GREEN.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(3)),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(email, style: const TextStyle(fontSize: 12)),
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text: productDetail['data']['productDetails'][0]
-                                  ['is_dynamic_pricing']
-                              ? '$price%'
-                              : 'NGN$price',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
-                  ],
+        child: SingleChildScrollView(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              verticalSpace(),
+              Container(
+                decoration: BoxDecoration(
+                    color: GREEN.withOpacity(0.05),
+                    borderRadius: BorderRadius.circular(3)),
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      Text(email, style: const TextStyle(fontSize: 12)),
+                      RichText(
+                          text: TextSpan(children: [
+                        const TextSpan(
+                            text: 'Pay ',
+                            style: TextStyle(fontSize: 12, color: DARK)),
+                        TextSpan(
+                            text: productDetail['data']['productDetails'][0]
+                                    ['is_dynamic_pricing']
+                                ? '$price%'
+                                : 'NGN$price',
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: PRIMARY))
+                      ]))
+                    ],
+                  ),
                 ),
               ),
-            ),
-            verticalSpace(),
-            paymentMethod == 'ussd' && enabledUssd
-                ? Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: openUssdProvider,
-                    child: const InputFormField(
-                        enabled: false,
-                        hint: 'Search for bank of your choice',
-                        prefixIcon: Icon(Icons.search),
-                        textCapitalization: TextCapitalization.sentences,
-                        keyboardType: TextInputType.text),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text('You want to make payment with USSD',
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: PRIMARY,
-                          fontWeight: FontWeight.w600)),
-                  verticalSpace(),
-                  const Divider(),
-                  verticalSpace(),
-                  Text(bankName,
-                      style: const TextStyle(
-                          fontSize: 23,
-                          color: DARK,
-                          fontWeight: FontWeight.w600)),
-                  Text('CODE - $bankCode',
-                      style: const TextStyle(
-                          fontSize: 20,
-                          color: DARK,
-                          fontWeight: FontWeight.w400)),
-                  verticalSpace(),
-                ],
-                  )
-                : Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const Text('Select Payment method',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                      )),
-                  const SizedBox(height: 5),
-                  const Text('Choose an option to proceed',
-                      style: TextStyle(fontSize: 12, color: DARK)),
-                  verticalSpace(),
-                  paymentMethodCard(transfer, 'Transfer',
-                      'Send to a bank Account', 'bank transfer'),
-                  verticalSpace(),
-                  paymentMethodCard(ussd, 'USSD',
-                      'Select any bank to generate USSD', 'ussd'),
-                ],
-                  ),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: button(
-                  text: 'Proceed',
-                  onTap: () async {
-                    if (stage == PurchaseStage.payment) {
-                      if (paymentMethod != '') {
-                        purchaseData['product_id'] = productId;
-                        if (paymentMethod == 'ussd' && !enabledUssd) {
-                          setState(() => enabledUssd = true);
+              verticalSpace(),
+              paymentMethod == 'ussd' && enabledUssd
+                  ? Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        InkWell(
+                          onTap: openUssdProvider,
+                          child: const InputFormField(
+                              enabled: false,
+                              hint: 'Search for bank of your choice',
+                              prefixIcon: Icon(Icons.search),
+                              textCapitalization: TextCapitalization.sentences,
+                              keyboardType: TextInputType.text),
+                        ),
+                        const SizedBox(height: 5),
+                        const Text('You want to make payment with USSD',
+                            style: TextStyle(
+                                fontSize: 13,
+                                color: PRIMARY,
+                                fontWeight: FontWeight.w600)),
+                        verticalSpace(),
+                        const Divider(),
+                        verticalSpace(),
+                        Text(bankName,
+                            style: const TextStyle(
+                                fontSize: 23,
+                                color: DARK,
+                                fontWeight: FontWeight.w600)),
+                        Text('CODE - $bankCode',
+                            style: const TextStyle(
+                                fontSize: 20,
+                                color: DARK,
+                                fontWeight: FontWeight.w400)),
+                        verticalSpace(),
+                      ],
+                    )
+                  : Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        const Text('Select Payment method',
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                            )),
+                        const SizedBox(height: 5),
+                        const Text('Choose an option to proceed',
+                            style: TextStyle(fontSize: 12, color: DARK)),
+                        verticalSpace(),
+                        paymentMethodCard(transfer, 'Transfer',
+                            'Send to a bank Account', 'bank transfer'),
+                        verticalSpace(),
+                        paymentMethodCard(ussd, 'USSD',
+                            'Select any bank to generate USSD', 'ussd'),
+                      ],
+                    ),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: button(
+                    text: 'Proceed',
+                    onTap: () async {
+                      if (stage == PurchaseStage.payment) {
+                        if (paymentMethod != '') {
+                          purchaseData['product_id'] = productId;
+                          if (paymentMethod == 'ussd' && !enabledUssd) {
+                            setState(() => enabledUssd = true);
+                          } else {
+                            makePayment();
+                          }
                         } else {
-                          makePayment();
+                          Dialogs.showErrorMessage('Select a payment method');
                         }
                       } else {
-                        Dialogs.showErrorMessage('Select a payment method');
+                        uploadImage();
                       }
-                    } else {
-                      uploadImage();
-                    }
-                  }),
-            ),
-            Center(child: getProductName(productName)),
-          ],
+                    }),
+              ),
+              Center(child: getProductName(productName)),
+            ],
+          ),
         ),
       ),
     );
@@ -978,7 +1029,7 @@ class _FormScreenState extends State<FormScreen> {
     var paymentChannel;
     var debitWalletReference;
     if (paymentOption == PaymentOption.gateway) {
-       paymentChannel = {
+      paymentChannel = {
         "channel": paymentMethod,
         "amount": double.parse(purchaseData['amount'])
       };
@@ -986,16 +1037,30 @@ class _FormScreenState extends State<FormScreen> {
         paymentChannel['bank_code'] = bankCode;
       }
     } else {
-       debitWalletReference = widget.reference;
+      debitWalletReference = widget.reference;
     }
     if (purchaseData['email'] == null || purchaseData['email'] == '') {
       purchaseData['email'] = email;
     }
+    if (purchaseData['first_name'] == null ||
+        purchaseData['first_name'] == '') {
+      purchaseData['first_name'] = firstName;
+    }
+    if (purchaseData['last_name'] == null || purchaseData['last_name'] == '') {
+      purchaseData['last_name'] = lastName;
+    }
+    if (purchaseData['phone_number'] == null ||
+        purchaseData['phone_number'] == '') {
+      purchaseData['phone_number'] = phone;
+    }
+    if (purchaseData['phone'] == null || purchaseData['phone'] == '') {
+      purchaseData['phone'] = phone;
+      purchaseData['phone'] = phone;
+    }
     var res = await WebServices.initiatePurchase(
-        publicKey:widget.publicKey,
+        publicKey: widget.publicKey,
         businessId: businessId,
         instanceId: widget.instanceId,
-        userId: widget.userId,
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
         paymentChannel: paymentChannel);
@@ -1022,19 +1087,18 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   completePurchase() async {
+    print('======>');
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
+
     if (purchaseData['title'] == null || purchaseData['title'] == '') {
       purchaseData['title'] = 'Chief';
     }
 
-
     var res = await WebServices.completePurchase(
         businessId: businessId,
-        userId: widget.userId,
-        publicKey:widget.publicKey,
+        publicKey: widget.publicKey,
         payload: purchaseData,
         reference: reference);
-    print(res);
 
     Navigator.pop(context);
     if (res is String) {
@@ -1043,12 +1107,22 @@ class _FormScreenState extends State<FormScreen> {
       Dialogs.successDialog(
           context: context,
           title: 'Purchase Successful',
-          message:
-              'You have just purchased \n$productName,\nKindly Check your email\nto complete your activation',
+          message: !widget.inspectable
+              ? 'You have just purchased \n$productName,\nKindly Check your email\nfor purchase detail'
+              : 'You have just purchased \n$productName,\nContinue to inspection',
           productName: productName,
+          isContinue: widget.inspectable ? true : false,
+          onCancel: () {
+            Navigator.pop(context);
+            Navigator.pop(context);
+          },
           onTap: () {
             Navigator.pop(context);
-            Navigator.pop(context);
+            if (widget.inspectable) {
+              initialiseSdk(context);
+            } else {
+              Navigator.pop(context);
+            }
           });
     }
   }
@@ -1057,22 +1131,24 @@ class _FormScreenState extends State<FormScreen> {
     if (showLoading) {
       Dialogs.showLoading(context: context, text: 'Verifying Payment');
     }
-    var res = await WebServices.verifyPayment(reference!, businessId,widget.publicKey);
-    print(res);
+    var res = await WebServices.verifyPayment(
+        reference!, businessId, widget.publicKey);
     if (res is String) {
-      if (res.contains('retry') || res.contains('failed')|| res.contains('error')) {
+      if (res.contains('retry') ||
+          res.contains('failed') ||
+          res.contains('error')||
+          res.toLowerCase().contains('format')) {
         Future.delayed(const Duration(seconds: 15), () => verifyPayment(false));
       } else {
         Navigator.pop(context);
 
-        Dialogs.failedDialog(context: context);
+        Dialogs.failedDialog(context: context, message: res);
       }
     } else {
       Dialogs.successDialog(
           context: context,
-          productName: productName,
-          reference: reference,
-          isContinue: true,
+          message:
+              'You paid for $productName\nKindly Continue to complete your purchase',
           onTap: () {
             Navigator.pop(context);
             getPurchaseInfo(true);
@@ -1081,8 +1157,8 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   getPurchaseInfo(isLoading) async {
-    var res = await WebServices.getPurchaseInfo(businessId, reference,widget.publicKey);
-    print('Res=====>  $res');
+    var res = await WebServices.getPurchaseInfo(
+        businessId, reference, widget.publicKey);
     if (res is String) {
       Navigator.pop(context);
 
@@ -1102,6 +1178,7 @@ class _FormScreenState extends State<FormScreen> {
         purchaseData['vehicle_category'] = res['data']['vehicle_category'];
         purchaseData['date_of_birth'] = res['data']['date_of_birth'];
         purchaseData['phone_number'] = res['data']['phone_number'];
+        purchaseData['phone'] = res['data']['phone'];
         purchaseData['last_name'] = res['data']['last_name'];
         purchaseData['first_name'] = res['data']['first_name'];
         purchaseData['email'] = res['data']['email'];
@@ -1117,7 +1194,9 @@ class _FormScreenState extends State<FormScreen> {
   uploadImage() async {
     if (_image != null) {
       Dialogs.showLoading(context: context, text: 'Uploading Image');
-      var res = await WebServices.uploadFile(context, businessId, _image!);
+      var res = await WebServices.uploadFile(
+          context, businessId, _image!, widget.publicKey);
+
       Navigator.pop(context);
       if (res.statusCode.toString() == '200' ||
           res.statusCode.toString() == '201') {
@@ -1131,7 +1210,12 @@ class _FormScreenState extends State<FormScreen> {
           });
         });
       } else {
-        Dialogs.showErrorMessage(res);
+        res.stream.transform(utf8.decoder).listen((value) {
+          var body = jsonDecode(value);
+          print(body['responseText']);
+          Dialogs.showErrorMessage(res.reas);
+
+        });
       }
     } else {
       completePurchase();

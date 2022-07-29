@@ -53,7 +53,7 @@ Widget successButton({onTap, color, text}) => Padding(
   ),
 );
 
-Widget closeButton({onTap, color}) => Padding(
+Widget closeButton({onTap, color,text}) => Padding(
   padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
   child: InkWell(
     onTap: onTap,
@@ -62,12 +62,12 @@ Widget closeButton({onTap, color}) => Padding(
         color: PRIMARY,
         borderRadius: BorderRadius.circular(6),
       ),
-      child:const Padding(
-        padding:  EdgeInsets.fromLTRB(0,20,0,20),
+      child: Padding(
+        padding:const  EdgeInsets.fromLTRB(0,20,0,20),
         child:   Center(
             child: Text(
-               'Yes, I want to',
-              style:  TextStyle(
+              text?? 'Yes, I want to',
+              style:const  TextStyle(
                   color: WHITE, fontSize: 12, fontWeight: FontWeight.w600),
             )),
       ),

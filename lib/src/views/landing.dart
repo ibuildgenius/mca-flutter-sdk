@@ -26,15 +26,15 @@ class MyCover extends StatefulWidget {
       required this.publicKey,
       required this.reference,
       required this.paymentOption,
-      required this.userId})
+      required this.form})
       : super(key: key);
   final List? productId;
-  final String userId;
-  final String email;
   final String publicKey;
+  final String email;
   final PaymentOption? paymentOption;
   final String? reference;
   final productData;
+  final form;
 
   @override
   State<MyCover> createState() => _MyCoverState();
@@ -51,6 +51,7 @@ class _MyCoverState extends State<MyCover> {
   String logo = '';
   String instanceId = '';
   BodyType bodyType = BodyType.introPage;
+  bool inspectable= false;
 
   @override
   void initState() {
@@ -64,11 +65,11 @@ class _MyCoverState extends State<MyCover> {
   }
 
   fetchProductDetail() async {
-
     setState(() {
       productDetail = widget.productData;
-
+      print(productDetail);
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
+      inspectable = productDetail['data']['productDetails'][0]['inspectable'] ?? false;
       provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
       productCategory = productDetail['data']['productDetails'][0]
               ['productCategory']['name']
@@ -77,7 +78,8 @@ class _MyCoverState extends State<MyCover> {
       businessName =
           productDetail['data']['businessDetails']['trading_name'] ?? '';
       logo = productDetail['data']['businessDetails']['logo'] ?? '';
-      instanceId = productDetail['data']['businessDetails']['instance_id'] ?? '';
+      instanceId =
+          productDetail['data']['businessDetails']['instance_id'] ?? '';
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
     });
@@ -90,7 +92,6 @@ class _MyCoverState extends State<MyCover> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          bottom: false,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
             child: Column(
@@ -165,12 +166,13 @@ class _MyCoverState extends State<MyCover> {
       case BodyType.detail:
         return FormScreen(
           productDetail: widget.productData,
-          publicKey:widget.publicKey,
-          email: widget.email,
-          userId: widget.userId,
+          publicKey: widget.publicKey,
           paymentOption: widget.paymentOption,
           reference: widget.reference,
           instanceId: instanceId,
+          form: widget.form,
+          inspectable: inspectable,
+          email: widget.email,
         );
       case BodyType.success:
         return successScreen();
@@ -205,7 +207,6 @@ class _MyCoverState extends State<MyCover> {
   }
 
   openIntro(String productType) {
-
     if (productType.contains('auto') || productType.contains('life')) {
       return const AutoScreen();
     } else if (productType.contains('health')) {
