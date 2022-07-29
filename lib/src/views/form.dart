@@ -130,7 +130,7 @@ class _FormScreenState extends State<FormScreen> {
         productId: [productId],
         publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
         paymentOption: widget.paymentOption,
-        reference: widget.reference,
+        reference: reference,
         transactionType: TransactionType.inspection,
         email: widget.email);
     mycover.initialise();
@@ -1086,6 +1086,7 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  // getInspectionInfo
   completePurchase() async {
     print('======>');
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');

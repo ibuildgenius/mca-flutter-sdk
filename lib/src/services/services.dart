@@ -14,22 +14,18 @@ class WebServices {
   static const String _initiatePurchaseUrl = '$_baseUrl/sdk/initiate-purchase';
   static const String _completePurchaseUrl = '$_baseUrl/sdk/complete-purchase';
   static const String _purchaseInfoUrl = '$_baseUrl/sdk/purchase-info';
-  static const String submitInspectionUrl = '$_baseUrl/inspections/vehicle';
-  static const String makeClaimsUrl = '$_baseUrl/claims/vehicle';
-
+  static const String submitInspectionUrl = '$_baseUrl/sdk/inspections/vehicle';
+  // static const String makeClaimsUrl = '$_baseUrl/claims/vehicle';
+  static const String inspectionInfo = '$_baseUrl/sdk/inspection-info';
 
   static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
   static const String userId = 'olakunle@mycovergenius.com';
 
   static initialiseSdk(
-      {
-      required String publicKey,
+      {required String publicKey,
       List? productId,
       paymentOption,
       reference}) async {
-
-
-
     var data;
     if (paymentOption == 'wallet' && (reference == '' || reference == null)) {
       return 'Reference must not be empty for a wallet payment option';
@@ -47,7 +43,6 @@ class WebServices {
         };
       }
 
-
       return await ApiScheme.initialisePostRequest(
           url: _initialiseSdkUrl, data: data, token: publicKey);
     }
@@ -57,10 +52,6 @@ class WebServices {
     var data = {
       "transaction_reference": reference,
     };
-    print(_verifyPaymentUrl);
-    print(reference);
-    print(publicKey);
-    print(businessId);
     return await ApiScheme.initialisePostRequest(
         url: _verifyPaymentUrl,
         data: data,
@@ -68,20 +59,20 @@ class WebServices {
         token: publicKey);
   }
 
-  static uploadFile(context, businessId, File image,token,{fileType}) async {
+  static uploadFile(context, businessId, File image, token, {fileType}) async {
     Map<String, String> headers = {
       "Accept": "application/json",
       "x-api-id": "$businessId",
       HttpHeaders.authorizationHeader: 'Bearer $token',
-
     };
+    print(_uploadUrl);
     var uri = Uri.parse(_uploadUrl);
 
     var request = http.MultipartRequest("POST", uri);
 
     request.files.add(await http.MultipartFile.fromPath('file', image.path));
 
-    request.fields['fileType'] = fileType??'image';
+    request.fields['fileType'] = fileType ?? 'image';
     request.headers.addAll(headers);
 
     var response = await request.send();
@@ -103,10 +94,14 @@ class WebServices {
         url: requestUrl, apiKey: businessId, token: publicKey);
   }
 
-
   static getUssdProvider(publicKey) async {
     return await ApiScheme.initialiseGetRequest(
         url: _ussdProviderUrl, token: publicKey);
+  }
+
+  static getInspectionInfo(reference,publicKey) async {
+    return await ApiScheme.initialiseGetRequest(
+        url: inspectionInfo+'?reference=$reference', token: publicKey);
   }
 
   static buyProduct({
@@ -150,8 +145,7 @@ class WebServices {
   }
 
   static completePurchase(
-      {
-      required String businessId,
+      {required String businessId,
       required String publicKey,
       String? reference,
       payload}) async {
@@ -166,29 +160,33 @@ class WebServices {
         token: publicKey);
   }
 
-
   static inspection(
       {token,
-        required String policyId,
-        required String    timeStamp,
-        required File interior,
-        required File dashboard,
-        required File frontSide,
-        required File backSide,
-        required File leftSide,
-        required File rightSide,
-        required File chassisNumber,
-        required String   address,
-        required String   reference,
-        required String   lon,
-        required String   lat,
-        required String   inspectionType,
-        required String    videoUrl}) async {
+      required String policyId,
+      required String timeStamp,
+      required File interior,
+      required File dashboard,
+      required File frontSide,
+      required File backSide,
+      required File leftSide,
+      required File rightSide,
+      required File chassisNumber,
+      required String address,
+      required String reference,
+      required String businessId,
+      required String lon,
+      required String lat,
+      required String inspectionType,
+      required String videoUrl}) async {
+    print('Submittion token $token');
+
     Map<String, String> headers = {
       "Accept": "application/json",
-      "Authorization": "Bearer " + token
+      "x-api-id": "$businessId",
+      HttpHeaders.authorizationHeader: 'Bearer $token',
     };
 
+    print('submitting endpoint $submitInspectionUrl');
 
     var uri = Uri.parse(submitInspectionUrl);
 
@@ -227,6 +225,9 @@ class WebServices {
     request.fields['video_url'] = videoUrl;
     request.fields['longitude'] = lon.toString();
     request.fields['latitude'] = lat.toString();
+
+
+    print(request.fields);
 
     var response = await request.send();
     print(response.statusCode);

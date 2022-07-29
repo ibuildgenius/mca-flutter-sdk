@@ -57,6 +57,7 @@ class ApiScheme {
       required String url,
       apiKey,
       required String token}) async {
+    print(url);
 
     try {
       var response =
@@ -74,6 +75,7 @@ class ApiScheme {
 
   static initialiseGetRequest({required String url, token, apiKey}) async {
     try {
+      print(url);
       var response = await _makeGetRequest(apiUrl: url, token: token);
       var body = jsonDecode(response.body);
       if (_isRequestSuccessful(response.statusCode)) {

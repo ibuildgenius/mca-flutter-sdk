@@ -17,7 +17,6 @@ class MyCoverAI {
       required this.context,
       this.productId,
       this.reference,
-      this.policyId,
       required this.email,
       this.form,
       this.typeOfInspection,
@@ -30,7 +29,6 @@ class MyCoverAI {
   final TransactionType? transactionType;
   final InspectionType? typeOfInspection;
   final String? reference;
-  final String? policyId;
   final String publicKey;
   final String email;
   final List? productId;
@@ -42,16 +40,31 @@ class MyCoverAI {
     var inspectionOption = typeOfInspection ?? InspectionType.vehicle;
 
     if (transactionType == TransactionType.inspection) {
-      await Navigator.push(
+      print('inspectioninfor');
+      var response = await WebServices.getInspectionInfo(reference, publicKey);
+      print(response);
+
+      Navigator.pop(context);
+      if (response is String) {
+        Dialogs.showErrorMessage(response);
+        return await Navigator.push(
           context,
-          MaterialPageRoute(
-              builder: (context) => DemoScreen(
-                    token: publicKey,
-                    email: email,
-                    reference: reference.toString(),
-                    policyId: policyId.toString(),
-                    typeOfInspection: inspectionOption,
-                  )));
+          MaterialPageRoute(builder: (context) => const Failed()),
+        );
+      } else {
+        var policyId = response['data']['payload']['policy']['id'];
+        // BUY-FFCDPFPNIGFIP
+        await Navigator.push(
+            context,
+            MaterialPageRoute(
+                builder: (context) => DemoScreen(
+                      token: publicKey,
+                      email: email,
+                      reference: reference.toString(),
+                      policyId: policyId.toString(),
+                      typeOfInspection: inspectionOption,
+                    )));
+      }
     }
     if (transactionType == TransactionType.purchase) {
       var response = await WebServices.initialiseSdk(

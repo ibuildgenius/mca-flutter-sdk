@@ -355,7 +355,7 @@ class _InspectionScreenState extends State<InspectionScreen>
                                                     .imageAsset,
                                                 height: width(context) * 0.25,
                                                 fit: BoxFit.contain,
-                                                package: 'mca_inspection_sdk',
+                                                package: 'mca_flutter_sdk',
                                               ),
                                             ),
                                             const SizedBox(height: 15),
@@ -375,7 +375,6 @@ class _InspectionScreenState extends State<InspectionScreen>
                           ],
                         ),
                       ),
-                      // _image==null?Container():Image.file(File(_image),height: 200),
                       Positioned(
                         right: 10,
                         left: 10,
@@ -518,8 +517,12 @@ class _InspectionScreenState extends State<InspectionScreen>
   submitInspection(context) async {
     print('submitting');
 
+
+    // policy_id: null, inspection_type: vehicle, reference: null,
+
     var response = await WebServices.inspection(
         token: widget.token,
+        businessId:'businessId',
         reference: widget.reference,
         policyId: widget.policyId,
         timeStamp: DateTime.now().toString(),
