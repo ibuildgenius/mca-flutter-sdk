@@ -70,9 +70,11 @@ class _FormScreenState extends State<FormScreen> {
   PaymentOption? paymentOption;
   PurchaseStage? stage;
   int initialPage = 0;
+  double _opacity = 0;
   var chunks = [];
   var pageData = [];
   bool enabledUssd = false;
+  bool go = false;
   var identityList, titleList, stateList, yearList, vehicleList, genderList;
 
   var ussdProviders = [];
@@ -81,6 +83,13 @@ class _FormScreenState extends State<FormScreen> {
   @override
   void initState() {
     setData();
+    Future.delayed(const Duration(seconds: 6), () {
+      setState(() {
+        _opacity = 1.0;
+        go = true;
+      });
+    });
+
     super.initState();
   }
 
@@ -965,9 +974,13 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: button(
-                  text: 'I have sent the money',
-                  onTap: () => verifyPayment(true)),
+              child:  AnimatedOpacity(
+                duration: const Duration(seconds: 7),
+                opacity: _opacity,
+                child: button(
+                    text: 'I have sent the money',
+                    onTap: () => verifyPayment(true)),
+              ),
             ),
             Center(child: getProductName(productName)),
           ],
