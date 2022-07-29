@@ -35,7 +35,9 @@ class _CompletedScreenState extends State<CompletedScreen> {
             button(
                 text: 'Go Home',
                 onTap: () {
-                  // Get.offAll(() => HomeNavigationBar(page: 0));
+                Navigator.pop(context);
+                Navigator.pop(context);
+                Navigator.pop(context);
                 })
           ],
         ),

@@ -137,6 +137,7 @@ class WebServices {
       "payment_channel": paymentChannel,
     };
 
+    print(data);
     return await ApiScheme.initialisePostRequest(
         url: _initiatePurchaseUrl,
         data: data,

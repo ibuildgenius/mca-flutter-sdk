@@ -40,9 +40,7 @@ class MyCoverAI {
     var inspectionOption = typeOfInspection ?? InspectionType.vehicle;
 
     if (transactionType == TransactionType.inspection) {
-      print('inspectioninfor');
       var response = await WebServices.getInspectionInfo(reference, publicKey);
-      print(response);
 
       Navigator.pop(context);
       if (response is String) {
@@ -53,7 +51,6 @@ class MyCoverAI {
         );
       } else {
         var policyId = response['data']['payload']['policy']['id'];
-        // BUY-FFCDPFPNIGFIP
         await Navigator.push(
             context,
             MaterialPageRoute(

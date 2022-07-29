@@ -50,8 +50,8 @@ class _MyHomePageState extends State<MyHomePage> {
           'name': 'Damilare Peter',
           'phone': '08108257228'
         },
-        paymentOption: paymentOption,
-        reference: reference,
+        paymentOption: PaymentOption.gateway,
+        // reference: 'SRGXADPHDEIDCU-WR',
         transactionType: TransactionType.purchase);
     var response = await myCover.initialise();
     if (response != null) {

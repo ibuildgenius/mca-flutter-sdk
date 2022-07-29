@@ -116,11 +116,15 @@ class _FormScreenState extends State<FormScreen> {
 
       if (paymentOption == PaymentOption.gateway && reference != '') {
         stage = PurchaseStage.purchase;
-        getPurchaseInfo(false);
+        if (paymentOption == PaymentOption.gateway) {
+          getPurchaseInfo(false);
+        }
       } else {
         stage = PurchaseStage.payment;
       }
+      print(stage);
 
+      setState(() {});
       splitList();
 
       getUssdProvider();
@@ -396,9 +400,16 @@ class _FormScreenState extends State<FormScreen> {
                       initialPage++;
                       setState(() => pageData = chunks[initialPage]);
                     } else {
+                      print('I am ahere');
+                      print(stage);
+                      print(paymentOption);
+
                       if (stage == PurchaseStage.payment &&
                           paymentOption == PaymentOption.gateway) {
                         setState(() => bodyType = 'bank');
+                      } else if (stage == PurchaseStage.payment &&
+                          paymentOption == PaymentOption.wallet) {
+                        makePayment();
                       } else {
                         uploadImage();
                       }
@@ -974,7 +985,7 @@ class _FormScreenState extends State<FormScreen> {
             verticalSpace(),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child:  AnimatedOpacity(
+              child: AnimatedOpacity(
                 duration: const Duration(seconds: 7),
                 opacity: _opacity,
                 child: button(
@@ -1077,11 +1088,13 @@ class _FormScreenState extends State<FormScreen> {
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
         paymentChannel: paymentChannel);
+    print('Chairman Chuks ===>$res');
 
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
+      if(paymentOption == PaymentOption.gateway){
       setState(() {
         if (paymentMethod.contains('transfer')) {
           bodyType = 'transfer';
@@ -1095,13 +1108,19 @@ class _FormScreenState extends State<FormScreen> {
           paymentCode = res['data']['payment_code'];
           reference = res['data']['reference'];
         }
-      });
+      });}
+      if(paymentOption ==PaymentOption.wallet){
+        setState(() =>
+          reference = res['data']['reference']);
+        getPurchaseInfo(false);
+
+      }
     }
   }
 
   // getInspectionInfo
   completePurchase() async {
-    print('======>');
+    print('===Coo=mplete===>');
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
 
     if (purchaseData['title'] == null || purchaseData['title'] == '') {
@@ -1113,7 +1132,7 @@ class _FormScreenState extends State<FormScreen> {
         publicKey: widget.publicKey,
         payload: purchaseData,
         reference: reference);
-
+print(res);
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
@@ -1150,7 +1169,7 @@ class _FormScreenState extends State<FormScreen> {
     if (res is String) {
       if (res.contains('retry') ||
           res.contains('failed') ||
-          res.contains('error')||
+          res.contains('error') ||
           res.toLowerCase().contains('format')) {
         Future.delayed(const Duration(seconds: 15), () => verifyPayment(false));
       } else {
@@ -1228,7 +1247,6 @@ class _FormScreenState extends State<FormScreen> {
           var body = jsonDecode(value);
           print(body['responseText']);
           Dialogs.showErrorMessage(res.reas);
-
         });
       }
     } else {
