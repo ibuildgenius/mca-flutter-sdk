@@ -228,6 +228,17 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  var listData;
+
+  Future<List> getListData(url) async {
+    if (url != null) {
+      var response = await WebServices.getListData(url, widget.publicKey);
+      return listData = response['data'];
+    } else {
+      return [];
+    }
+  }
+
   getUssdProvider() async {
     var response = await WebServices.getUssdProvider(widget.publicKey);
     if (response is String) {
@@ -507,7 +518,6 @@ class _FormScreenState extends State<FormScreen> {
         itemCount: data.length,
         shrinkWrap: true,
         itemBuilder: (c, i) {
-
           var item = data[i];
           if (item['data_url'].toString() != 'null') {
             if (item['data_url'].toString().contains('make') &&
@@ -515,7 +525,7 @@ class _FormScreenState extends State<FormScreen> {
               getList('${item['data_url']}2014');
             } else if (item['data_url'].toString().contains('model')) {
               getList('${item['data_url']}?year=2014&make=TOYOTA');
-            }else {
+            } else {
               getList(item['data_url']);
             }
           }
@@ -532,51 +542,12 @@ class _FormScreenState extends State<FormScreen> {
               InkWell(
                 onTap: () async {
                   if (item['data_url'].toString() != 'null') {
-                    var listItem;
-                    if (item['data_url'].toString().contains('title')) {
-                      listItem = titleList;
-                    }
-                    if (item['data_url'].toString().contains('state')) {
-                      listItem = stateList;
-                    }
-                    if (item['data_url'].toString().contains('identity')) {
-                      listItem = identityList;
-                    }
-                    if (item['data_url'].toString().contains('category') ||
-                        item['data_url'].toString().contains('vehicle-types') ||
-                        item['data_url'].toString().contains('vehicle_types')) {
-                      listItem = vehicleList;
-                    }
-                    if (item['data_url'].toString().contains('year')) {
-                      listItem = yearList;
-                    }
-                    if (item['data_url'].toString().contains('vehicle-make') ||
-                        item['data_url'].toString().contains('vehicle-make')) {
-                      listItem = vehicleMakeList;
-                    }
-                    if (item['data_url'].toString().contains('vehicle-model') ||
-                        item['data_url'].toString().contains('model')) {
-                      listItem = vehicleModelList;
-                    }
-                    if (item['data_url'].toString().contains('insurance')) {
-                      listItem = insuranceList;
-                    }
-                    if (item['data_url'].toString().contains('color')) {
-                      listItem = colorList;
-                    }
-                    if (item['data_url']
-                        .toString()
-                        .toLowerCase()
-                        .contains('gender')) {
-                      listItem = genderList;
-                    }
-                    if (listItem != null) {
-                      pickItem(listItem, item['label'], onSelect: (value) {
-                        Navigator.pop(context);
-                        controller.text = value.toString();
-                        purchaseData[item['name']] = controller.text;
-                      });
-                    }
+                    pickItem(await getListData(item['data_url']), item['label'],
+                        onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      purchaseData[item['name']] = controller.text;
+                    });
                   } else if (item['label']
                       .toString()
                       .toLowerCase()
@@ -609,16 +580,11 @@ class _FormScreenState extends State<FormScreen> {
                     controller: controller,
                     onChanged: (value) {
                       purchaseData[item['name']] = controller.text;
-                      if (item['name'].toString().contains('cost')) {
-                        purchaseData['vehicle_cost'] =
-                            double.parse(controller.text);
-                      }
-
-                      if (item['name'] == 'vehicle_value') {
+                      if (item['name'].toString().contains('cost') ||
+                          item['name'] == 'vehicle_value' ||
+                          item['data_type'] == 'number') {
                         if (controller.text.isNotEmpty) {
-                          purchaseData['vehicle_value'] =
-                              double.parse(controller.text);
-                          print(purchaseData['vehicle_value'].runtimeType);
+                          item['name'] = int.parse(controller.text);
                         }
                       }
 
@@ -634,13 +600,6 @@ class _FormScreenState extends State<FormScreen> {
                       if (item['name'].toString().contains('last_name')) {
                         lastName = controller.text;
                       }
-                      if (item['data_type'] == 'number') {
-                        if (controller.text.isNotEmpty) {
-                          purchaseData['payment_plan'] =
-                              int.parse(controller.text);
-                        }
-                      }
-
                     },
                     keyboardType: (item['label']
                                 .toString()
@@ -658,6 +617,10 @@ class _FormScreenState extends State<FormScreen> {
                                 .toString()
                                 .toLowerCase()
                                 .contains('number') ||
+                            item['name']
+                                .toString()
+                                .toLowerCase()
+                                .contains('value') ||
                             item['label']
                                 .toString()
                                 .toLowerCase()
