@@ -21,6 +21,7 @@ dependencies:
   video_compress: ^3.1.0
   permission_handler: ^9.2.0
   geolocator: ^8.0.0
+  sentry_flutter: ^6.9.0
 
 
 

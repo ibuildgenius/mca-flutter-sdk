@@ -12,7 +12,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -37,7 +36,7 @@ class MyHomePage extends StatefulWidget {
 
 class _MyHomePageState extends State<MyHomePage> {
   var allProducts;
-  String userEmail = 'olakunle@mycovergenius.com';
+  String userEmail = 'dami@mycovergenius.com';
 
   initialiseSdk(context, {userId, productId, paymentOption, reference}) async {
     final myCover = MyCoverAI(
@@ -51,7 +50,7 @@ class _MyHomePageState extends State<MyHomePage> {
           'phone': '08108257228'
         },
         paymentOption: PaymentOption.gateway,
-        // reference: 'SRGXADPHDEIDCU-WR',
+        // reference: 'BUY-SMRCECMNYKMHV',
         transactionType: TransactionType.purchase);
     var response = await myCover.initialise();
     if (response != null) {
@@ -100,19 +99,10 @@ class _MyHomePageState extends State<MyHomePage> {
   static const String _generateRefUrl =
       'https://staging.api.mycover.ai/v1/distributors/create-debit-wallet-reference';
 
-  // static getRef(businessId, reference) async {
-  //   var requestUrl = _generateRefUrl;
-  //   return await ApiScheme.initialiseGetRequest(
-  //       url: requestUrl,
-  //       apiKey: businessId,
-  //       token: '575b0498-24b1-4a75-9446-546640b778c6'
-  //   );
-  // }
 
   getAllProducts(clientId) async {
     var data = {"client_id": clientId, "payment_option": 'gateway'};
     try {
-      // Bearer 575b0498-24b1-4a75-9446-546640b778c6
       var res = await makePostRequest(
           apiUrl: productUrl,
           data: data,
@@ -129,7 +119,6 @@ class _MyHomePageState extends State<MyHomePage> {
   getRef(clientId) async {
     var data = {"client_id": clientId, "payment_option": 'gateway'};
     try {
-      // Bearer 575b0498-24b1-4a75-9446-546640b778c6
       var res = await makePostRequest(
           apiUrl: _generateRefUrl,
           data: data,

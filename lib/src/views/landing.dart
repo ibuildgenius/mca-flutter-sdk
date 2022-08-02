@@ -56,6 +56,7 @@ class _MyCoverState extends State<MyCover> {
   @override
   void initState() {
     fetchProductDetail();
+
     super.initState();
   }
 
@@ -67,7 +68,6 @@ class _MyCoverState extends State<MyCover> {
   fetchProductDetail() async {
     setState(() {
       productDetail = widget.productData;
-      print(productDetail);
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       inspectable = productDetail['data']['productDetails'][0]['inspectable'] ?? false;
       provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
@@ -143,14 +143,8 @@ class _MyCoverState extends State<MyCover> {
                 const SizedBox(height: 10),
                 selectBody(bodyType),
                 const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(top: 5.0),
-                  child: Image.asset(myCover,
-                      width: 170,
-                      fit: BoxFit.fitWidth,
-                      color: LIGHT_GREY,
-                      package: 'mca_flutter_sdk'),
-                ),
+                verticalSpace(),
+
               ],
             ),
           ),
@@ -171,6 +165,7 @@ class _MyCoverState extends State<MyCover> {
           reference: widget.reference,
           instanceId: instanceId,
           form: widget.form,
+          provider: provider,
           inspectable: inspectable,
           email: widget.email,
         );
@@ -190,6 +185,7 @@ class _MyCoverState extends State<MyCover> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               verticalSpace(),
+
               openIntro(productCategory),
               smallVerticalSpace(),
               const Divider(),
@@ -197,7 +193,11 @@ class _MyCoverState extends State<MyCover> {
                   text: 'Get Covered',
                   onTap: () => setState(() => bodyType = BodyType.detail)),
               smallVerticalSpace(),
-              getProductName(provider.toUpperCase()),
+              Image.asset(myCover,
+                  width: 170,
+                  fit: BoxFit.fitWidth,
+                  package: 'mca_flutter_sdk'),
+
               smallVerticalSpace(),
             ],
           ),

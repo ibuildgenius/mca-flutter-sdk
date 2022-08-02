@@ -25,6 +25,7 @@ class FormScreen extends StatefulWidget {
       required this.productDetail,
       required this.instanceId,
       required this.form,
+      required this.provider,
       required this.reference,
       required this.inspectable,
       required this.email,
@@ -34,6 +35,7 @@ class FormScreen extends StatefulWidget {
   final productDetail;
   final form;
   final String instanceId;
+  final String provider;
   final String email;
   final String publicKey;
   final bool inspectable;
@@ -64,6 +66,7 @@ class _FormScreenState extends State<FormScreen> {
   String businessId = '';
   String price = '';
   String paymentMethod = '';
+  String provider = '';
   String bankCode = '';
   var purchaseData = {};
   String bodyType = 'form';
@@ -75,7 +78,16 @@ class _FormScreenState extends State<FormScreen> {
   var pageData = [];
   bool enabledUssd = false;
   bool go = false;
-  var identityList, titleList, stateList, yearList, vehicleList, genderList;
+  var identityList,
+      titleList,
+      stateList,
+      yearList,
+      vehicleList,
+      vehicleModelList,
+      vehicleMakeList,
+      insuranceList,
+      genderList,
+      colorList;
 
   var ussdProviders = [];
   var searchList = [];
@@ -83,7 +95,7 @@ class _FormScreenState extends State<FormScreen> {
   @override
   void initState() {
     setData();
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 14), () {
       setState(() {
         _opacity = 1.0;
         go = true;
@@ -96,6 +108,7 @@ class _FormScreenState extends State<FormScreen> {
   setData() {
     productDetail = widget.productDetail;
     setState(() {
+      provider = widget.provider;
       paymentOption = widget.paymentOption;
       reference = widget.reference ?? '';
       forms = productDetail['data']['productDetails'][0]['form_fields'];
@@ -122,7 +135,6 @@ class _FormScreenState extends State<FormScreen> {
       } else {
         stage = PurchaseStage.payment;
       }
-      print(stage);
 
       setState(() {});
       splitList();
@@ -164,17 +176,33 @@ class _FormScreenState extends State<FormScreen> {
     return null;
   }
 
-  getList(url, {listName}) async {
+  getList(url) async {
     if (url != null) {
       var response = await WebServices.getListData(url, widget.publicKey);
       if (response['responseText']
-          .toString()
-          .toLowerCase()
-          .contains('vehicle category')) {
+              .toString()
+              .toLowerCase()
+              .contains('vehicle category') ||
+          response['responseText']
+              .toString()
+              .toLowerCase()
+              .contains('vehicle type')) {
         vehicleList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('model')) {
+        vehicleModelList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('make')) {
+        vehicleMakeList = response['data'];
       }
       if (response['responseText'].toString().toLowerCase().contains('state')) {
         stateList = response['data'];
+      }
+      if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('insurance type')) {
+        insuranceList = response['data'];
       }
       if (response['responseText'].toString().toLowerCase().contains('title')) {
         titleList = response['data'];
@@ -187,6 +215,9 @@ class _FormScreenState extends State<FormScreen> {
           .toLowerCase()
           .contains('identity')) {
         identityList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('color')) {
+        colorList = response['data'];
       }
       if (response['responseText']
           .toString()
@@ -247,7 +278,7 @@ class _FormScreenState extends State<FormScreen> {
                         children: List.generate(
                             list.length,
                             (i) => ListTile(
-                                  title: Text(list[i],
+                                  title: Text('${list[i]}',
                                       style: const TextStyle(
                                           fontWeight: FontWeight.w500,
                                           fontSize: 16)),
@@ -352,6 +383,17 @@ class _FormScreenState extends State<FormScreen> {
       child: Column(
         children: [
           verticalSpace(),
+          Row(
+            children: [
+              Expanded(
+                child: Text(productName,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.w700)),
+              )
+            ],
+          ),
+          smallVerticalSpace(),
           Container(
             decoration: BoxDecoration(
                 color: GREEN.withOpacity(0.05),
@@ -372,6 +414,10 @@ class _FormScreenState extends State<FormScreen> {
               ),
             ),
           ),
+          smallVerticalSpace(),
+          Align(
+              alignment: Alignment.topRight,
+              child: getProductName(provider.toUpperCase())),
           verticalSpace(),
           Expanded(
             child: productDetail == null
@@ -390,7 +436,7 @@ class _FormScreenState extends State<FormScreen> {
                       ),
           ),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 20.0),
+            padding: const EdgeInsets.symmetric(vertical: 15.0),
             child: button(
                 text: 'Get Covered',
                 onTap: () async {
@@ -400,10 +446,6 @@ class _FormScreenState extends State<FormScreen> {
                       initialPage++;
                       setState(() => pageData = chunks[initialPage]);
                     } else {
-                      print('I am ahere');
-                      print(stage);
-                      print(paymentOption);
-
                       if (stage == PurchaseStage.payment &&
                           paymentOption == PaymentOption.gateway) {
                         setState(() => bodyType = 'bank');
@@ -417,7 +459,8 @@ class _FormScreenState extends State<FormScreen> {
                   }
                 }),
           ),
-          getProductName(productName),
+          Image.asset(myCover,
+              width: 170, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
         ],
       ),
     ));
@@ -464,13 +507,21 @@ class _FormScreenState extends State<FormScreen> {
         itemCount: data.length,
         shrinkWrap: true,
         itemBuilder: (c, i) {
+
           var item = data[i];
           if (item['data_url'].toString() != 'null') {
-            getList(item['data_url']);
+            if (item['data_url'].toString().contains('make') &&
+                item['data_url'].toString().contains('year')) {
+              getList('${item['data_url']}2014');
+            } else if (item['data_url'].toString().contains('model')) {
+              getList('${item['data_url']}?year=2014&make=TOYOTA');
+            }else {
+              getList(item['data_url']);
+            }
           }
           purchaseData['product_id'] = productId;
           purchaseData['amount'] = price;
-
+          purchaseData['vehicle_registration_number'] = 'AKD91HR';
           final controller = _getControllerOf(item['name'],
               initValue: getInitialValue(item['label'].toString()));
 
@@ -491,11 +542,27 @@ class _FormScreenState extends State<FormScreen> {
                     if (item['data_url'].toString().contains('identity')) {
                       listItem = identityList;
                     }
-                    if (item['data_url'].toString().contains('category')) {
+                    if (item['data_url'].toString().contains('category') ||
+                        item['data_url'].toString().contains('vehicle-types') ||
+                        item['data_url'].toString().contains('vehicle_types')) {
                       listItem = vehicleList;
                     }
                     if (item['data_url'].toString().contains('year')) {
                       listItem = yearList;
+                    }
+                    if (item['data_url'].toString().contains('vehicle-make') ||
+                        item['data_url'].toString().contains('vehicle-make')) {
+                      listItem = vehicleMakeList;
+                    }
+                    if (item['data_url'].toString().contains('vehicle-model') ||
+                        item['data_url'].toString().contains('model')) {
+                      listItem = vehicleModelList;
+                    }
+                    if (item['data_url'].toString().contains('insurance')) {
+                      listItem = insuranceList;
+                    }
+                    if (item['data_url'].toString().contains('color')) {
+                      listItem = colorList;
                     }
                     if (item['data_url']
                         .toString()
@@ -506,7 +573,7 @@ class _FormScreenState extends State<FormScreen> {
                     if (listItem != null) {
                       pickItem(listItem, item['label'], onSelect: (value) {
                         Navigator.pop(context);
-                        controller.text = value;
+                        controller.text = value.toString();
                         purchaseData[item['name']] = controller.text;
                       });
                     }
@@ -546,6 +613,15 @@ class _FormScreenState extends State<FormScreen> {
                         purchaseData['vehicle_cost'] =
                             double.parse(controller.text);
                       }
+
+                      if (item['name'] == 'vehicle_value') {
+                        if (controller.text.isNotEmpty) {
+                          purchaseData['vehicle_value'] =
+                              double.parse(controller.text);
+                          print(purchaseData['vehicle_value'].runtimeType);
+                        }
+                      }
+
                       if (item['name'].toString().contains('email')) {
                         email = controller.text;
                       }
@@ -564,6 +640,7 @@ class _FormScreenState extends State<FormScreen> {
                               int.parse(controller.text);
                         }
                       }
+
                     },
                     keyboardType: (item['label']
                                 .toString()
@@ -587,12 +664,15 @@ class _FormScreenState extends State<FormScreen> {
                                 .contains('bvn'))
                         ? TextInputType.phone
                         : TextInputType.text,
-                    textCapitalization: item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('number')
-                        ? TextCapitalization.characters
-                        : TextCapitalization.sentences,
+                    textCapitalization:
+                        item['label'].toString().toLowerCase().contains('email')
+                            ? TextCapitalization.none
+                            : item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('number')
+                                ? TextCapitalization.characters
+                                : TextCapitalization.sentences,
                     inputFormatters: <TextInputFormatter>[
                       (item['label']
                                   .toString()
@@ -655,7 +735,10 @@ class _FormScreenState extends State<FormScreen> {
                         : null,
                     suffixIcon: item['data_url'].toString() != 'null'
                         ? const Icon(Icons.expand_more)
-                        : item['label'].toString().toLowerCase().contains('date')
+                        : item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('date')
                             ? const Icon(Icons.event_note)
                             : null,
                     validator: (value) {
@@ -704,6 +787,16 @@ class _FormScreenState extends State<FormScreen> {
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               verticalSpace(),
+              Row(
+                children: [
+                  Expanded(
+                      child: Text(productName,
+                          textAlign: TextAlign.end,
+                          style: const TextStyle(
+                              fontSize: 15, fontWeight: FontWeight.w700)))
+                ],
+              ),
+              smallVerticalSpace(),
               Container(
                 decoration: BoxDecoration(
                     color: GREEN.withOpacity(0.05),
@@ -789,28 +882,34 @@ class _FormScreenState extends State<FormScreen> {
                             'Select any bank to generate USSD', 'ussd'),
                       ],
                     ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: button(
-                    text: 'Proceed',
-                    onTap: () async {
-                      if (stage == PurchaseStage.payment) {
-                        if (paymentMethod != '') {
-                          purchaseData['product_id'] = productId;
-                          if (paymentMethod == 'ussd' && !enabledUssd) {
-                            setState(() => enabledUssd = true);
+              AnimatedOpacity(
+                duration: const Duration(seconds: 15),
+                opacity: _opacity,
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20.0),
+                  child: button(
+                      text: 'Proceed',
+                      onTap: () async {
+                        if (stage == PurchaseStage.payment) {
+                          if (paymentMethod != '') {
+                            purchaseData['product_id'] = productId;
+                            if (paymentMethod == 'ussd' && !enabledUssd) {
+                              setState(() => enabledUssd = true);
+                            } else {
+                              makePayment();
+                            }
                           } else {
-                            makePayment();
+                            Dialogs.showErrorMessage('Select a payment method');
                           }
                         } else {
-                          Dialogs.showErrorMessage('Select a payment method');
+                          uploadImage();
                         }
-                      } else {
-                        uploadImage();
-                      }
-                    }),
+                      }),
+                ),
               ),
-              Center(child: getProductName(productName)),
+              Center(
+                child: getProductName(provider.toUpperCase()),
+              ),
             ],
           ),
         ),
@@ -828,6 +927,16 @@ class _FormScreenState extends State<FormScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             verticalSpace(),
+            Row(
+              children: [
+                Expanded(
+                    child: Text(productName,
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700)))
+              ],
+            ),
+            smallVerticalSpace(),
             Container(
               decoration: BoxDecoration(
                   color: GREEN.withOpacity(0.05),
@@ -894,13 +1003,19 @@ class _FormScreenState extends State<FormScreen> {
             )),
             const Divider(),
             verticalSpace(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: button(
-                  text: 'I have sent the money',
-                  onTap: () => verifyPayment(true)),
+            AnimatedOpacity(
+              duration: const Duration(seconds: 15),
+              opacity: _opacity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: button(
+                    text: 'I have sent the money',
+                    onTap: () => verifyPayment(true)),
+              ),
             ),
-            Center(child: getProductName(productName)),
+            Center(
+              child: getProductName(provider.toUpperCase()),
+            ),
           ],
         ),
       ),
@@ -917,6 +1032,17 @@ class _FormScreenState extends State<FormScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             verticalSpace(),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(productName,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700)),
+                )
+              ],
+            ),
+            smallVerticalSpace(),
             Container(
               decoration: BoxDecoration(
                   color: GREEN.withOpacity(0.05),
@@ -983,17 +1109,19 @@ class _FormScreenState extends State<FormScreen> {
             )),
             const Divider(),
             verticalSpace(),
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: AnimatedOpacity(
-                duration: const Duration(seconds: 7),
-                opacity: _opacity,
+            AnimatedOpacity(
+              duration: const Duration(seconds: 15),
+              opacity: _opacity,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
                 child: button(
                     text: 'I have sent the money',
                     onTap: () => verifyPayment(true)),
               ),
             ),
-            Center(child: getProductName(productName)),
+            Center(
+              child: getProductName(provider.toUpperCase()),
+            ),
           ],
         ),
       ),
@@ -1088,32 +1216,30 @@ class _FormScreenState extends State<FormScreen> {
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
         paymentChannel: paymentChannel);
-    print('Chairman Chuks ===>$res');
 
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
-      if(paymentOption == PaymentOption.gateway){
-      setState(() {
-        if (paymentMethod.contains('transfer')) {
-          bodyType = 'transfer';
-          accountNumber = res['data']['account_number'];
-          bankName = res['data']['bank'];
-          reference = res['data']['reference'];
-        }
-        if (paymentMethod.contains('ussd')) {
-          bodyType = 'ussd';
-          ussdCode = res['data']['ussd_code'];
-          paymentCode = res['data']['payment_code'];
-          reference = res['data']['reference'];
-        }
-      });}
-      if(paymentOption ==PaymentOption.wallet){
-        setState(() =>
-          reference = res['data']['reference']);
+      if (paymentOption == PaymentOption.gateway) {
+        setState(() {
+          if (paymentMethod.contains('transfer')) {
+            bodyType = 'transfer';
+            accountNumber = res['data']['account_number'];
+            bankName = res['data']['bank'];
+            reference = res['data']['reference'];
+          }
+          if (paymentMethod.contains('ussd')) {
+            bodyType = 'ussd';
+            ussdCode = res['data']['ussd_code'];
+            paymentCode = res['data']['payment_code'];
+            reference = res['data']['reference'];
+          }
+        });
+      }
+      if (paymentOption == PaymentOption.wallet) {
+        setState(() => reference = res['data']['reference']);
         getPurchaseInfo(false);
-
       }
     }
   }
@@ -1132,7 +1258,7 @@ class _FormScreenState extends State<FormScreen> {
         publicKey: widget.publicKey,
         payload: purchaseData,
         reference: reference);
-print(res);
+    print(res);
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
@@ -1239,6 +1365,7 @@ print(res);
             purchaseData['image'] = body['data']['file_url'];
             purchaseData['identification_url'] = body['data']['file_url'];
             purchaseData['image_url'] = body['data']['file_url'];
+            purchaseData['national_id_image'] = body['data']['file_url'];
             completePurchase();
           });
         });

@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-
 import '../const.dart';
 import '../theme.dart';
 import 'buttons.dart';
@@ -152,7 +150,7 @@ class Dialogs {
 
   static Future<void> showLoading({context, text}) async {
     return showDialog(
-        barrierDismissible: false,
+        barrierDismissible: true,
         context: context,
         builder: (context) {
           return AlertDialog(

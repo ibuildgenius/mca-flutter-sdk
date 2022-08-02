@@ -9,8 +9,17 @@ PODS:
     - Flutter
   - image_picker_ios (0.0.1):
     - Flutter
+  - package_info_plus (0.4.5):
+    - Flutter
   - permission_handler_apple (9.0.4):
     - Flutter
+  - Sentry (7.22.0):
+    - Sentry/Core (= 7.22.0)
+  - Sentry/Core (7.22.0)
+  - sentry_flutter (0.0.1):
+    - Flutter
+    - FlutterMacOS
+    - Sentry (~> 7.22.0)
   - Toast (4.0.0)
   - video_compress (0.3.0):
     - Flutter
@@ -21,11 +30,14 @@ DEPENDENCIES:
   - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - geolocator_apple (from `.symlinks/plugins/geolocator_apple/ios`)
   - image_picker_ios (from `.symlinks/plugins/image_picker_ios/ios`)
+  - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - video_compress (from `.symlinks/plugins/video_compress/ios`)
 
 SPEC REPOS:
   trunk:
+    - Sentry
     - Toast
 
 EXTERNAL SOURCES:
@@ -39,8 +51,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/geolocator_apple/ios"
   image_picker_ios:
     :path: ".symlinks/plugins/image_picker_ios/ios"
+  package_info_plus:
+    :path: ".symlinks/plugins/package_info_plus/ios"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  sentry_flutter:
+    :path: ".symlinks/plugins/sentry_flutter/ios"
   video_compress:
     :path: ".symlinks/plugins/video_compress/ios"
 
@@ -50,7 +66,10 @@ SPEC CHECKSUMS:
   fluttertoast: 16fbe6039d06a763f3533670197d01fc73459037
   geolocator_apple: cc556e6844d508c95df1e87e3ea6fa4e58c50401
   image_picker_ios: b786a5dcf033a8336a657191401bfdf12017dabb
+  package_info_plus: 6c92f08e1f853dc01228d6f553146438dafcd14e
   permission_handler_apple: 44366e37eaf29454a1e7b1b7d736c2cceaeb17ce
+  Sentry: 30b51086ca9aac23337880152e95538f7e177f7f
+  sentry_flutter: eaca55af5c951f4be6c4b1daddce1744c37d8476
   Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   video_compress: fce97e4fb1dfd88175aa07d2ffc8a2f297f87fbe
 

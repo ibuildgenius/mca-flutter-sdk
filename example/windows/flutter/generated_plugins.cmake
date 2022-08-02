@@ -5,6 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   geolocator_windows
   permission_handler_windows
+  sentry_flutter
 )
 
 set(PLUGIN_BUNDLED_LIBRARIES)
