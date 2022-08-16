@@ -17,9 +17,6 @@ class WebServices {
   static const String submitInspectionUrl = '$_baseUrl/sdk/inspections/vehicle';
   static const String inspectionInfo = '$_baseUrl/sdk/inspection-info';
 
-  static const String productId = 'a72c4e3c-e868-4782-bb35-df6e3344ae6c';
-  static const String userId = 'olakunle@mycovergenius.com';
-
   static initialiseSdk(
       {required String publicKey,
       List? productId,
@@ -41,7 +38,8 @@ class WebServices {
           "debit_wallet_reference": reference
         };
       }
-
+print('=======> Initi data $data');
+print(publicKey);
       return await ApiScheme.initialisePostRequest(
           url: _initialiseSdkUrl, data: data, token: publicKey);
     }
@@ -136,6 +134,7 @@ class WebServices {
       "payment_channel": paymentChannel,
     };
 
+print(data);
     return await ApiScheme.initialisePostRequest(
         url: _initiatePurchaseUrl,
         data: data,

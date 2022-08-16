@@ -1,5 +1,4 @@
 
-//Images Assets
 import 'package:flutter/material.dart';
 
 const String insight = 'assets/images/insight.png';

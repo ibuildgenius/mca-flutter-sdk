@@ -1,16 +1,12 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:http/http.dart' as http;
 import 'package:mca_flutter_sdk/src/services/services.dart';
 import 'package:video_compress/video_compress.dart';
-
 import '../const.dart';
-import '../services/api_scheme.dart';
 import '../services/location_service.dart';
 import '../theme.dart';
 import '../widgets/dialogs.dart';
@@ -515,11 +511,6 @@ class _InspectionScreenState extends State<InspectionScreen>
   }
 
   submitInspection(context) async {
-    print('submitting');
-
-
-    // policy_id: null, inspection_type: vehicle, reference: null,
-
     var response = await WebServices.inspection(
         token: widget.token,
         businessId:'businessId',
@@ -548,7 +539,6 @@ class _InspectionScreenState extends State<InspectionScreen>
       Navigator.pop(context);
       response.stream.transform(utf8.decoder).listen((value) {
         var body = jsonDecode(value);
-        print(body['responseText']);
         Dialogs.showErrorMessage(body['responseText'].toString());
       });
     }
@@ -588,33 +578,6 @@ class _InspectionScreenState extends State<InspectionScreen>
     var response = await WebServices.uploadFile(
         context, 'businessId', Vid, widget.token,fileType: 'video');
 
-    // Map<String, String> headers = {
-    //   "Accept": "application/json",
-    //   "Authorization": "Bearer " + token
-    // };
-    //
-    // var uri = Uri.parse(WebServices.uploadUrl);
-    //
-    // var request = http.MultipartRequest("POST", uri);
-    //
-    // await VideoCompress.setLogLevel(0);
-    // final MediaInfo? video = await VideoCompress.compressVideo(
-    //   videoFile!.path,
-    //   quality: VideoQuality.LowQuality,
-    //   deleteOrigin: false,
-    //   includeAudio: true,
-    // );
-    // File Vid = File(video!.path.toString());
-    //
-    // request.files.add(await http.MultipartFile.fromPath('file', Vid.path));
-    //
-    // request.fields['fileType'] = 'video';
-    // request.headers.addAll(headers);
-    //
-    // var response = await request.send();
-
-    print('uoploading');
-    print(response.reasonPhrase);
 
     if (response.statusCode.toString() == '200' ||
         response.statusCode.toString() == '201') {

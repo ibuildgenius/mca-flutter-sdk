@@ -31,6 +31,8 @@ class PhoneNumberValidator {
   }
 }
 
+
+
 class BVNValidator {
   static String? validate(String value,{error}) {
     if (value.isEmpty) {

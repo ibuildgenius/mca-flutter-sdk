@@ -37,7 +37,7 @@ class _DemoScreenState extends State<DemoScreen> {
 
   boot() async {
     cameras = await availableCameras();
-    Future.delayed(const Duration(seconds: 6), () {
+    Future.delayed(const Duration(seconds: 5), () {
       setState(() {
         _opacity = 1.0;
         go = true;
@@ -132,7 +132,7 @@ class _DemoScreenState extends State<DemoScreen> {
                         const SizedBox(width: 10),
                         Expanded(
                           child: AnimatedOpacity(
-                            duration: const Duration(seconds: 7),
+                            duration: const Duration(seconds: 6),
                             opacity: _opacity,
                             child: InkWell(
                               onTap: () {

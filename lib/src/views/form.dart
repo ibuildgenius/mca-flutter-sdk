@@ -17,8 +17,6 @@ import '../widgets/common.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
 
-//inspectable
-
 class FormScreen extends StatefulWidget {
   const FormScreen(
       {Key? key,
@@ -65,6 +63,7 @@ class _FormScreenState extends State<FormScreen> {
   String productId = '';
   String businessId = '';
   String price = '';
+  String calcPrice = '';
   String paymentMethod = '';
   String provider = '';
   String bankCode = '';
@@ -177,6 +176,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   getList(url) async {
+    print(url);
     if (url != null) {
       var response = await WebServices.getListData(url, widget.publicKey);
       if (response['responseText']
@@ -230,9 +230,23 @@ class _FormScreenState extends State<FormScreen> {
 
   var listData;
 
+  getUrl(url) {
+    if (url.toString() != 'null') {
+      if (url.toString().contains('make') && url.toString().contains('year')) {
+        return '$url${'2000'}';
+      } else if (url.toString().contains('model')) {
+        return '$url?year=2014&make=TOYOTA';
+      } else {
+        return url;
+      }
+    }
+  }
+
   Future<List> getListData(url) async {
     if (url != null) {
-      var response = await WebServices.getListData(url, widget.publicKey);
+      var response =
+          await WebServices.getListData(getUrl(url), widget.publicKey);
+
       return listData = response['data'];
     } else {
       return [];
@@ -393,17 +407,32 @@ class _FormScreenState extends State<FormScreen> {
       padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
       child: Column(
         children: [
-          verticalSpace(),
-          Row(
-            children: [
-              Expanded(
-                child: Text(productName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontSize: 15, fontWeight: FontWeight.w700)),
-              )
-            ],
-          ),
+          verticalSpace(height: 10),
+          if (widget.publicKey.toString().toLowerCase().contains('test'))
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.amberAccent,
+                      borderRadius: BorderRadius.circular(5)),
+                  child: const Padding(
+                    padding: EdgeInsets.fromLTRB(12, 2, 12, 2),
+                    child: Text('Test',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: DARK,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700)),
+                  ),
+                ),
+              ],
+            ),
+          verticalSpace(height: 5),
+          Text(productName,
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
           smallVerticalSpace(),
           Container(
             decoration: BoxDecoration(
@@ -512,6 +541,108 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  var contentFormField = <Widget>[];
+  final contentTitleController = <TextEditingController>[];
+  final contentDescController = <TextEditingController>[];
+
+  Widget contentFormCard() {
+    var _contentTitleController = TextEditingController();
+    contentTitleController.add(_contentTitleController);
+    var _contentDescController = TextEditingController();
+    contentDescController.add(_contentDescController);
+
+    return Row(
+      children: [
+        Expanded(
+          child: InputFormField(
+            label: "Object",
+            controller: _contentTitleController,
+            // validator: (value) => FieldValidator.validate(value),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Expanded(
+          child: InputFormField(
+            label: "How many",
+            controller: _contentDescController,
+            // validator: (value) => FieldValidator.validate(value),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildContentForm(BuildContext context) {
+    // contentFormField.add(contentFormCard());
+    return Padding(
+      padding: const EdgeInsets.all(30.0),
+      child: Stack(
+        children: [
+          Container(
+            decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey, width: 1.5),
+                borderRadius: BorderRadius.circular(10),
+                shape: BoxShape.rectangle),
+            padding: const EdgeInsets.all(10),
+            margin: const EdgeInsets.symmetric(vertical: 10),
+            child: Scrollbar(
+              child: ListView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: contentFormField.length,
+                itemBuilder: (BuildContext context, int index) {
+                  return Row(
+                    children: [
+                      Expanded(child: contentFormField[index]),
+                      const SizedBox(width: 5),
+                      if (contentFormField.length > 1)
+                        InkWell(
+                          onTap: () {
+                            contentFormField.removeAt(index);
+                            setState(() {});
+                          },
+                          child: const Icon(Icons.remove_circle,
+                              size: 20, color: Colors.red),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+          Positioned(
+              bottom: 0,
+              right: 8,
+              child: InkWell(
+                onTap: () =>
+                    setState(() => contentFormField.add(contentFormCard())),
+                child: Container(
+                    decoration: BoxDecoration(
+                        color: Colors.green,
+                        borderRadius: BorderRadius.circular(3)),
+                    child: Padding(
+                      padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+                      child: Row(
+                        children: const [
+                          Icon(Icons.add_circle, size: 15, color: Colors.white),
+                          Padding(
+                              padding: EdgeInsets.all(4.0),
+                              child: Text(
+                                'Add Item',
+                                style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w400,
+                                    color: Colors.white),
+                              )),
+                        ],
+                      ),
+                    )),
+              )),
+        ],
+      ),
+    );
+  }
+
   form(data) {
     return ListView.separated(
         separatorBuilder: (c, i) => smallVerticalSpace(),
@@ -519,20 +650,10 @@ class _FormScreenState extends State<FormScreen> {
         shrinkWrap: true,
         itemBuilder: (c, i) {
           var item = data[i];
-          if (item['data_url'].toString() != 'null') {
-            if (item['data_url'].toString().contains('make') &&
-                item['data_url'].toString().contains('year')) {
-              getList('${item['data_url']}2014');
-            } else if (item['data_url'].toString().contains('model')) {
-              getList('${item['data_url']}?year=2014&make=TOYOTA');
-            } else {
-              getList(item['data_url']);
-            }
-          }
           purchaseData['product_id'] = productId;
           purchaseData['amount'] = price;
           purchaseData['vehicle_registration_number'] = 'AKD91HR';
-          final controller = _getControllerOf(item['name'],
+          final controller = _getControllerOf(item['name'].toString(),
               initValue: getInitialValue(item['label'].toString()));
 
           return Column(
@@ -579,13 +700,20 @@ class _FormScreenState extends State<FormScreen> {
                 child: InputFormField(
                     controller: controller,
                     onChanged: (value) {
-                      purchaseData[item['name']] = controller.text;
+
                       if (item['name'].toString().contains('cost') ||
-                          item['name'] == 'vehicle_value' ||
-                          item['data_type'] == 'number') {
-                        if (controller.text.isNotEmpty) {
-                          item['name'] = int.parse(controller.text);
-                        }
+                          item['name'] == 'vehicle_value'||
+                          item['name'] == 'vehicle_cost'||
+                          item['name'] == 'payment_plan') {
+                        purchaseData[item['name']] = int.parse(controller.text);
+                      }if (
+                          item['name'] == 'vehicle_registration_number') {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      print(purchaseData['vehicle_registration_number'].runtimeType);
+
+                      if (item['name'].toString().toLowerCase().contains('address')) {
+                        purchaseData[item['name']] = controller.text.toString();
                       }
 
                       if (item['name'].toString().contains('email')) {
@@ -777,10 +905,10 @@ class _FormScreenState extends State<FormScreen> {
                             text: 'Pay ',
                             style: TextStyle(fontSize: 12, color: DARK)),
                         TextSpan(
-                            text: productDetail['data']['productDetails'][0]
+                            text:calcPrice==''? productDetail['data']['productDetails'][0]
                                     ['is_dynamic_pricing']
                                 ? '$price%'
-                                : 'NGN$price',
+                                : 'NGN$price':'NGN$calcPrice',
                             style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
@@ -845,30 +973,27 @@ class _FormScreenState extends State<FormScreen> {
                             'Select any bank to generate USSD', 'ussd'),
                       ],
                     ),
-              AnimatedOpacity(
-                duration: const Duration(seconds: 15),
-                opacity: _opacity,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 20.0),
-                  child: button(
-                      text: 'Proceed',
-                      onTap: () async {
-                        if (stage == PurchaseStage.payment) {
-                          if (paymentMethod != '') {
-                            purchaseData['product_id'] = productId;
-                            if (paymentMethod == 'ussd' && !enabledUssd) {
-                              setState(() => enabledUssd = true);
-                            } else {
-                              makePayment();
-                            }
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 20.0),
+                child: button(
+                    text: 'Proceed',
+                    onTap: () async {
+                      print("I am here");
+                      if (stage == PurchaseStage.payment) {
+                        if (paymentMethod != '') {
+                          purchaseData['product_id'] = productId;
+                          if (paymentMethod == 'ussd' && !enabledUssd) {
+                            setState(() => enabledUssd = true);
                           } else {
-                            Dialogs.showErrorMessage('Select a payment method');
+                            makePayment();
                           }
                         } else {
-                          uploadImage();
+                          Dialogs.showErrorMessage('Select a payment method');
                         }
-                      }),
-                ),
+                      } else {
+                        uploadImage();
+                      }
+                    }),
               ),
               Center(
                 child: getProductName(provider.toUpperCase()),
@@ -917,10 +1042,10 @@ class _FormScreenState extends State<FormScreen> {
                           text: 'Pay ',
                           style: TextStyle(fontSize: 12, color: DARK)),
                       TextSpan(
-                          text: productDetail['data']['productDetails'][0]
+                          text:calcPrice==''? productDetail['data']['productDetails'][0]
                                   ['is_dynamic_pricing']
                               ? '$price%'
-                              : 'NGN$price',
+                              : 'NGN$price':'NGN$calcPrice',
                           style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -1023,10 +1148,10 @@ class _FormScreenState extends State<FormScreen> {
                           text: 'Pay ',
                           style: TextStyle(fontSize: 12, color: DARK)),
                       TextSpan(
-                          text: productDetail['data']['productDetails'][0]
+                          text:calcPrice==''? productDetail['data']['productDetails'][0]
                                   ['is_dynamic_pricing']
                               ? '$price%'
-                              : 'NGN$price',
+                              : 'NGN$price':'NGN$calcPrice',
                           style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.w600,
@@ -1178,14 +1303,18 @@ class _FormScreenState extends State<FormScreen> {
         instanceId: widget.instanceId,
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
-        paymentChannel: paymentChannel);
+        paymentChannel: paymentChannel
+    );
 
+print(res);
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
+      setState(()=> calcPrice = res['data']['amount'].toString());
       if (paymentOption == PaymentOption.gateway) {
         setState(() {
+
           if (paymentMethod.contains('transfer')) {
             bodyType = 'transfer';
             accountNumber = res['data']['account_number'];

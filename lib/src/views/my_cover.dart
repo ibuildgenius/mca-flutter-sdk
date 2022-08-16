@@ -7,6 +7,7 @@ import '../services/services.dart';
 import '../widgets/dialogs.dart';
 import 'all_products.dart';
 import 'failed.dart';
+import 'homeForm.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
 enum TransactionType { purchase, inspection }
@@ -19,15 +20,13 @@ class MyCoverAI {
       this.reference,
       required this.email,
       this.form,
-      this.typeOfInspection,
       required this.publicKey,
-      required this.transactionType,
+      this.transactionType,
       this.paymentOption});
 
   final BuildContext context;
   final PaymentOption? paymentOption;
   final TransactionType? transactionType;
-  final InspectionType? typeOfInspection;
   final String? reference;
   final String publicKey;
   final String email;
@@ -35,11 +34,14 @@ class MyCoverAI {
   final form;
 
   initialise() async {
+
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
     var payOption = paymentOption ?? PaymentOption.gateway;
-    var inspectionOption = typeOfInspection ?? InspectionType.vehicle;
+    var inspectionOption = InspectionType.vehicle;
+    var transactionOption = transactionType ?? TransactionType.purchase;
 
-    if (transactionType == TransactionType.inspection) {
+
+    if (transactionOption == TransactionType.inspection) {
       var response = await WebServices.getInspectionInfo(reference, publicKey);
 
       Navigator.pop(context);
@@ -63,12 +65,14 @@ class MyCoverAI {
                     )));
       }
     }
-    if (transactionType == TransactionType.purchase) {
+    if (transactionOption == TransactionType.purchase) {
       var response = await WebServices.initialiseSdk(
           productId: productId ?? [],
           publicKey: publicKey,
           reference: reference,
           paymentOption: payOption.toString().replaceAll('PaymentOption.', ''));
+
+      print(response);
       Navigator.pop(context);
 
       if (response is String) {

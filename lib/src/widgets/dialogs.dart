@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+
 import '../const.dart';
 import '../theme.dart';
 import 'buttons.dart';
@@ -17,7 +18,6 @@ class Dialogs {
         fontSize: 13.0);
   }
 
-
   static showNoticeSnackBar(message) {
     return Fluttertoast.showToast(
         msg: message.toString(),
@@ -28,7 +28,6 @@ class Dialogs {
         textColor: Colors.white,
         fontSize: 13.0);
   }
-
 
   static Future<void> showConfirmSubmitDialog(context,
       {okAction, cancelAction}) async {
@@ -101,7 +100,7 @@ class Dialogs {
                                 onTap: cancelAction,
                                 child: Container(
                                   padding:
-                                  const EdgeInsets.fromLTRB(5, 12, 5, 12),
+                                      const EdgeInsets.fromLTRB(5, 12, 5, 12),
                                   child: const Center(
                                     child: Text(
                                       'Restart',
@@ -120,7 +119,7 @@ class Dialogs {
                                 onTap: okAction,
                                 child: Container(
                                   padding:
-                                  const EdgeInsets.fromLTRB(5, 12, 5, 12),
+                                      const EdgeInsets.fromLTRB(5, 12, 5, 12),
                                   child: const Center(
                                     child: Text(
                                       'Review',
@@ -135,9 +134,7 @@ class Dialogs {
                             ),
                           ],
                         ),
-                        const SizedBox(
-                          height: 3,
-                        ),
+                        const SizedBox(height: 3),
                       ],
                     ),
                   ),
@@ -205,7 +202,7 @@ class Dialogs {
       message,
       reference,
       productName,
-        onCancel,
+      onCancel,
       onTap,
       isContinue = false}) async {
     return showDialog(
@@ -258,9 +255,8 @@ class Dialogs {
                               textAlign: TextAlign.center,
                               style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
-
                           Padding(
-                            padding: const EdgeInsets.fromLTRB(35,28,35,15),
+                            padding: const EdgeInsets.fromLTRB(35, 28, 35, 15),
                             child:
                                 successButton(text: 'Continue', onTap: onTap),
                           ),
@@ -286,8 +282,7 @@ class Dialogs {
                                 ),
                               ),
                             ),
-
-                            smallVerticalSpace(),
+                          smallVerticalSpace(),
                         ],
                       ),
                     ),
@@ -383,7 +378,7 @@ class Dialogs {
         });
   }
 
-  static Future<void> failedDialog({context,message}) async {
+  static Future<void> failedDialog({context, message}) async {
     return showDialog(
         barrierDismissible: false,
         context: context,
@@ -427,8 +422,7 @@ class Dialogs {
                             ),
                           ),
                           verticalSpace(),
-                           Text(
-                             message??'',
+                          Text(message ?? '',
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: 14)),
                           verticalSpace(),
