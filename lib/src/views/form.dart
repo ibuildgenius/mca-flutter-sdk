@@ -1338,13 +1338,13 @@ print(res);
 
   // getInspectionInfo
   completePurchase() async {
-    print('===Coo=mplete===>');
+    print('===Complete===>');
     Dialogs.showLoading(context: context, text: 'Submitting Purchase');
 
     if (purchaseData['title'] == null || purchaseData['title'] == '') {
       purchaseData['title'] = 'Chief';
     }
-
+   print( 'Regsyration type === ${purchaseData['vehicle_registration_number'].runtimeType}');
     var res = await WebServices.completePurchase(
         businessId: businessId,
         publicKey: widget.publicKey,
