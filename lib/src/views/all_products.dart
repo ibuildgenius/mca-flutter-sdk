@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../mca_flutter_sdk.dart';
 import '../const.dart';
@@ -38,7 +41,20 @@ class _AllProductsState extends State<AllProducts> {
         publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
         paymentOption: widget.paymentOption,
         reference: widget.reference, transactionType: TransactionType.purchase, email: widget.email);
-    mycover.initialise();
+    runZonedGuarded(() async {
+      await Sentry.init(
+            (options) {
+              options.dsn = 'https://b38daa0de05c465a9425719e8dccc46c@o1144473.ingest.sentry.io/6617317';
+              // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+              // We recommend adjusting this value in production.
+              options.tracesSampleRate = 0.5;
+        },
+      );
+      // Init your App.
+      mycover.initialise();
+    }, (exception, stackTrace) async {
+      await Sentry.captureException(exception, stackTrace: stackTrace);
+    });
   }
 
   getImages(String category) {
