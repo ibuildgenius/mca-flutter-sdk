@@ -72,7 +72,6 @@ class MyCoverAI {
           reference: reference,
           paymentOption: payOption.toString().replaceAll('PaymentOption.', ''));
 
-      print(response);
       Navigator.pop(context);
 
       if (response is String) {

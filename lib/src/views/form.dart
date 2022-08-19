@@ -12,7 +12,7 @@ import '../const.dart';
 import '../services/services.dart';
 import '../theme.dart';
 import '../validator.dart';
-import '../widgets/buttons.dart';
+import '../widgets/body_scaffold.dart';
 import '../widgets/common.dart';
 import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
@@ -67,6 +67,7 @@ class _FormScreenState extends State<FormScreen> {
   String paymentMethod = '';
   String provider = '';
   String bankCode = '';
+  String logo = '';
   var purchaseData = {};
   String bodyType = 'form';
   PaymentOption? paymentOption;
@@ -115,6 +116,7 @@ class _FormScreenState extends State<FormScreen> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
       price = productDetail['data']['productDetails'][0]['price'] ?? '';
+      logo = productDetail['data']['businessDetails']['logo'] ?? '';
       email = widget.email;
 
       paymentMethod = '';
@@ -147,17 +149,17 @@ class _FormScreenState extends State<FormScreen> {
     return selectBody(bodyType);
   }
 
-  initialiseSdk(context) {
-    final mycover = MyCoverAI(
-        context: context,
-        form: widget.form,
-        productId: [productId],
-        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
-        paymentOption: widget.paymentOption,
-        reference: reference,
-        transactionType: TransactionType.inspection,
-        email: widget.email);
-    mycover.initialise();
+  selectBody(bodyType) {
+    switch (bodyType) {
+      case 'form':
+        return inputBody();
+      case 'bank':
+        return payment();
+      case 'transfer':
+        return bankDetailCard();
+      case 'ussd':
+        return ussdCard();
+    }
   }
 
   openGallery() async {
@@ -175,96 +177,846 @@ class _FormScreenState extends State<FormScreen> {
     return null;
   }
 
-  getList(url) async {
-    print(url);
-    if (url != null) {
-      var response = await WebServices.getListData(url, widget.publicKey);
-      if (response['responseText']
-              .toString()
-              .toLowerCase()
-              .contains('vehicle category') ||
-          response['responseText']
-              .toString()
-              .toLowerCase()
-              .contains('vehicle type')) {
-        vehicleList = response['data'];
-      }
-      if (response['responseText'].toString().toLowerCase().contains('model')) {
-        vehicleModelList = response['data'];
-      }
-      if (response['responseText'].toString().toLowerCase().contains('make')) {
-        vehicleMakeList = response['data'];
-      }
-      if (response['responseText'].toString().toLowerCase().contains('state')) {
-        stateList = response['data'];
-      }
-      if (response['responseText']
-          .toString()
-          .toLowerCase()
-          .contains('insurance type')) {
-        insuranceList = response['data'];
-      }
-      if (response['responseText'].toString().toLowerCase().contains('title')) {
-        titleList = response['data'];
-      }
-      if (response['responseText'].toString().toLowerCase().contains('year')) {
-        yearList = response['data'];
-      }
-      if (response['responseText']
-          .toString()
-          .toLowerCase()
-          .contains('identity')) {
-        identityList = response['data'];
-      }
-      if (response['responseText'].toString().toLowerCase().contains('color')) {
-        colorList = response['data'];
-      }
-      if (response['responseText']
-          .toString()
-          .toLowerCase()
-          .contains('gender')) {
-        genderList = response['data'];
-      }
-    }
+  var make;
+
+  Widget inputBody() {
+    return FormBodyScaffold(
+      logo: logo,
+      text: 'Get Covered',
+      buttonAction: () {
+        FocusScope.of(context).unfocus();
+        if (_formKey.currentState!.validate()) {
+          if (initialPage < (chunks.length - 1)) {
+            initialPage++;
+            setState(() => pageData = chunks[initialPage]);
+          } else {
+            if (stage == PurchaseStage.payment &&
+                paymentOption == PaymentOption.gateway) {
+              setState(() => bodyType = 'bank');
+            } else if (stage == PurchaseStage.payment &&
+                paymentOption == PaymentOption.wallet) {
+              makePayment();
+            } else {
+              uploadImage();
+            }
+          }
+        }
+        // setState(() => bodyType = BodyType.detail);
+      },
+      backAction: () {
+        if (initialPage > 0) {
+          initialPage--;
+          setState(() => pageData = chunks[initialPage]);
+        } else {}
+        // bodyType == BodyType.introPage
+        //     ? Dialogs.confirmClose(context)
+        //     : setState(() => bodyType = BodyType.introPage);
+      },
+      body: Column(
+        children: [
+          verticalSpace(height: 10),
+          if (widget.publicKey.toString().toLowerCase().contains('test'))
+            Row(
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Expanded(
+                    child:
+                        Container(height: 0.7, color: GREY.withOpacity(0.3))),
+                Container(
+                  decoration: BoxDecoration(
+                      color: Colors.amberAccent.withOpacity(0.4),
+                      borderRadius: BorderRadius.circular(5)),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
+                    child: Text('TEST',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                            color: DARK.withOpacity(0.8),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400)),
+                  ),
+                ),
+                Expanded(
+                    child:
+                        Container(height: 0.7, color: GREY.withOpacity(0.3))),
+              ],
+            ),
+          verticalSpace(height: 5),
+          Text(productName,
+              textAlign: TextAlign.center,
+              style:
+                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+          smallVerticalSpace(),
+          Container(
+            decoration: BoxDecoration(
+                color: GREEN.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(3)),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+              child: Row(
+                children: const [
+                  Icon(Icons.info, color: GREEN),
+                  SizedBox(width: 15),
+                  Expanded(
+                    child: Text(
+                        'Enter details as it appear on legal documents.',
+                        style: TextStyle(fontSize: 12)),
+                  )
+                ],
+              ),
+            ),
+          ),
+          smallVerticalSpace(),
+          Align(
+              alignment: Alignment.topRight,
+              child: getProductName(provider.toUpperCase())),
+          verticalSpace(),
+          productDetail == null
+              ? const Center(child: CircularProgressIndicator.adaptive())
+              : forms == null
+                  ? const Center(child: CircularProgressIndicator.adaptive())
+                  : Form(
+                      key: _formKey,
+                      child: ListView.separated(
+                          physics: const NeverScrollableScrollPhysics(),
+                          separatorBuilder: (c, i) => smallVerticalSpace(),
+                          itemCount: 1,
+                          shrinkWrap: true,
+                          itemBuilder: (c, i) {
+                            return form(pageData);
+                          }),
+                    ),
+          if (pageData.length < 3) verticalSpace(height: height(context) * 0.1),
+
+          // Padding(
+          //   padding: const EdgeInsets.symmetric(vertical: 15.0),
+          //   child: button(
+          //       text: 'Get Covered',
+          //       onTap: () async {
+          //         FocusScope.of(context).unfocus();
+          //         if (_formKey.currentState!.validate()) {
+          //           if (initialPage < (chunks.length - 1)) {
+          //             initialPage++;
+          //             setState(() => pageData = chunks[initialPage]);
+          //           } else {
+          //             if (stage == PurchaseStage.payment &&
+          //                 paymentOption == PaymentOption.gateway) {
+          //               setState(() => bodyType = 'bank');
+          //             } else if (stage == PurchaseStage.payment &&
+          //                 paymentOption == PaymentOption.wallet) {
+          //               makePayment();
+          //             } else {
+          //               uploadImage();
+          //             }
+          //           }
+          //         }
+          //       }),
+          // ),
+          // Image.asset(myCover,
+          //     width: 170, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
+        ],
+      ),
+    );
+
+    //   Padding(
+    //   padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+    //   child: Column(
+    //     children: [
+    //       const SizedBox(height: 10),
+    //
+    //       Row(
+    //         mainAxisAlignment: MainAxisAlignment.center,
+    //         children: [
+    //           logo == ''
+    //               ? Image.asset(mca, height: 30, package: 'mca_flutter_sdk')
+    //               : Image.network(
+    //             logo,
+    //             height: 30,
+    //           ),
+    //         ],
+    //       ),
+    //       const SizedBox(height: 10),
+    //
+    //
+    //
+    //       const SizedBox(height: 10),
+    //       verticalSpace(),
+    //     ],
+    //   ),
+    // );
   }
 
-  var listData;
+  form(data) {
+    return ListView.separated(
+        physics: const NeverScrollableScrollPhysics(),
+        separatorBuilder: (c, i) => smallVerticalSpace(),
+        itemCount: data.length,
+        shrinkWrap: true,
+        itemBuilder: (c, i) {
+          var item = data[i];
+          purchaseData['product_id'] = productId;
+          purchaseData['amount'] = price;
+          purchaseData['vehicle_registration_number'] = 'AKD91HR';
+          final controller = _getControllerOf(item['name'].toString(),
+              initValue: getInitialValue(item['label'].toString()));
 
-  getUrl(url) {
-    if (url.toString() != 'null') {
-      if (url.toString().contains('make') && url.toString().contains('year')) {
-        return '$url${'2000'}';
-      } else if (url.toString().contains('model')) {
-        return '$url?year=2014&make=TOYOTA';
-      } else {
-        return url;
-      }
-    }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              textBoxTitle(item['label']),
+              InkWell(
+                onTap: () async {
+                  if (item['data_url'].toString() != 'null') {
+                    pickItem(await getListData(item['data_url'], make: make),
+                        item['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      purchaseData[item['name']] = controller.text;
+                      if (item['name'].contains('make')) {
+                        make = controller.text;
+                      }
+                    });
+                  } else if (item['label']
+                      .toString()
+                      .toLowerCase()
+                      .contains('date')) {
+                    _showDialog(CupertinoDatePicker(
+                      initialDateTime: DateTime.now(),
+                      mode: CupertinoDatePickerMode.date,
+                      use24hFormat: true,
+                      onDateTimeChanged: (DateTime newDate) {
+                        setState(() {
+                          controller.text = newDate.toString().substring(0, 10);
+                          purchaseData[item['name']] = controller.text;
+                        });
+                      },
+                    ));
+                  } else if (item['label']
+                      .toString()
+                      .toLowerCase()
+                      .contains('image')) {
+                    var selectedImage = await openGallery();
+                    if (selectedImage != null) {
+                      setState(() {
+                        _image = selectedImage;
+                        controller.text = _image!.path.toString();
+                      });
+                    }
+                  }
+                },
+                child: InputFormField(
+                    controller: controller,
+                    onChanged: (value) {
+                      print(item['name']);
+                      print(purchaseData[item['name']]);
+
+                      if (item['name'].toString().contains('cost') ||
+                          item['name'] == 'vehicle_value' ||
+                          item['name'] == 'vehicle_cost' ||
+                          item['name'] == 'payment_plan') {
+                        if (controller.text.isNotEmpty) {
+                          purchaseData[item['name']] =
+                              int.parse(controller.text);
+                        }
+                      }
+                      if (item['name'] == 'registration_number') {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+
+                      if (item['name']
+                          .toString()
+                          .toLowerCase()
+                          .contains('address')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+
+                      if (item['name'].toString().contains('email')) {
+                        email = controller.text;
+                      }
+                      if (item['name'].toString().contains('first_name')) {
+                        firstName = controller.text;
+                      }
+                      if (item['name'].toString().contains('phone')) {
+                        phone = controller.text;
+                      }
+                      if (item['name'].toString().contains('last_name')) {
+                        lastName = controller.text;
+                      }
+                      if (item['name'].toString().contains('other_names')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('occupation')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('town')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('owner_title')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('chassis_number')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('engine_number')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                    },
+                    keyboardType: (item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('phone') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('cost') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('price') ||
+                            item['data_type']
+                                .toString()
+                                .toLowerCase()
+                                .contains('number') ||
+                            item['name']
+                                .toString()
+                                .toLowerCase()
+                                .contains('value') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('bvn'))
+                        ? TextInputType.phone
+                        : TextInputType.text,
+                    textCapitalization:
+                        item['label'].toString().toLowerCase().contains('email')
+                            ? TextCapitalization.none
+                            : item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('number')
+                                ? TextCapitalization.characters
+                                : TextCapitalization.sentences,
+                    inputFormatters: <TextInputFormatter>[
+                      (item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('phone') ||
+                              item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('cost') ||
+                              item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('price') ||
+                              item['label']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('bvn'))
+                          ? FilteringTextInputFormatter.digitsOnly
+                          : FilteringTextInputFormatter.deny(RegExp(r'[/\\]'))
+                    ],
+                    enabled: item['data_url'].toString() != 'null' ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('date') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('image') ||
+                            item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('product')
+                        ? false
+                        : true,
+                    hint: item['description'],
+                    prefixIcon: item['label']
+                            .toString()
+                            .toLowerCase()
+                            .contains('image')
+                        ? Row(
+                            mainAxisAlignment: MainAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const SizedBox(width: 10),
+                              Container(
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(3),
+                                      border: Border.all(color: GREY)),
+                                  child: const Padding(
+                                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                    child: Text(
+                                      'Select Image',
+                                      style: TextStyle(fontSize: 12),
+                                    ),
+                                  )),
+                              const SizedBox(width: 10),
+                            ],
+                          )
+                        : null,
+                    suffixIcon: item['data_url'].toString() != 'null'
+                        ? const Icon(Icons.expand_more)
+                        : item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('date')
+                            ? const Icon(Icons.event_note)
+                            : null,
+                    validator: (value) {
+                      var label = item['label'].toString().toLowerCase();
+                      if (label.contains('phone')) {
+                        return PhoneNumberValidator.validate(value,
+                            error: item['errorMsg']);
+                      } else if (label.contains('email')) {
+                        return EmailValidator.validate(value,
+                            error: item['errorMsg']);
+                      } else if (label.contains('bvn')) {
+                        return BVNValidator.validate(value,
+                            error: item['errorMsg']);
+                      } else {
+                        return FieldValidator.validate(value,
+                            error: item['errorMsg']);
+                      }
+                    }),
+              ),
+            ],
+          );
+        });
   }
 
-  Future<List> getListData(url) async {
-    if (url != null) {
-      var response =
-          await WebServices.getListData(getUrl(url), widget.publicKey);
+  payment() {
+    return FormBodyScaffold(
+      logo: logo,
+      text: 'Get Covered',
+      buttonAction: () {
+        print("I am here");
+        if (stage == PurchaseStage.payment) {
+          if (paymentMethod != '') {
+            purchaseData['product_id'] = productId;
+            if (paymentMethod == 'ussd' && !enabledUssd) {
+              setState(() => enabledUssd = true);
+            } else {
+              makePayment();
+            }
+          } else {
+            Dialogs.showErrorMessage('Select a payment method');
+          }
+        } else {
+          uploadImage();
+        }
 
-      return listData = response['data'];
-    } else {
-      return [];
-    }
+        // setState(() => bodyType = BodyType.detail);
+      },
+      backAction: () {
+        bodyType = 'form';
+        // initialPage--;
+        // pageData = chunks[initialPage];
+        setState(() {});
+        // bodyType == BodyType.introPage
+        //     ? Dialogs.confirmClose(context)
+        //     : setState(() => bodyType = BodyType.introPage);
+      },
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          verticalSpace(),
+          Row(
+            children: [
+              Expanded(
+                  child: Text(productName,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700)))
+            ],
+          ),
+          smallVerticalSpace(),
+          Container(
+            decoration: BoxDecoration(
+                color: GREEN.withOpacity(0.05),
+                borderRadius: BorderRadius.circular(3)),
+            child: Padding(
+              padding:
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Text(email, style: const TextStyle(fontSize: 12)),
+                  if (calcPrice != '')
+                    RichText(
+                        text: TextSpan(children: [
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: 'NGN$calcPrice',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
+                ],
+              ),
+            ),
+          ),
+          verticalSpace(),
+          paymentMethod == 'ussd' && enabledUssd
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    !isBankSelected
+                        ? ussdProvidersCard()
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () =>
+                                    setState(() => isBankSelected = false),
+                                child: const InputFormField(
+                                    enabled: false,
+                                    hint: 'Search for bank of your choice',
+                                    prefixIcon: Icon(Icons.search),
+                                    textCapitalization:
+                                        TextCapitalization.sentences,
+                                    keyboardType: TextInputType.text),
+                              ),
+                              const SizedBox(height: 5),
+                              const Text('You want to make payment with USSD',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: PRIMARY,
+                                      fontWeight: FontWeight.w600)),
+                              verticalSpace(),
+                              const Divider(),
+                              verticalSpace(),
+                              Text(bankName,
+                                  style: const TextStyle(
+                                      fontSize: 23,
+                                      color: DARK,
+                                      fontWeight: FontWeight.w600)),
+                              Text('CODE - $bankCode',
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      color: DARK,
+                                      fontWeight: FontWeight.w400)),
+                              verticalSpace(),
+                            ],
+                          ),
+                  ],
+                )
+              : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text('Select Payment method',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        )),
+                    const SizedBox(height: 5),
+                    const Text('Choose an option to proceed',
+                        style: TextStyle(fontSize: 12, color: DARK)),
+                    verticalSpace(),
+                    paymentMethodCard(transfer, 'Transfer',
+                        'Send to a bank Account', 'bank transfer'),
+                    verticalSpace(),
+                    paymentMethodCard(ussd, 'USSD',
+                        'Select any bank to generate USSD', 'ussd'),
+                  ],
+                ),
+          SizedBox(height: height(context) * 0.1),
+          Center(
+            child: getProductName(provider.toUpperCase()),
+          ),
+        ],
+      ),
+    );
   }
 
-  getUssdProvider() async {
-    var response = await WebServices.getUssdProvider(widget.publicKey);
-    if (response is String) {
-      log(response);
-    } else {
-      setState(() {
-        ussdProviders = response['data'];
-        searchList = ussdProviders;
-        bankName = searchList[0]['bank_name'];
-        bankCode = searchList[0]['type'];
-      });
-    }
+  bankDetailCard() {
+    return FormBodyScaffold(
+      logo: logo,
+      text: 'I have sent the money',
+      buttonAction: () {
+        verifyPayment(true);
+      },
+      backAction: () {
+        bodyType = 'form';
+        // initialPage--;
+        // pageData = chunks[initialPage];
+        setState(() {});
+        // bodyType == BodyType.introPage
+        //     ? Dialogs.confirmClose(context)
+        //     : setState(() => bodyType = BodyType.introPage);
+      },
+      body: Container(
+        decoration:
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            verticalSpace(),
+            Row(
+              children: [
+                Expanded(
+                    child: Text(productName,
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(
+                            fontSize: 15, fontWeight: FontWeight.w700)))
+              ],
+            ),
+            smallVerticalSpace(),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(email, style: const TextStyle(fontSize: 12)),
+                    RichText(
+                        text: TextSpan(children: [
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: calcPrice == ''
+                              ? productDetail['data']['productDetails'][0]
+                                      ['is_dynamic_pricing']
+                                  ? '$price%'
+                                  : 'NGN$price'
+                              : 'NGN$calcPrice',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
+                  ],
+                ),
+              ),
+            ),
+            verticalSpace(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 5),
+                const Text('Send to the Account No. below',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: PRIMARY,
+                        fontWeight: FontWeight.w600)),
+                verticalSpace(),
+                const Divider(),
+                verticalSpace(),
+                Text(bankName,
+                    style: const TextStyle(
+                        fontSize: 25,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+                const Text('MyCover.ai',
+                    style: TextStyle(
+                        fontSize: 25,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+                verticalSpace(height: 10.0),
+                Text(accountNumber,
+                    style: const TextStyle(
+                        fontSize: 28,
+                        color: DARK,
+                        fontWeight: FontWeight.w700)),
+                verticalSpace(),
+                const Divider(),
+              ],
+            ),
+            const Divider(),
+            verticalSpace(),
+            // AnimatedOpacity(
+            //   duration: const Duration(seconds: 15),
+            //   opacity: _opacity,
+            //   child: Padding(
+            //     padding: const EdgeInsets.symmetric(vertical: 20.0),
+            //     child: button(
+            //         text: 'I have sent the money',
+            //         onTap: () => verifyPayment(true)),
+            //   ),
+            // ),
+            Center(
+              child: getProductName(provider.toUpperCase()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  ussdCard() {
+    return FormBodyScaffold(
+      logo: logo,
+      text: 'I have sent the money',
+      buttonAction: () {
+        verifyPayment(true);
+      },
+      backAction: () {
+        bodyType = 'form';
+        // initialPage--;
+        // pageData = chunks[initialPage];
+        setState(() {});
+        // bodyType == BodyType.introPage
+        //     ? Dialogs.confirmClose(context)
+        //     : setState(() => bodyType = BodyType.introPage);
+      },
+      body: Container(
+        decoration:
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            verticalSpace(),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(productName,
+                      textAlign: TextAlign.end,
+                      style: const TextStyle(
+                          fontSize: 15, fontWeight: FontWeight.w700)),
+                )
+              ],
+            ),
+            smallVerticalSpace(),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(email, style: const TextStyle(fontSize: 12)),
+                    if (calcPrice != '')
+                      RichText(
+                          text: TextSpan(children: [
+                        const TextSpan(
+                            text: 'Pay ',
+                            style: TextStyle(fontSize: 12, color: DARK)),
+                        TextSpan(
+                            text: 'NGN$calcPrice',
+                            style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: PRIMARY))
+                      ]))
+                  ],
+                ),
+              ),
+            ),
+            verticalSpace(),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                const SizedBox(height: 5),
+                const Text('Use below USSD Code to make payment',
+                    style: TextStyle(
+                        fontSize: 13,
+                        color: PRIMARY,
+                        fontWeight: FontWeight.w600)),
+                verticalSpace(),
+                const Divider(),
+                verticalSpace(),
+                Text(bankName,
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+                Text('CODE - $paymentCode',
+                    style: const TextStyle(
+                        fontSize: 20,
+                        color: DARK,
+                        fontWeight: FontWeight.w600)),
+                verticalSpace(),
+                Text(ussdCode,
+                    style: const TextStyle(
+                        fontSize: 28,
+                        color: DARK,
+                        fontWeight: FontWeight.w700)),
+                verticalSpace(),
+                const Divider(),
+              ],
+            ),
+            const Divider(),
+            verticalSpace(),
+            // AnimatedOpacity(
+            //   duration: const Duration(seconds: 15),
+            //   opacity: _opacity,
+            //   child: Padding(
+            //     padding: const EdgeInsets.symmetric(vertical: 20.0),
+            //     child: button(
+            //         text: 'I have sent the money',
+            //         onTap: () => verifyPayment(true)),
+            //   ),
+            // ),
+            Center(
+              child: getProductName(provider.toUpperCase()),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget paymentMethodCard(image, title, subtitle, value) {
+    return InkWell(
+      onTap: () => setState(() => paymentMethod = value),
+      child: Container(
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            border: paymentMethod == value
+                ? Border.all(color: PRIMARY, width: 1.5)
+                : Border.all(color: GREY.withOpacity(0.2), width: 0.7)),
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
+          child: Row(
+            children: [
+              Image.asset(image,
+                  height: 45, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
+              const SizedBox(width: 15),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title,
+                        style: const TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                        )),
+                    const SizedBox(height: 3),
+                    Text(subtitle,
+                        style: const TextStyle(fontSize: 12, color: DARK)),
+                  ],
+                ),
+              ),
+              Container(
+                height: 12,
+                width: 12,
+                decoration: BoxDecoration(
+                    color: WHITE,
+                    shape: BoxShape.circle,
+                    border: paymentMethod == value
+                        ? Border.all(color: PRIMARY, width: 4)
+                        : Border.all(color: GREY, width: 1)),
+              )
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   final Map<String, TextEditingController> _controllerMap = Map();
@@ -332,6 +1084,58 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  bool isBankSelected = false;
+
+  ussdProvidersCard() {
+    print(searchList);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 22),
+      decoration:
+          BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(15)),
+      height: MediaQuery.of(context).size.height * 0.5,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const SizedBox(height: 20),
+          InputFormField(
+              padding: 10.0,
+              onChanged: (value) {
+                searchTerm = value;
+                search();
+              },
+              hint: 'Search for bank of your choice',
+              prefixIcon: const Icon(Icons.search),
+              textCapitalization: TextCapitalization.sentences,
+              suffixIcon: InkWell(
+                  onTap: () => setState(() => isBankSelected = true),
+                  child: Icon(Icons.close)),
+              keyboardType: TextInputType.text),
+          Expanded(
+              child: ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 30),
+                  itemCount: searchList.length,
+                  shrinkWrap: true,
+                  itemBuilder: (c, i) {
+                    var item = searchList[i];
+                    return ListTile(
+                      title: Text(item['bank_name'],
+                          style: const TextStyle(
+                              fontWeight: FontWeight.w500, fontSize: 16)),
+                      onTap: () {
+                        // Navigator.pop(context);
+                        setState(() {
+                          bankName = item['bank_name'];
+                          bankCode = item['type'];
+                          isBankSelected = true;
+                        });
+                      },
+                    );
+                  })),
+        ],
+      ),
+    );
+  }
+
   void openUssdProvider() => showModalBottomSheet(
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
@@ -397,113 +1201,6 @@ class _FormScreenState extends State<FormScreen> {
     } else {
       return '';
     }
-  }
-
-  Widget inputBody() {
-    return Expanded(
-        child: Container(
-      decoration:
-          BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-      padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-      child: Column(
-        children: [
-          verticalSpace(height: 10),
-          if (widget.publicKey.toString().toLowerCase().contains('test'))
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                      color: Colors.amberAccent,
-                      borderRadius: BorderRadius.circular(5)),
-                  child: const Padding(
-                    padding: EdgeInsets.fromLTRB(12, 2, 12, 2),
-                    child: Text('Test',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            color: DARK,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700)),
-                  ),
-                ),
-              ],
-            ),
-          verticalSpace(height: 5),
-          Text(productName,
-              textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-          smallVerticalSpace(),
-          Container(
-            decoration: BoxDecoration(
-                color: GREEN.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(3)),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-              child: Row(
-                children: const [
-                  Icon(Icons.info, color: GREEN),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: Text(
-                        'Enter details as it appear on legal documents.',
-                        style: TextStyle(fontSize: 12)),
-                  )
-                ],
-              ),
-            ),
-          ),
-          smallVerticalSpace(),
-          Align(
-              alignment: Alignment.topRight,
-              child: getProductName(provider.toUpperCase())),
-          verticalSpace(),
-          Expanded(
-            child: productDetail == null
-                ? const Center(child: CircularProgressIndicator.adaptive())
-                : forms == null
-                    ? const Center(child: CircularProgressIndicator.adaptive())
-                    : Form(
-                        key: _formKey,
-                        child: ListView.separated(
-                            separatorBuilder: (c, i) => smallVerticalSpace(),
-                            itemCount: 1,
-                            shrinkWrap: true,
-                            itemBuilder: (c, i) {
-                              return form(pageData);
-                            }),
-                      ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(vertical: 15.0),
-            child: button(
-                text: 'Get Covered',
-                onTap: () async {
-                  FocusScope.of(context).unfocus();
-                  if (_formKey.currentState!.validate()) {
-                    if (initialPage < (chunks.length - 1)) {
-                      initialPage++;
-                      setState(() => pageData = chunks[initialPage]);
-                    } else {
-                      if (stage == PurchaseStage.payment &&
-                          paymentOption == PaymentOption.gateway) {
-                        setState(() => bodyType = 'bank');
-                      } else if (stage == PurchaseStage.payment &&
-                          paymentOption == PaymentOption.wallet) {
-                        makePayment();
-                      } else {
-                        uploadImage();
-                      }
-                    }
-                  }
-                }),
-          ),
-          Image.asset(myCover,
-              width: 170, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
-        ],
-      ),
-    ));
   }
 
   void _showDialog(Widget child) {
@@ -643,625 +1340,113 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  form(data) {
-    return ListView.separated(
-        separatorBuilder: (c, i) => smallVerticalSpace(),
-        itemCount: data.length,
-        shrinkWrap: true,
-        itemBuilder: (c, i) {
-          var item = data[i];
-          purchaseData['product_id'] = productId;
-          purchaseData['amount'] = price;
-          purchaseData['vehicle_registration_number'] = 'AKD91HR';
-          final controller = _getControllerOf(item['name'].toString(),
-              initValue: getInitialValue(item['label'].toString()));
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              textBoxTitle(item['label']),
-              InkWell(
-                onTap: () async {
-                  if (item['data_url'].toString() != 'null') {
-                    pickItem(await getListData(item['data_url']), item['label'],
-                        onSelect: (value) {
-                      Navigator.pop(context);
-                      controller.text = value.toString();
-                      purchaseData[item['name']] = controller.text;
-                    });
-                  } else if (item['label']
-                      .toString()
-                      .toLowerCase()
-                      .contains('date')) {
-                    _showDialog(CupertinoDatePicker(
-                      initialDateTime: DateTime.now(),
-                      mode: CupertinoDatePickerMode.date,
-                      use24hFormat: true,
-                      onDateTimeChanged: (DateTime newDate) {
-                        setState(() {
-                          controller.text = newDate.toString().substring(0, 10);
-                          purchaseData[item['name']] = controller.text;
-                        });
-                      },
-                    ));
-                  } else if (item['label']
-                      .toString()
-                      .toLowerCase()
-                      .contains('image')) {
-                    var selectedImage = await openGallery();
-                    if (selectedImage != null) {
-                      setState(() {
-                        _image = selectedImage;
-                        controller.text = _image!.path.toString();
-                      });
-                    }
-                  }
-                },
-                child: InputFormField(
-                    controller: controller,
-                    onChanged: (value) {
-
-                      if (item['name'].toString().contains('cost') ||
-                          item['name'] == 'vehicle_value'||
-                          item['name'] == 'vehicle_cost'||
-                          item['name'] == 'payment_plan') {
-                        purchaseData[item['name']] = int.parse(controller.text);
-                      }if (
-                          item['name'] == 'vehicle_registration_number') {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      print(purchaseData['vehicle_registration_number'].runtimeType);
-
-                      if (item['name'].toString().toLowerCase().contains('address')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-
-                      if (item['name'].toString().contains('email')) {
-                        email = controller.text;
-                      }
-                      if (item['name'].toString().contains('first_name')) {
-                        firstName = controller.text;
-                      }
-                      if (item['name'].toString().contains('phone')) {
-                        phone = controller.text;
-                      }
-                      if (item['name'].toString().contains('last_name')) {
-                        lastName = controller.text;
-                      }
-                    },
-                    keyboardType: (item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('phone') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('cost') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('price') ||
-                            item['data_type']
-                                .toString()
-                                .toLowerCase()
-                                .contains('number') ||
-                            item['name']
-                                .toString()
-                                .toLowerCase()
-                                .contains('value') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('bvn'))
-                        ? TextInputType.phone
-                        : TextInputType.text,
-                    textCapitalization:
-                        item['label'].toString().toLowerCase().contains('email')
-                            ? TextCapitalization.none
-                            : item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('number')
-                                ? TextCapitalization.characters
-                                : TextCapitalization.sentences,
-                    inputFormatters: <TextInputFormatter>[
-                      (item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('phone') ||
-                              item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('cost') ||
-                              item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('price') ||
-                              item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('bvn'))
-                          ? FilteringTextInputFormatter.digitsOnly
-                          : FilteringTextInputFormatter.deny(RegExp(r'[/\\]'))
-                    ],
-                    enabled: item['data_url'].toString() != 'null' ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('date') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('image') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('product')
-                        ? false
-                        : true,
-                    hint: item['description'],
-                    prefixIcon: item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('image')
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(width: 10),
-                              Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(3),
-                                      border: Border.all(color: GREY)),
-                                  child: const Padding(
-                                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    child: Text(
-                                      'Select Image',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  )),
-                              const SizedBox(width: 10),
-                            ],
-                          )
-                        : null,
-                    suffixIcon: item['data_url'].toString() != 'null'
-                        ? const Icon(Icons.expand_more)
-                        : item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('date')
-                            ? const Icon(Icons.event_note)
-                            : null,
-                    validator: (value) {
-                      var label = item['label'].toString().toLowerCase();
-                      if (label.contains('phone')) {
-                        return PhoneNumberValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else if (label.contains('email')) {
-                        return EmailValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else if (label.contains('bvn')) {
-                        return BVNValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else {
-                        return FieldValidator.validate(value,
-                            error: item['errorMsg']);
-                      }
-                    }),
-              ),
-            ],
-          );
-        });
-  }
-
-  selectBody(bodyType) {
-    switch (bodyType) {
-      case 'form':
-        return inputBody();
-      case 'bank':
-        return payment();
-      case 'transfer':
-        return bankDetailCard();
-      case 'ussd':
-        return ussdCard();
+  getList(url) async {
+    if (url != null) {
+      var response = await WebServices.getListData(url, widget.publicKey);
+      if (response['responseText']
+              .toString()
+              .toLowerCase()
+              .contains('vehicle category') ||
+          response['responseText']
+              .toString()
+              .toLowerCase()
+              .contains('vehicle type')) {
+        vehicleList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('model')) {
+        vehicleModelList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('make')) {
+        vehicleMakeList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('state')) {
+        stateList = response['data'];
+      }
+      if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('insurance type')) {
+        insuranceList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('title')) {
+        titleList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('year')) {
+        yearList = response['data'];
+      }
+      if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('identity')) {
+        identityList = response['data'];
+      }
+      if (response['responseText'].toString().toLowerCase().contains('color')) {
+        colorList = response['data'];
+      }
+      if (response['responseText']
+          .toString()
+          .toLowerCase()
+          .contains('gender')) {
+        genderList = response['data'];
+      }
     }
   }
 
-  payment() {
-    return Expanded(
-      child: Container(
-        decoration:
-            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-        child: SingleChildScrollView(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              verticalSpace(),
-              Row(
-                children: [
-                  Expanded(
-                      child: Text(productName,
-                          textAlign: TextAlign.end,
-                          style: const TextStyle(
-                              fontSize: 15, fontWeight: FontWeight.w700)))
-                ],
-              ),
-              smallVerticalSpace(),
-              Container(
-                decoration: BoxDecoration(
-                    color: GREEN.withOpacity(0.05),
-                    borderRadius: BorderRadius.circular(3)),
-                child: Padding(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Text(email, style: const TextStyle(fontSize: 12)),
-                      RichText(
-                          text: TextSpan(children: [
-                        const TextSpan(
-                            text: 'Pay ',
-                            style: TextStyle(fontSize: 12, color: DARK)),
-                        TextSpan(
-                            text:calcPrice==''? productDetail['data']['productDetails'][0]
-                                    ['is_dynamic_pricing']
-                                ? '$price%'
-                                : 'NGN$price':'NGN$calcPrice',
-                            style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: PRIMARY))
-                      ]))
-                    ],
-                  ),
-                ),
-              ),
-              verticalSpace(),
-              paymentMethod == 'ussd' && enabledUssd
-                  ? Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        InkWell(
-                          onTap: openUssdProvider,
-                          child: const InputFormField(
-                              enabled: false,
-                              hint: 'Search for bank of your choice',
-                              prefixIcon: Icon(Icons.search),
-                              textCapitalization: TextCapitalization.sentences,
-                              keyboardType: TextInputType.text),
-                        ),
-                        const SizedBox(height: 5),
-                        const Text('You want to make payment with USSD',
-                            style: TextStyle(
-                                fontSize: 13,
-                                color: PRIMARY,
-                                fontWeight: FontWeight.w600)),
-                        verticalSpace(),
-                        const Divider(),
-                        verticalSpace(),
-                        Text(bankName,
-                            style: const TextStyle(
-                                fontSize: 23,
-                                color: DARK,
-                                fontWeight: FontWeight.w600)),
-                        Text('CODE - $bankCode',
-                            style: const TextStyle(
-                                fontSize: 20,
-                                color: DARK,
-                                fontWeight: FontWeight.w400)),
-                        verticalSpace(),
-                      ],
-                    )
-                  : Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        const Text('Select Payment method',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            )),
-                        const SizedBox(height: 5),
-                        const Text('Choose an option to proceed',
-                            style: TextStyle(fontSize: 12, color: DARK)),
-                        verticalSpace(),
-                        paymentMethodCard(transfer, 'Transfer',
-                            'Send to a bank Account', 'bank transfer'),
-                        verticalSpace(),
-                        paymentMethodCard(ussd, 'USSD',
-                            'Select any bank to generate USSD', 'ussd'),
-                      ],
-                    ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: button(
-                    text: 'Proceed',
-                    onTap: () async {
-                      print("I am here");
-                      if (stage == PurchaseStage.payment) {
-                        if (paymentMethod != '') {
-                          purchaseData['product_id'] = productId;
-                          if (paymentMethod == 'ussd' && !enabledUssd) {
-                            setState(() => enabledUssd = true);
-                          } else {
-                            makePayment();
-                          }
-                        } else {
-                          Dialogs.showErrorMessage('Select a payment method');
-                        }
-                      } else {
-                        uploadImage();
-                      }
-                    }),
-              ),
-              Center(
-                child: getProductName(provider.toUpperCase()),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
+  var listData;
+
+  getUrl(url, {make}) {
+    if (url.toString() != 'null') {
+      if (url.toString().contains('make') && url.toString().contains('year')) {
+        return '$url${'2000'}';
+      } else if (url.toString().contains('model')) {
+        return '$url?year=2014&make=$make';
+      } else {
+        return url;
+      }
+    }
   }
 
-  bankDetailCard() {
-    return Expanded(
-      child: Container(
-        decoration:
-            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            verticalSpace(),
-            Row(
-              children: [
-                Expanded(
-                    child: Text(productName,
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700)))
-              ],
-            ),
-            smallVerticalSpace(),
-            Container(
-              decoration: BoxDecoration(
-                  color: GREEN.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(3)),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(email, style: const TextStyle(fontSize: 12)),
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text:calcPrice==''? productDetail['data']['productDetails'][0]
-                                  ['is_dynamic_pricing']
-                              ? '$price%'
-                              : 'NGN$price':'NGN$calcPrice',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
-                  ],
-                ),
-              ),
-            ),
-            verticalSpace(),
-            Expanded(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 5),
-                const Text('Send to the Account No. below',
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: PRIMARY,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(),
-                const Divider(),
-                verticalSpace(),
-                Text(bankName,
-                    style: const TextStyle(
-                        fontSize: 25,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                const Text('MyCover.ai',
-                    style: TextStyle(
-                        fontSize: 25,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(height: 10.0),
-                Text(accountNumber,
-                    style: const TextStyle(
-                        fontSize: 28,
-                        color: DARK,
-                        fontWeight: FontWeight.w700)),
-                verticalSpace(),
-                const Divider(),
-              ],
-            )),
-            const Divider(),
-            verticalSpace(),
-            AnimatedOpacity(
-              duration: const Duration(seconds: 15),
-              opacity: _opacity,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: button(
-                    text: 'I have sent the money',
-                    onTap: () => verifyPayment(true)),
-              ),
-            ),
-            Center(
-              child: getProductName(provider.toUpperCase()),
-            ),
-          ],
-        ),
-      ),
-    );
+  Future<List> getListData(url, {make}) async {
+    if (url != null) {
+      var response = await WebServices.getListData(
+          getUrl(url, make: make), widget.publicKey);
+      print(response['data']);
+      if (url.contains('model')) {
+        var models = [];
+        var data = response['data']
+            .where((element) => element['make']
+                .toString()
+                .toLowerCase()
+                .contains(make.toString().toLowerCase()))
+            .toList();
+
+        for (var i in data) {
+          models.add(i['name']);
+        }
+
+        return models;
+      } else {
+        return listData = response['data'];
+      }
+    } else {
+      return [];
+    }
   }
 
-  ussdCard() {
-    return Expanded(
-      child: Container(
-        decoration:
-            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            verticalSpace(),
-            Row(
-              children: [
-                Expanded(
-                  child: Text(productName,
-                      textAlign: TextAlign.end,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)),
-                )
-              ],
-            ),
-            smallVerticalSpace(),
-            Container(
-              decoration: BoxDecoration(
-                  color: GREEN.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(3)),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
-                  children: [
-                    Text(email, style: const TextStyle(fontSize: 12)),
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text:calcPrice==''? productDetail['data']['productDetails'][0]
-                                  ['is_dynamic_pricing']
-                              ? '$price%'
-                              : 'NGN$price':'NGN$calcPrice',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
-                  ],
-                ),
-              ),
-            ),
-            verticalSpace(),
-            Expanded(
-                child: Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 5),
-                const Text('Use below USSD Code to make payment',
-                    style: TextStyle(
-                        fontSize: 13,
-                        color: PRIMARY,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(),
-                const Divider(),
-                verticalSpace(),
-                Text(bankName,
-                    style: const TextStyle(
-                        fontSize: 20,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                Text('CODE - $paymentCode',
-                    style: const TextStyle(
-                        fontSize: 20,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(),
-                Text(ussdCode,
-                    style: const TextStyle(
-                        fontSize: 28,
-                        color: DARK,
-                        fontWeight: FontWeight.w700)),
-                verticalSpace(),
-                const Divider(),
-              ],
-            )),
-            const Divider(),
-            verticalSpace(),
-            AnimatedOpacity(
-              duration: const Duration(seconds: 15),
-              opacity: _opacity,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 20.0),
-                child: button(
-                    text: 'I have sent the money',
-                    onTap: () => verifyPayment(true)),
-              ),
-            ),
-            Center(
-              child: getProductName(provider.toUpperCase()),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  getUssdProvider() async {
+    var response = await WebServices.getUssdProvider(widget.publicKey);
 
-  Widget paymentMethodCard(image, title, subtitle, value) {
-    return InkWell(
-      onTap: () => setState(() => paymentMethod = value),
-      child: Container(
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(5),
-            border: paymentMethod == value
-                ? Border.all(color: PRIMARY, width: 1.5)
-                : Border.all(color: GREY.withOpacity(0.2), width: 0.7)),
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(10, 12, 10, 12),
-          child: Row(
-            children: [
-              Image.asset(image,
-                  height: 45, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
-              const SizedBox(width: 15),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(title,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        )),
-                    const SizedBox(height: 3),
-                    Text(subtitle,
-                        style: const TextStyle(fontSize: 12, color: DARK)),
-                  ],
-                ),
-              ),
-              Container(
-                height: 12,
-                width: 12,
-                decoration: BoxDecoration(
-                    color: WHITE,
-                    shape: BoxShape.circle,
-                    border: paymentMethod == value
-                        ? Border.all(color: PRIMARY, width: 4)
-                        : Border.all(color: GREY, width: 1)),
-              )
-            ],
-          ),
-        ),
-      ),
-    );
+    print('====BANKS======> $response');
+    if (response is String) {
+      log(response);
+    } else {
+      setState(() {
+        ussdProviders = response['data'];
+        searchList = ussdProviders;
+        bankName = searchList[0]['bank_name'];
+        bankCode = searchList[0]['type'];
+      });
+    }
   }
 
   makePayment() async {
@@ -1303,18 +1488,16 @@ class _FormScreenState extends State<FormScreen> {
         instanceId: widget.instanceId,
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
-        paymentChannel: paymentChannel
-    );
+        paymentChannel: paymentChannel);
 
-print(res);
+    print(res);
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
-      setState(()=> calcPrice = res['data']['amount'].toString());
+      setState(() => calcPrice = res['data']['amount'].toString());
       if (paymentOption == PaymentOption.gateway) {
         setState(() {
-
           if (paymentMethod.contains('transfer')) {
             bodyType = 'transfer';
             accountNumber = res['data']['account_number'];
@@ -1336,6 +1519,19 @@ print(res);
     }
   }
 
+  initialiseSdk(context) {
+    final mycover = MyCoverAI(
+        context: context,
+        form: widget.form,
+        productId: [productId],
+        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
+        paymentOption: widget.paymentOption,
+        reference: reference,
+        transactionType: TransactionType.inspection,
+        email: widget.email);
+    mycover.initialise();
+  }
+
   // getInspectionInfo
   completePurchase() async {
     print('===Complete===>');
@@ -1344,7 +1540,9 @@ print(res);
     if (purchaseData['title'] == null || purchaseData['title'] == '') {
       purchaseData['title'] = 'Chief';
     }
-   print( 'Regsyration type === ${purchaseData['vehicle_registration_number'].runtimeType}');
+    print(
+        'Regstration type === ${purchaseData['vehicle_registration_number'].runtimeType}');
+
     var res = await WebServices.completePurchase(
         businessId: businessId,
         publicKey: widget.publicKey,

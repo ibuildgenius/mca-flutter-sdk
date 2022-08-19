@@ -5,17 +5,28 @@ import 'package:http/http.dart' as http;
 import 'api_scheme.dart';
 
 class WebServices {
-  static const String _baseUrl = 'https://staging.api.mycover.ai/v1';
-  static const String _initialiseSdkUrl = '$_baseUrl/sdk/initialize';
-  static const String _buySdkUrl = '$_baseUrl/sdk/buy';
-  static const String _uploadUrl = '$_baseUrl/sdk/upload-file';
-  static const String _ussdProviderUrl = '$_baseUrl/sdk/ussd-providers';
-  static const String _verifyPaymentUrl = '$_baseUrl/sdk/verify-transaction';
-  static const String _initiatePurchaseUrl = '$_baseUrl/sdk/initiate-purchase';
-  static const String _completePurchaseUrl = '$_baseUrl/sdk/complete-purchase';
-  static const String _purchaseInfoUrl = '$_baseUrl/sdk/purchase-info';
-  static const String submitInspectionUrl = '$_baseUrl/sdk/inspections/vehicle';
-  static const String inspectionInfo = '$_baseUrl/sdk/inspection-info';
+  static const String _initialiseSdkUrl = '/sdk/initialize';
+  static const String _buySdkUrl = '/sdk/buy';
+  static const String _uploadUrl = '/sdk/upload-file';
+  static const String _ussdProviderUrl = '/sdk/ussd-providers';
+  static const String _verifyPaymentUrl = '/sdk/verify-transaction';
+  static const String _initiatePurchaseUrl = '/sdk/initiate-purchase';
+  static const String _completePurchaseUrl = '/sdk/complete-purchase';
+  static const String _purchaseInfoUrl = '/sdk/purchase-info';
+  static const String submitInspectionUrl = '/sdk/inspections/vehicle';
+  static const String inspectionInfo = '/sdk/inspection-info';
+
+
+  static getBaseUrl(publicKey){
+    print('===> $publicKey');
+    if(publicKey.toString().toLowerCase().contains('test')){
+      return 'https://staging.api.mycover.ai/v1';
+    }else{
+      return 'https://api.mycover.ai/v1';
+
+    }
+  }
+
 
   static initialiseSdk(
       {required String publicKey,
@@ -41,16 +52,18 @@ class WebServices {
 print('=======> Initi data $data');
 print(publicKey);
       return await ApiScheme.initialisePostRequest(
-          url: _initialiseSdkUrl, data: data, token: publicKey);
+          url: '${getBaseUrl(publicKey)}' + _initialiseSdkUrl, data: data, token: publicKey);
     }
   }
+
+
 
   static verifyPayment(String reference, businessId, publicKey) async {
     var data = {
       "transaction_reference": reference,
     };
     return await ApiScheme.initialisePostRequest(
-        url: _verifyPaymentUrl,
+        url: '${getBaseUrl(publicKey)}' + _verifyPaymentUrl,
         data: data,
         apiKey: businessId,
         token: publicKey);
@@ -62,8 +75,8 @@ print(publicKey);
       "x-api-id": "$businessId",
       HttpHeaders.authorizationHeader: 'Bearer $token',
     };
-    print(_uploadUrl);
-    var uri = Uri.parse(_uploadUrl);
+    print('==>$_uploadUrl');
+    var uri = Uri.parse('${getBaseUrl(token)}' + _uploadUrl);
 
     var request = http.MultipartRequest("POST", uri);
 
@@ -79,13 +92,13 @@ print(publicKey);
 
   static getListData(String url, publicKey) async {
     return await ApiScheme.initialiseGetRequest(
-        url: '$_baseUrl$url', token: publicKey);
+        url: '${getBaseUrl(publicKey)}' + url, token: publicKey);
   }
 
   static getPurchaseInfo(businessId, reference, publicKey) async {
     String queryString = 'reference=$reference';
 
-    var requestUrl = _purchaseInfoUrl + '?' + queryString;
+    var requestUrl = '${getBaseUrl(publicKey)}' + _purchaseInfoUrl + '?' + queryString;
 
     return await ApiScheme.initialiseGetRequest(
         url: requestUrl, apiKey: businessId, token: publicKey);
@@ -93,12 +106,12 @@ print(publicKey);
 
   static getUssdProvider(publicKey) async {
     return await ApiScheme.initialiseGetRequest(
-        url: _ussdProviderUrl, token: publicKey);
+        url: '${getBaseUrl(publicKey)}' + _ussdProviderUrl, token: publicKey);
   }
 
   static getInspectionInfo(reference,publicKey) async {
     return await ApiScheme.initialiseGetRequest(
-        url: inspectionInfo+'?reference=$reference', token: publicKey);
+        url: '${getBaseUrl(publicKey)}' +  inspectionInfo+'?reference=$reference', token: publicKey);
   }
 
   static buyProduct({
@@ -115,7 +128,7 @@ print(publicKey);
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: _buySdkUrl, data: data, apiKey: businessId, token: publicKey);
+        url: '${getBaseUrl(publicKey)}' + _buySdkUrl, data: data, apiKey: businessId, token: publicKey);
   }
 
   static initiatePurchase({
@@ -136,7 +149,7 @@ print(publicKey);
 
 print(data);
     return await ApiScheme.initialisePostRequest(
-        url: _initiatePurchaseUrl,
+        url:'${getBaseUrl(publicKey)}' + _initiatePurchaseUrl,
         data: data,
         apiKey: businessId,
         token: publicKey);
@@ -151,9 +164,9 @@ print(data);
       "payload": payload,
       "reference": reference,
     };
-    print(data);
+    print('Complete puchase ===>  $data');
     return await ApiScheme.initialisePostRequest(
-        url: _completePurchaseUrl,
+        url: '${getBaseUrl(publicKey)}' + _completePurchaseUrl,
         data: data,
         apiKey: businessId,
         token: publicKey);
@@ -187,7 +200,7 @@ print(data);
 
     print('submitting endpoint $submitInspectionUrl');
 
-    var uri = Uri.parse(submitInspectionUrl);
+    var uri = Uri.parse('${getBaseUrl(token)}' + submitInspectionUrl);
 
     var request = http.MultipartRequest("POST", uri);
 

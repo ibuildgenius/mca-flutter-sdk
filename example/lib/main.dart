@@ -52,7 +52,6 @@ class _MyHomePageState extends State<MyHomePage> {
           'name': 'Damilare Peter',
           'phone': '08108257228'
         },
-        // reference: 'BUY-YZLXGPKEIKBAP',
         paymentOption: PaymentOption.gateway,
         transactionType: TransactionType.purchase);
     var response = await myCover.initialise();
@@ -87,9 +86,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   static makePostRequest({apiUrl, data, token}) async {
-    print(data);
-    print(apiUrl);
-    print(token);
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
     var headers = {
