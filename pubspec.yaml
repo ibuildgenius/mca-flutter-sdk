@@ -33,3 +33,9 @@ dev_dependencies:
 flutter:
   assets:
     - assets/images/
+
+  fonts:
+    - family: Space
+      fonts:
+        - asset: assets/fonts/space-grotesk.ttf
+

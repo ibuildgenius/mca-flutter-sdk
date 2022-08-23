@@ -241,12 +241,12 @@ class _FormScreenState extends State<FormScreen> {
                         Container(height: 0.7, color: GREY.withOpacity(0.3))),
               ],
             ),
-          verticalSpace(height: 5),
+          verticalSpace(height: 15),
           Text(productName,
               textAlign: TextAlign.center,
               style:
                   const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
-          smallVerticalSpace(),
+          verticalSpace(height: 25),
           Container(
             decoration: BoxDecoration(
                 color: GREEN.withOpacity(0.05),
@@ -409,7 +409,6 @@ class _FormScreenState extends State<FormScreen> {
                     controller: controller,
                     onChanged: (value) {
                       print(item['name']);
-                      print(purchaseData[item['name']]);
 
                       if (item['name'].toString().contains('cost') ||
                           item['name'] == 'vehicle_value' ||
@@ -437,13 +436,19 @@ class _FormScreenState extends State<FormScreen> {
                       if (item['name'].toString().contains('first_name')) {
                         firstName = controller.text;
                       }
-                      if (item['name'].toString().contains('phone')) {
+                      if (item['name'].toString().contains('phone')&&!item['name'].toString().contains('next_of_kin_phone')) {
                         phone = controller.text;
                       }
                       if (item['name'].toString().contains('last_name')) {
                         lastName = controller.text;
                       }
                       if (item['name'].toString().contains('other_names')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('next_of_kin_name')||item['name'].toString().contains('next_of_kin_phone')||item['name'].toString().contains('next_of_kin_address')) {
+                        purchaseData[item['name']] = controller.text.toString();
+                      }
+                      if (item['name'].toString().contains('marital_status')) {
                         purchaseData[item['name']] = controller.text.toString();
                       }
                       if (item['name'].toString().contains('occupation')) {
@@ -462,6 +467,7 @@ class _FormScreenState extends State<FormScreen> {
                         purchaseData[item['name']] = controller.text.toString();
                       }
                     },
+
                     keyboardType: (item['label']
                                 .toString()
                                 .toLowerCase()
@@ -1092,7 +1098,7 @@ class _FormScreenState extends State<FormScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration:
           BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(15)),
-      height: MediaQuery.of(context).size.height * 0.5,
+      height: MediaQuery.of(context).size.height * 0.56,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1120,7 +1126,7 @@ class _FormScreenState extends State<FormScreen> {
                     return ListTile(
                       title: Text(item['bank_name'],
                           style: const TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 16)),
+                              fontWeight: FontWeight.w500, fontSize: 15)),
                       onTap: () {
                         // Navigator.pop(context);
                         setState(() {
@@ -1524,7 +1530,7 @@ class _FormScreenState extends State<FormScreen> {
         context: context,
         form: widget.form,
         productId: [productId],
-        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
+        publicKey: widget.publicKey,
         paymentOption: widget.paymentOption,
         reference: reference,
         transactionType: TransactionType.inspection,
@@ -1654,6 +1660,7 @@ class _FormScreenState extends State<FormScreen> {
             var body = jsonDecode(value);
             purchaseData['image'] = body['data']['file_url'];
             purchaseData['identification_url'] = body['data']['file_url'];
+            purchaseData['identification_image_url'] = body['data']['file_url'];
             purchaseData['image_url'] = body['data']['file_url'];
             purchaseData['national_id_image'] = body['data']['file_url'];
             completePurchase();
@@ -1671,3 +1678,6 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 }
+
+
+// BUY-BPJFZKRFDDSME

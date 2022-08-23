@@ -40,7 +40,7 @@ class MyCoverAI {
     var inspectionOption = InspectionType.vehicle;
     var transactionOption = transactionType ?? TransactionType.purchase;
 
-
+    // BUY-JQZEHTEBPUFVE
     if (transactionOption == TransactionType.inspection) {
       var response = await WebServices.getInspectionInfo(reference, publicKey);
 
