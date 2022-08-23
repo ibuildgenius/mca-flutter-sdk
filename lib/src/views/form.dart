@@ -101,6 +101,7 @@ class _FormScreenState extends State<FormScreen> {
         go = true;
       });
     });
+    contentFormField.add(contentFormCard());
 
     super.initState();
   }
@@ -178,6 +179,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   var make;
+  var state;
 
   Widget inputBody() {
     return FormBodyScaffold(
@@ -368,7 +370,9 @@ class _FormScreenState extends State<FormScreen> {
               InkWell(
                 onTap: () async {
                   if (item['data_url'].toString() != 'null') {
-                    pickItem(await getListData(item['data_url'], make: make),
+                    pickItem(
+                        await getListData(item['data_url'],
+                            make: make, state: state),
                         item['label'], onSelect: (value) {
                       Navigator.pop(context);
                       controller.text = value.toString();
@@ -376,6 +380,14 @@ class _FormScreenState extends State<FormScreen> {
                       if (item['name'].contains('make')) {
                         make = controller.text;
                       }
+                    });
+                  } else if (item['name'].toString().contains('is_full_year')) {
+                    var list = ['Full year', 'Half year'];
+                    pickItem(list, item['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      purchaseData[item['name']] =
+                          controller.text == 'Full year' ? true : false;
                     });
                   } else if (item['label']
                       .toString()
@@ -405,97 +417,155 @@ class _FormScreenState extends State<FormScreen> {
                     }
                   }
                 },
-                child: InputFormField(
-                    controller: controller,
-                    onChanged: (value) {
-                      print(item['name']);
 
-                      if (item['name'].toString().contains('cost') ||
-                          item['name'] == 'vehicle_value' ||
-                          item['name'] == 'vehicle_cost' ||
-                          item['name'] == 'payment_plan') {
-                        if (controller.text.isNotEmpty) {
-                          purchaseData[item['name']] =
-                              int.parse(controller.text);
-                        }
-                      }
-                      if (item['name'] == 'registration_number') {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
+                // {id: 94fda736-7721-4470-9ba9-c3047a803a11, product_id: 0386fe30-a3be-4ff2-a64a-048d2c99504b,
+                // form_field_id: 1, description: Items in your home that want to insure, name: home_items,
+                // label: Home items, position: 17, full_description: Items in your home that want to insure,
+                // data_type: array, input_type: text, show_first: false, required: true, error_msg: Please provide a value,
+                // data_source: user_defined, data_url: null, depends_on: null, meta: null, min: 2, max: null, min_max_constraint: length,
+                // created_at: 2022-08-11T09:05:07.987Z, updated_at: 2022-08-11T09:05:07.987Z,
+                // form_field: {id: 1, name: Input, label: Input form field, created_at: 2022-07-28T17:15:53.581Z, updated_at: 2022-07-28T17:15:53.581Z}}
 
-                      if (item['name']
-                          .toString()
-                          .toLowerCase()
-                          .contains('address')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
+                child: item['data_type'] == 'array'
+                    ? buildContentForm(context, item)
+                    : InputFormField(
+                        controller: controller,
+                        onChanged: (value) {
+                          if (item['name'].toString().contains('cost') ||
+                              item['name'] == 'vehicle_value' ||
+                              item['name'] == 'vehicle_cost' ||
+                              item['name'] == 'units' ||
+                              item['name'] == 'payment_plan') {
+                            if (controller.text.isNotEmpty) {
+                              purchaseData[item['name']] =
+                                  int.parse(controller.text);
+                            }
+                          }
 
-                      if (item['name'].toString().contains('email')) {
-                        email = controller.text;
-                      }
-                      if (item['name'].toString().contains('first_name')) {
-                        firstName = controller.text;
-                      }
-                      if (item['name'].toString().contains('phone')&&!item['name'].toString().contains('next_of_kin_phone')) {
-                        phone = controller.text;
-                      }
-                      if (item['name'].toString().contains('last_name')) {
-                        lastName = controller.text;
-                      }
-                      if (item['name'].toString().contains('other_names')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('next_of_kin_name')||item['name'].toString().contains('next_of_kin_phone')||item['name'].toString().contains('next_of_kin_address')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('marital_status')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('occupation')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('town')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('owner_title')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('chassis_number')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('engine_number')) {
-                        purchaseData[item['name']] = controller.text.toString();
-                      }
-                    },
+                          if (item['name'].contains('state')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
 
-                    keyboardType: (item['label']
+                            state = controller.text;
+                          }
+                          if (item['name'] == 'registration_number') {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+
+                          if (item['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('address')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+
+                          if (item['name'].toString().contains('email')) {
+                            email = controller.text;
+                          }
+                          if (item['name'].toString().contains('first_name')) {
+                            firstName = controller.text;
+                          }
+                          if (item['name'].toString().contains('phone') &&
+                              !item['name']
+                                  .toString()
+                                  .contains('next_of_kin_phone')) {
+                            phone = controller.text;
+                          }
+                          if (item['name'].toString().contains('last_name')) {
+                            lastName = controller.text;
+                          }
+
+                          if (item['name'].toString().contains('other_names')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                                  .toString()
+                                  .contains('next_of_kin_name') ||
+                              item['name']
+                                  .toString()
+                                  .contains('next_of_kin_phone') ||
+                              item['name']
+                                  .toString()
+                                  .contains('next_of_kin_address')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('marital_status')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('occupation')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('town')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('tenancy')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('description')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('pre_ownership')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('owner_title')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('chassis_number')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('engine_number')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                        },
+                        keyboardType:
+                            (item['label'].toString().toLowerCase().contains('phone') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('cost') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('price') ||
+                                    item['data_type']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('number') ||
+                                    item['name']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('value') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('bvn'))
+                                ? TextInputType.phone
+                                : TextInputType.text,
+                        textCapitalization: item['label']
                                 .toString()
                                 .toLowerCase()
-                                .contains('phone') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('cost') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('price') ||
-                            item['data_type']
-                                .toString()
-                                .toLowerCase()
-                                .contains('number') ||
-                            item['name']
-                                .toString()
-                                .toLowerCase()
-                                .contains('value') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('bvn'))
-                        ? TextInputType.phone
-                        : TextInputType.text,
-                    textCapitalization:
-                        item['label'].toString().toLowerCase().contains('email')
+                                .contains('email')
                             ? TextCapitalization.none
                             : item['label']
                                     .toString()
@@ -503,90 +573,88 @@ class _FormScreenState extends State<FormScreen> {
                                     .contains('number')
                                 ? TextCapitalization.characters
                                 : TextCapitalization.sentences,
-                    inputFormatters: <TextInputFormatter>[
-                      (item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('phone') ||
-                              item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('cost') ||
-                              item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('price') ||
-                              item['label']
-                                  .toString()
-                                  .toLowerCase()
-                                  .contains('bvn'))
-                          ? FilteringTextInputFormatter.digitsOnly
-                          : FilteringTextInputFormatter.deny(RegExp(r'[/\\]'))
-                    ],
-                    enabled: item['data_url'].toString() != 'null' ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('date') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('image') ||
-                            item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('product')
-                        ? false
-                        : true,
-                    hint: item['description'],
-                    prefixIcon: item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('image')
-                        ? Row(
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              const SizedBox(width: 10),
-                              Container(
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(3),
-                                      border: Border.all(color: GREY)),
-                                  child: const Padding(
-                                    padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                    child: Text(
-                                      'Select Image',
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  )),
-                              const SizedBox(width: 10),
-                            ],
-                          )
-                        : null,
-                    suffixIcon: item['data_url'].toString() != 'null'
-                        ? const Icon(Icons.expand_more)
-                        : item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('date')
-                            ? const Icon(Icons.event_note)
+                        inputFormatters: <TextInputFormatter>[
+                          (item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('phone') ||
+                                  item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('cost') ||
+                                  item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('price') ||
+                                  item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('bvn'))
+                              ? FilteringTextInputFormatter.digitsOnly
+                              : FilteringTextInputFormatter.deny(
+                                  RegExp(r'[/\\]'))
+                        ],
+                        enabled: item['data_url'].toString() != 'null' ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('date') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('image') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('product') ||
+                                item['name'].toString().toLowerCase().contains('is_full_year')
+                            ? false
+                            : true,
+                        hint: item['description'],
+                        prefixIcon: item['label'].toString().toLowerCase().contains('image')
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(width: 10),
+                                  Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          border: Border.all(color: GREY)),
+                                      child: const Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                        child: Text(
+                                          'Select Image',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      )),
+                                  const SizedBox(width: 10),
+                                ],
+                              )
                             : null,
-                    validator: (value) {
-                      var label = item['label'].toString().toLowerCase();
-                      if (label.contains('phone')) {
-                        return PhoneNumberValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else if (label.contains('email')) {
-                        return EmailValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else if (label.contains('bvn')) {
-                        return BVNValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else {
-                        return FieldValidator.validate(value,
-                            error: item['errorMsg']);
-                      }
-                    }),
+                        suffixIcon: (item['data_url'].toString() != 'null' || item['name'].toString().toLowerCase().contains('is_full_year'))
+                            ? const Icon(Icons.expand_more)
+                            : item['label'].toString().toLowerCase().contains('date')
+                                ? const Icon(Icons.event_note)
+                                : null,
+                        validator: (value) {
+                          var label = item['label'].toString().toLowerCase();
+                          if (label.contains('phone')) {
+                            return PhoneNumberValidator.validate(value,
+                                error: item['errorMsg']);
+                          } else if (label.contains('email')) {
+                            return EmailValidator.validate(value,
+                                error: item['errorMsg']);
+                          } else if (label.contains('bvn')) {
+                            return BVNValidator.validate(value,
+                                error: item['errorMsg']);
+                          } else {
+                            return FieldValidator.validate(value,
+                                error: item['errorMsg']);
+                          }
+                        }),
               ),
             ],
           );
@@ -698,6 +766,7 @@ class _FormScreenState extends State<FormScreen> {
                               const Divider(),
                               verticalSpace(),
                               Text(bankName,
+                                  textAlign: TextAlign.center,
                                   style: const TextStyle(
                                       fontSize: 23,
                                       color: DARK,
@@ -820,6 +889,7 @@ class _FormScreenState extends State<FormScreen> {
                 const Divider(),
                 verticalSpace(),
                 Text(bankName,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 25,
                         color: DARK,
@@ -937,15 +1007,16 @@ class _FormScreenState extends State<FormScreen> {
                 const Divider(),
                 verticalSpace(),
                 Text(bankName,
+                    textAlign: TextAlign.center,
                     style: const TextStyle(
                         fontSize: 20,
                         color: DARK,
                         fontWeight: FontWeight.w600)),
-                Text('CODE - $paymentCode',
-                    style: const TextStyle(
-                        fontSize: 20,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
+                // Text('CODE - $paymentCode',
+                //     style: const TextStyle(
+                //         fontSize: 20,
+                //         color: DARK,
+                //         fontWeight: FontWeight.w600)),
                 verticalSpace(),
                 Text(ussdCode,
                     style: const TextStyle(
@@ -1093,7 +1164,6 @@ class _FormScreenState extends State<FormScreen> {
   bool isBankSelected = false;
 
   ussdProvidersCard() {
-    print(searchList);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration:
@@ -1254,20 +1324,37 @@ class _FormScreenState extends State<FormScreen> {
     var _contentDescController = TextEditingController();
     contentDescController.add(_contentDescController);
 
+    var item = {
+      'name': _contentTitleController.text,
+      'amount': _contentDescController.text
+    };
+
+    homeContent.add(item);
+    productDetail['home_items'] = homeContent;
     return Row(
       children: [
         Expanded(
           child: InputFormField(
-            label: "Object",
+            label: "Name",
             controller: _contentTitleController,
+            onChanged: (v) {
+              item['name'] = _contentTitleController.text;
+            },
             // validator: (value) => FieldValidator.validate(value),
           ),
         ),
         const SizedBox(width: 10),
         Expanded(
           child: InputFormField(
-            label: "How many",
+            label: "Amount",
             controller: _contentDescController,
+            keyboardType: TextInputType.number,
+            inputFormatters: <TextInputFormatter>[
+              FilteringTextInputFormatter.digitsOnly
+            ],
+            onChanged: (v) {
+              item['amount'] = _contentDescController.text;
+            },
             // validator: (value) => FieldValidator.validate(value),
           ),
         ),
@@ -1275,26 +1362,32 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  Widget buildContentForm(BuildContext context) {
-    // contentFormField.add(contentFormCard());
-    return Padding(
-      padding: const EdgeInsets.all(30.0),
-      child: Stack(
-        children: [
-          Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey, width: 1.5),
-                borderRadius: BorderRadius.circular(10),
-                shape: BoxShape.rectangle),
-            padding: const EdgeInsets.all(10),
-            margin: const EdgeInsets.symmetric(vertical: 10),
-            child: Scrollbar(
-              child: ListView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: contentFormField.length,
-                itemBuilder: (BuildContext context, int index) {
-                  return Row(
+  var homeContent = [];
+
+  Widget buildContentForm(BuildContext context, formItem) {
+    return Stack(
+      children: [
+        Container(
+          decoration: BoxDecoration(
+              border: Border.all(color: GREY.withOpacity(0.6), width: 0.5),
+              borderRadius: BorderRadius.circular(10),
+              shape: BoxShape.rectangle),
+          // padding: const EdgeInsets.sy(10),
+          margin: const EdgeInsets.symmetric(vertical: 10),
+          child: Scrollbar(
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: contentFormField.length,
+              itemBuilder: (BuildContext context, int index) {
+                // 'home_items':[
+                //   {'name': 'Home', 'amount': 500},
+                // ]
+
+                purchaseData[formItem['name']] = homeContent;
+                return Padding(
+                  padding: const EdgeInsets.only(left: 5.0),
+                  child: Row(
                     children: [
                       Expanded(child: contentFormField[index]),
                       const SizedBox(width: 5),
@@ -1308,41 +1401,41 @@ class _FormScreenState extends State<FormScreen> {
                               size: 20, color: Colors.red),
                         ),
                     ],
-                  );
-                },
-              ),
+                  ),
+                );
+              },
             ),
           ),
-          Positioned(
-              bottom: 0,
-              right: 8,
-              child: InkWell(
-                onTap: () =>
-                    setState(() => contentFormField.add(contentFormCard())),
-                child: Container(
-                    decoration: BoxDecoration(
-                        color: Colors.green,
-                        borderRadius: BorderRadius.circular(3)),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
-                      child: Row(
-                        children: const [
-                          Icon(Icons.add_circle, size: 15, color: Colors.white),
-                          Padding(
-                              padding: EdgeInsets.all(4.0),
-                              child: Text(
-                                'Add Item',
-                                style: TextStyle(
-                                    fontSize: 9,
-                                    fontWeight: FontWeight.w400,
-                                    color: Colors.white),
-                              )),
-                        ],
-                      ),
-                    )),
-              )),
-        ],
-      ),
+        ),
+        Positioned(
+            bottom: 0,
+            right: 8,
+            child: InkWell(
+              onTap: () =>
+                  setState(() => contentFormField.add(contentFormCard())),
+              child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.green,
+                      borderRadius: BorderRadius.circular(3)),
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+                    child: Row(
+                      children: const [
+                        Icon(Icons.add_circle, size: 15, color: Colors.white),
+                        Padding(
+                            padding: EdgeInsets.all(4.0),
+                            child: Text(
+                              'Add Item',
+                              style: TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: FontWeight.w400,
+                                  color: Colors.white),
+                            )),
+                      ],
+                    ),
+                  )),
+            )),
+      ],
     );
   }
 
@@ -1412,7 +1505,7 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
-  Future<List> getListData(url, {make}) async {
+  Future<List> getListData(url, {make, state}) async {
     if (url != null) {
       var response = await WebServices.getListData(
           getUrl(url, make: make), widget.publicKey);
@@ -1431,7 +1524,24 @@ class _FormScreenState extends State<FormScreen> {
         }
 
         return models;
-      } else {
+      }
+      // else
+      // if (url.contains('lga')) {
+      //   var lga = [];
+      //   var data = response['data']
+      //       .where((element) => element
+      //           .toString()
+      //           .toLowerCase()
+      //           .contains(state.toString().toLowerCase()))
+      //       .toList();
+      //
+      //   for (var i in data) {
+      //     lga.add(i['name']);
+      //   }
+      //
+      //   return lga;
+      // }
+      else {
         return listData = response['data'];
       }
     } else {
@@ -1546,9 +1656,10 @@ class _FormScreenState extends State<FormScreen> {
     if (purchaseData['title'] == null || purchaseData['title'] == '') {
       purchaseData['title'] = 'Chief';
     }
-    print(
-        'Regstration type === ${purchaseData['vehicle_registration_number'].runtimeType}');
 
+    print('===>' + purchaseData['tenancy'].toString());
+    print('<===== ${purchaseData['home_items']}');
+    print('===>' + purchaseData['description'].toString());
     var res = await WebServices.completePurchase(
         businessId: businessId,
         publicKey: widget.publicKey,
@@ -1679,5 +1790,4 @@ class _FormScreenState extends State<FormScreen> {
   }
 }
 
-
-// BUY-BPJFZKRFDDSME
+//BUY-JAIENPYEBEGEQ
