@@ -147,7 +147,7 @@ class Dialogs {
 
   static Future<void> showLoading({context, text}) async {
     return showDialog(
-        barrierDismissible: true,
+        barrierDismissible: false,
         context: context,
         builder: (context) {
           return AlertDialog(
@@ -244,7 +244,8 @@ class Dialogs {
                           Center(
                             child: Text(
                               title ?? 'Payment Successful',
-                              style: const TextStyle(
+                              style: const TextStyle(                          fontFamily: 'Space',
+
                                   fontWeight: FontWeight.w700, fontSize: 21),
                             ),
                           ),
@@ -253,7 +254,8 @@ class Dialogs {
                               message ??
                                   'You paid for $productName,\nKindly proceed to complete your purchase',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(fontSize: 14)),
+                              style: const TextStyle(                          fontFamily: 'Space',
+                                  fontSize: 14)),
                           verticalSpace(),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(35, 28, 35, 15),
@@ -275,7 +277,8 @@ class Dialogs {
                                   child: Text(
                                     'Later',
                                     style: TextStyle(
-                                        color: PRIMARY,
+                                        color: PRIMARY,                          fontFamily: 'Space',
+
                                         fontWeight: FontWeight.w600,
                                         fontSize: 15),
                                   ),

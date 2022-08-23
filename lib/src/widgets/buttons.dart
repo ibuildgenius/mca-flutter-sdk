@@ -42,7 +42,8 @@ Widget successButton({onTap, color, text}) => Padding(
             Center(
                 child: Text(
                   text ?? '',
-                  style: const TextStyle(
+                  style: const TextStyle(                          fontFamily: 'Space',
+
                       color: WHITE, fontSize: 14, fontWeight: FontWeight.w600),
                 )),
             const Icon(Icons.arrow_forward, color: WHITE, size: 16),
@@ -67,7 +68,8 @@ Widget closeButton({onTap, color,text}) => Padding(
         child:   Center(
             child: Text(
               text?? 'Yes, I want to',
-              style:const  TextStyle(
+              style:const  TextStyle(                          fontFamily: 'Space',
+
                   color: WHITE, fontSize: 12, fontWeight: FontWeight.w600),
             )),
       ),
@@ -89,7 +91,8 @@ Widget dialogButton({onTap, color, text}) => Padding(
         child: Center(
             child: Text(
               text ?? '',
-              style: const TextStyle(
+              style: const TextStyle(                          fontFamily: 'Space',
+
                   color: WHITE, fontSize: 14, fontWeight: FontWeight.w600),
             )),
       ),

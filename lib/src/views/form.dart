@@ -233,6 +233,7 @@ class _FormScreenState extends State<FormScreen> {
                     child: Text('TEST',
                         textAlign: TextAlign.center,
                         style: TextStyle(
+                            fontFamily: 'Space',
                             color: DARK.withOpacity(0.8),
                             fontSize: 14,
                             fontWeight: FontWeight.w400)),
@@ -246,8 +247,10 @@ class _FormScreenState extends State<FormScreen> {
           verticalSpace(height: 15),
           Text(productName,
               textAlign: TextAlign.center,
-              style:
-                  const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+              style: const TextStyle(
+                  fontFamily: 'Space',
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700)),
           verticalSpace(height: 25),
           Container(
             decoration: BoxDecoration(
@@ -261,9 +264,12 @@ class _FormScreenState extends State<FormScreen> {
                   Icon(Icons.info, color: GREEN),
                   SizedBox(width: 15),
                   Expanded(
-                    child: Text(
-                        'Enter details as it appear on legal documents.',
-                        style: TextStyle(fontSize: 12)),
+                    child:
+                        Text('Enter details as it appear on legal documents.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontFamily: 'Space',
+                            )),
                   )
                 ],
               ),
@@ -389,6 +395,14 @@ class _FormScreenState extends State<FormScreen> {
                       purchaseData[item['name']] =
                           controller.text == 'Full year' ? true : false;
                     });
+                  }else if (item['name'].toString().contains('stock_keeping')) {
+                    var list = ['Yes', 'No'];
+                    pickItem(list, item['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      purchaseData[item['name']] =
+                          controller.text == 'Yes' ? true : false;
+                    });
                   } else if (item['label']
                       .toString()
                       .toLowerCase()
@@ -431,10 +445,12 @@ class _FormScreenState extends State<FormScreen> {
                     : InputFormField(
                         controller: controller,
                         onChanged: (value) {
+                          print(item);
                           if (item['name'].toString().contains('cost') ||
                               item['name'] == 'vehicle_value' ||
                               item['name'] == 'vehicle_cost' ||
                               item['name'] == 'units' ||
+                              item['name'] == 'stock_amount' ||
                               item['name'] == 'payment_plan') {
                             if (controller.text.isNotEmpty) {
                               purchaseData[item['name']] =
@@ -478,6 +494,14 @@ class _FormScreenState extends State<FormScreen> {
                           }
 
                           if (item['name'].toString().contains('other_names')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('nature_of_business')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('shop_type')) {
                             purchaseData[item['name']] =
                                 controller.text.toString();
                           }
@@ -607,7 +631,8 @@ class _FormScreenState extends State<FormScreen> {
                                     .toString()
                                     .toLowerCase()
                                     .contains('product') ||
-                                item['name'].toString().toLowerCase().contains('is_full_year')
+                                item['name'].toString().toLowerCase().contains('is_full_year')||
+                                item['name'].toString().toLowerCase().contains('stock_keeping')
                             ? false
                             : true,
                         hint: item['description'],
@@ -634,7 +659,7 @@ class _FormScreenState extends State<FormScreen> {
                                 ],
                               )
                             : null,
-                        suffixIcon: (item['data_url'].toString() != 'null' || item['name'].toString().toLowerCase().contains('is_full_year'))
+                        suffixIcon: (item['data_url'].toString() != 'null' || item['name'].toString().toLowerCase().contains('is_full_year')|| item['name'].toString().toLowerCase().contains('stock_keeping'))
                             ? const Icon(Icons.expand_more)
                             : item['label'].toString().toLowerCase().contains('date')
                                 ? const Icon(Icons.event_note)
@@ -882,6 +907,7 @@ class _FormScreenState extends State<FormScreen> {
                 const SizedBox(height: 5),
                 const Text('Send to the Account No. below',
                     style: TextStyle(
+                        fontFamily: 'Space',
                         fontSize: 13,
                         color: PRIMARY,
                         fontWeight: FontWeight.w600)),
@@ -891,6 +917,7 @@ class _FormScreenState extends State<FormScreen> {
                 Text(bankName,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
+                        fontFamily: 'Space',
                         fontSize: 25,
                         color: DARK,
                         fontWeight: FontWeight.w600)),
@@ -960,7 +987,9 @@ class _FormScreenState extends State<FormScreen> {
                   child: Text(productName,
                       textAlign: TextAlign.end,
                       style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)),
+                          fontFamily: 'Space',
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700)),
                 )
               ],
             ),
@@ -981,10 +1010,14 @@ class _FormScreenState extends State<FormScreen> {
                           text: TextSpan(children: [
                         const TextSpan(
                             text: 'Pay ',
-                            style: TextStyle(fontSize: 12, color: DARK)),
+                            style: TextStyle(
+                                fontFamily: 'Space',
+                                fontSize: 12,
+                                color: DARK)),
                         TextSpan(
                             text: 'NGN$calcPrice',
                             style: const TextStyle(
+                                fontFamily: 'Space',
                                 fontSize: 18,
                                 fontWeight: FontWeight.w600,
                                 color: PRIMARY))
@@ -1000,6 +1033,7 @@ class _FormScreenState extends State<FormScreen> {
                 const SizedBox(height: 5),
                 const Text('Use below USSD Code to make payment',
                     style: TextStyle(
+                        fontFamily: 'Space',
                         fontSize: 13,
                         color: PRIMARY,
                         fontWeight: FontWeight.w600)),
@@ -1009,6 +1043,7 @@ class _FormScreenState extends State<FormScreen> {
                 Text(bankName,
                     textAlign: TextAlign.center,
                     style: const TextStyle(
+                        fontFamily: 'Space',
                         fontSize: 20,
                         color: DARK,
                         fontWeight: FontWeight.w600)),
@@ -1020,6 +1055,7 @@ class _FormScreenState extends State<FormScreen> {
                 verticalSpace(),
                 Text(ussdCode,
                     style: const TextStyle(
+                        fontFamily: 'Space',
                         fontSize: 28,
                         color: DARK,
                         fontWeight: FontWeight.w700)),
@@ -1070,12 +1106,14 @@ class _FormScreenState extends State<FormScreen> {
                   children: [
                     Text(title,
                         style: const TextStyle(
+                          fontFamily: 'Space',
                           fontSize: 16,
                           fontWeight: FontWeight.w600,
                         )),
                     const SizedBox(height: 3),
                     Text(subtitle,
-                        style: const TextStyle(fontSize: 12, color: DARK)),
+                        style: const TextStyle(
+                            fontFamily: 'Space', fontSize: 12, color: DARK)),
                   ],
                 ),
               ),
@@ -1124,7 +1162,9 @@ class _FormScreenState extends State<FormScreen> {
                   child: Center(
                       child: Text('$title',
                           style: const TextStyle(
-                              fontWeight: FontWeight.w700, fontSize: 16))),
+                              fontFamily: 'Space',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16))),
                 ),
                 Expanded(
                   child: SingleChildScrollView(
@@ -1134,6 +1174,7 @@ class _FormScreenState extends State<FormScreen> {
                             (i) => ListTile(
                                   title: Text('${list[i]}',
                                       style: const TextStyle(
+                                          fontFamily: 'Space',
                                           fontWeight: FontWeight.w500,
                                           fontSize: 16)),
                                   onTap: () => onSelect(list[i]),
@@ -1196,7 +1237,9 @@ class _FormScreenState extends State<FormScreen> {
                     return ListTile(
                       title: Text(item['bank_name'],
                           style: const TextStyle(
-                              fontWeight: FontWeight.w500, fontSize: 15)),
+                              fontFamily: 'Space',
+                              fontWeight: FontWeight.w500,
+                              fontSize: 15)),
                       onTap: () {
                         // Navigator.pop(context);
                         setState(() {
@@ -1245,7 +1288,9 @@ class _FormScreenState extends State<FormScreen> {
                           return ListTile(
                             title: Text(item['bank_name'],
                                 style: const TextStyle(
-                                    fontWeight: FontWeight.w500, fontSize: 16)),
+                                    fontFamily: 'Space',
+                                    fontWeight: FontWeight.w500,
+                                    fontSize: 16)),
                             onTap: () {
                               Navigator.pop(context);
                               setState(() {
@@ -1428,6 +1473,7 @@ class _FormScreenState extends State<FormScreen> {
                               'Add Item',
                               style: TextStyle(
                                   fontSize: 9,
+                                  fontFamily: 'Space',
                                   fontWeight: FontWeight.w400,
                                   color: Colors.white),
                             )),
