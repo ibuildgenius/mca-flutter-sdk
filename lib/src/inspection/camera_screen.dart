@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:mca_flutter_sdk/src/services/services.dart';
 import 'package:video_compress/video_compress.dart';
+
 import '../const.dart';
 import '../services/location_service.dart';
 import '../theme.dart';
@@ -24,7 +26,7 @@ class InspectionScreen extends StatefulWidget {
       required this.reference,
       required this.typeOfInspection})
       : super(key: key);
-  final String token, policyId,reference;
+  final String token, policyId, reference;
   final InspectionType typeOfInspection;
 
   @override
@@ -56,6 +58,8 @@ class _InspectionScreenState extends State<InspectionScreen>
   final _imageController = InspectionImageController();
   int inspectionIndex = 0;
   File? _image;
+  File? _video;
+
   bool isCompleted = false;
 
   @override
@@ -328,7 +332,7 @@ class _InspectionScreenState extends State<InspectionScreen>
                               ],
                             ),
                             Container(
-                              padding: const EdgeInsets.fromLTRB(55, 40, 55, 0),
+                              padding:  EdgeInsets.fromLTRB(55, height(context) * 0.05, 55, 0),
                               child: SizedBox(
                                 height: height(context) * 0.25,
                                 child: Center(
@@ -383,43 +387,54 @@ class _InspectionScreenState extends State<InspectionScreen>
                                     shape: BoxShape.circle,
                                     color: GREY.withOpacity(0.8)),
                                 child: const Center(
-                                    child: CircularProgressIndicator(color: PRIMARY)))
+                                    child: CircularProgressIndicator(
+                                        color: PRIMARY)))
                             : GestureDetector(
                                 onTap: () async {
                                   print(
                                       'inspectionIndex--------> $inspectionIndex');
-                                  if (start) {
-                                    changeLoading();
+                                    if (start) {
+                                      changeLoading();
 
-                                    _imageController.forwardAction(context,
-                                        done: () {
-                                      Navigator.pop(context);
-                                      setState(() => isCompleted = true);
-                                    });
+                                      _imageController.forwardAction(context,
+                                          done: () {
+                                        Navigator.pop(context);
+                                        setState(() => isCompleted = true);
+                                      });
+                                      if (inspectionIndex < 8) {
+                                        if (Platform.isAndroid && inspectionIndex ==0 ) {
+                                          await _controller
+                                              .stopVideoRecording()
+                                              .then((file) {
+                                            if (mounted) setState(() {});
+                                            videoFile = File(file.path);
+                                          });
+                                        }
 
-                                    if (inspectionIndex < 8) {
-                                      await _controller
-                                          .takePicture()
-                                          .then((value) {
-                                        _image = File(value.path);
-                                        imageList.add(_image!);
-                                        inspectionIndex++;
-                                      });
+                                        await _controller
+                                            .takePicture()
+                                            .then((value) {
+                                          _image = File(value.path);
+                                          imageList.add(_image!);
+                                          inspectionIndex++;
+                                        });
+                                      }
+                                      if (inspectionIndex == 7) {
+                                        if (Platform.isIOS) {
+                                          await _controller
+                                              .stopVideoRecording()
+                                              .then((file) {
+                                            if (mounted) setState(() {});
+                                            videoFile = File(file.path);
+                                          });
+                                        }
+                                      }
+                                      setState(() => isLoading = false);
+                                    } else {
+                                      setState(() => start = true);
+                                      await _controller.startVideoRecording();
+                                      startTimer();
                                     }
-                                    if (inspectionIndex == 7) {
-                                      await _controller
-                                          .stopVideoRecording()
-                                          .then((file) {
-                                        if (mounted) setState(() {});
-                                        videoFile = File(file.path);
-                                      });
-                                    }
-                                    setState(() => isLoading = false);
-                                  } else {
-                                    setState(() => start = true);
-                                    await _controller.startVideoRecording();
-                                    startTimer();
-                                  }
                                 },
                                 child: (Platform.isIOS)
                                     ? Container(
@@ -513,7 +528,7 @@ class _InspectionScreenState extends State<InspectionScreen>
   submitInspection(context) async {
     var response = await WebServices.inspection(
         token: widget.token,
-        businessId:'businessId',
+        businessId: 'businessId',
         reference: widget.reference,
         policyId: widget.policyId,
         timeStamp: DateTime.now().toString(),
@@ -561,11 +576,9 @@ class _InspectionScreenState extends State<InspectionScreen>
     );
   }
 
-
-
   uploadVideo(context) async {
     Dialogs.showLoading(context: context, text: 'Submitting Inspection');
-
+print('====>>>>>>>>>===== ${videoFile!.path}');
     await VideoCompress.setLogLevel(0);
     final MediaInfo? video = await VideoCompress.compressVideo(
       videoFile!.path,
@@ -576,8 +589,8 @@ class _InspectionScreenState extends State<InspectionScreen>
     File Vid = File(video!.path.toString());
 
     var response = await WebServices.uploadFile(
-        context, 'businessId', Vid, widget.token,fileType: 'video');
-
+        context, 'businessId', Vid, widget.token,
+        fileType: 'video');
 
     if (response.statusCode.toString() == '200' ||
         response.statusCode.toString() == '201') {
