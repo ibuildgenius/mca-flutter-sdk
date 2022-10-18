@@ -103,7 +103,11 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       var res = await makePostRequest(
           apiUrl: productUrl, data: data, token: publicKey);
+
+      print("Server Responded with $res");
+
       print(res.body);
+
       if (res.statusCode! >= 200 && res.statusCode < 300) {
         var body = jsonDecode(res.body);
         setState(() => allProducts = body['data']['productDetails']);
@@ -132,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           return ListTile(
                               leading: const Icon(Icons.store_mall_directory),
                               title: Text(item['name']),
-                              subtitle: Text(item['productCategory']['name']),
+                              subtitle: Text(item['name']),
                               trailing: Text(
                                 item['is_dynamic_pricing']
                                     ? '${item['price']}%'

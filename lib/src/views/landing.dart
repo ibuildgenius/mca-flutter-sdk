@@ -57,7 +57,6 @@ class _MyCoverState extends State<MyCover> {
   @override
   void initState() {
     fetchProductDetail();
-
     super.initState();
   }
 
@@ -74,7 +73,7 @@ class _MyCoverState extends State<MyCover> {
           productDetail['data']['productDetails'][0]['inspectable'] ?? false;
       provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
       productCategory = productDetail['data']['productDetails'][0]
-              ['productCategory']['name']
+              ['name']
           .toString()
           .toLowerCase();
       businessName =
@@ -136,103 +135,103 @@ class _MyCoverState extends State<MyCover> {
       body: openIntro(productCategory),
     );
 
-    //   Padding(
-    //     padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-    //     child: Column(
-    //       children: [
-    //         const SizedBox(height: 10),
-    //         // selectBody(bodyType),
-    //         Padding(
-    //           padding: const EdgeInsets.symmetric(horizontal: 2.0),
-    //           child: Row(
-    //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    //             children: [
-    //               InkWell(
-    //                 onTap: () {
-    //                   bodyType == BodyType.introPage
-    //                       ? Dialogs.confirmClose(context)
-    //                       : setState(() => bodyType = BodyType.introPage);
-    //                 },
-    //                 child: Container(
-    //                     decoration: BoxDecoration(
-    //                         shape: BoxShape.circle,
-    //                         color: WHITE.withOpacity(0.7)),
-    //                     child: const Padding(
-    //                       padding: EdgeInsets.all(8.0),
-    //                       child:
-    //                       Icon(Icons.arrow_back, color: BLACK, size: 15),
-    //                     )),
-    //               ),
-    //               InkWell(
-    //                 onTap: () => Dialogs.confirmClose(context),
-    //                 child: Container(
-    //                     decoration: BoxDecoration(
-    //                         shape: BoxShape.circle,
-    //                         color: RED.withOpacity(0.2)),
-    //                     child: const Padding(
-    //                       padding: EdgeInsets.all(8.0),
-    //                       child: Icon(Icons.close, color: RED, size: 15),
-    //                     )),
-    //               ),
-    //             ],
-    //           ),
-    //         ),
-    //         Row(
-    //           mainAxisAlignment: MainAxisAlignment.center,
-    //           children: [
-    //             logo == ''
-    //                 ? Image.asset(mca,
-    //                 height: 30, package: 'mca_flutter_sdk')
-    //                 : Image.network(
-    //               logo,
-    //               height: 30,
-    //             ),
-    //           ],
-    //         ),
-    //         const SizedBox(height: 10),
-    //
-    //         Expanded(
-    //           child: Padding(
-    //             padding: const EdgeInsets.all(4.0),
-    //             child: Container(
-    //               decoration:
-    //               BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-    //               child: Padding(
-    //                 padding: const EdgeInsets.symmetric(horizontal: 15.0),
-    //                 child: Column(
-    //                   mainAxisAlignment: MainAxisAlignment.center,
-    //                   children: <Widget>[
-    //
-    //                     verticalSpace(),
-    //
-    //                     openIntro(productCategory),
-    //                     smallVerticalSpace(),
-    //                     const Divider(),
-    //                     button(
-    //                         text: 'Get Covered',
-    //                         onTap: () => setState(() => bodyType = BodyType.detail)),
-    //                     smallVerticalSpace(),
-    //                     Image.asset(myCover,
-    //                         width: 160,
-    //                         fit: BoxFit.fitWidth,
-    //                         package: 'mca_flutter_sdk'),
-    //
-    //                     smallVerticalSpace(),
-    //                   ],
-    //                 ),
-    //               ),
-    //             ),
-    //           ),
-    //         ),
-    //
-    //         const SizedBox(height: 10),
-    //         verticalSpace(),
-    //
-    //       ],
-    //
-    //   ),
-    //
-    // );
+     /* Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            // selectBody(bodyType),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      bodyType == BodyType.introPage
+                          ? Dialogs.confirmClose(context)
+                          : setState(() => bodyType = BodyType.introPage);
+                    },
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: WHITE.withOpacity(0.7)),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child:
+                          Icon(Icons.arrow_back, color: BLACK, size: 15),
+                        )),
+                  ),
+                  InkWell(
+                    onTap: () => Dialogs.confirmClose(context),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: RED.withOpacity(0.2)),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.close, color: RED, size: 15),
+                        )),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                logo == ''
+                    ? Image.asset(mca,
+                    height: 30, package: 'mca_flutter_sdk')
+                    : Image.network(
+                  logo,
+                  height: 30,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Container(
+                  decoration:
+                  BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+
+                        verticalSpace(),
+
+                        openIntro(productCategory),
+                        smallVerticalSpace(),
+                        const Divider(),
+                        button(
+                            text: 'Get Covered',
+                            onTap: () => setState(() => bodyType = BodyType.detail)),
+                        smallVerticalSpace(),
+                        Image.asset(myCover,
+                            width: 160,
+                            fit: BoxFit.fitWidth,
+                            package: 'mca_flutter_sdk'),
+
+                        smallVerticalSpace(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+            verticalSpace(),
+
+          ],
+
+      ),
+
+    ); */
   }
 
   openIntro(String productType) {
