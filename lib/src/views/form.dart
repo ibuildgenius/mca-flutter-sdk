@@ -124,9 +124,8 @@ class _FormScreenState extends State<FormScreen> {
       if (widget.form != null) {
         var inputForm = widget.form;
         phone = inputForm['phone'] ?? '';
-        var name = inputForm['name'] ?? '';
-        firstName = name.split(' ').first;
-        lastName = name.split(' ')[1];
+        firstName = '';
+        lastName = '';
       }
 
       if (paymentOption == PaymentOption.gateway && reference != '') {
@@ -244,6 +243,7 @@ class _FormScreenState extends State<FormScreen> {
                         Container(height: 0.7, color: GREY.withOpacity(0.3))),
               ],
             ),
+
           verticalSpace(height: 15),
           Text(productName,
               textAlign: TextAlign.center,
@@ -395,7 +395,9 @@ class _FormScreenState extends State<FormScreen> {
                       purchaseData[item['name']] =
                           controller.text == 'Full year' ? true : false;
                     });
-                  }else if (item['name'].toString().contains('stock_keeping')) {
+                  } else if (item['name']
+                      .toString()
+                      .contains('stock_keeping')) {
                     var list = ['Yes', 'No'];
                     pickItem(list, item['label'], onSelect: (value) {
                       Navigator.pop(context);
@@ -497,7 +499,9 @@ class _FormScreenState extends State<FormScreen> {
                             purchaseData[item['name']] =
                                 controller.text.toString();
                           }
-                          if (item['name'].toString().contains('nature_of_business')) {
+                          if (item['name']
+                              .toString()
+                              .contains('nature_of_business')) {
                             purchaseData[item['name']] =
                                 controller.text.toString();
                           }
@@ -631,7 +635,7 @@ class _FormScreenState extends State<FormScreen> {
                                     .toString()
                                     .toLowerCase()
                                     .contains('product') ||
-                                item['name'].toString().toLowerCase().contains('is_full_year')||
+                                item['name'].toString().toLowerCase().contains('is_full_year') ||
                                 item['name'].toString().toLowerCase().contains('stock_keeping')
                             ? false
                             : true,
@@ -659,7 +663,7 @@ class _FormScreenState extends State<FormScreen> {
                                 ],
                               )
                             : null,
-                        suffixIcon: (item['data_url'].toString() != 'null' || item['name'].toString().toLowerCase().contains('is_full_year')|| item['name'].toString().toLowerCase().contains('stock_keeping'))
+                        suffixIcon: (item['data_url'].toString() != 'null' || item['name'].toString().toLowerCase().contains('is_full_year') || item['name'].toString().toLowerCase().contains('stock_keeping'))
                             ? const Icon(Icons.expand_more)
                             : item['label'].toString().toLowerCase().contains('date')
                                 ? const Icon(Icons.event_note)

@@ -1,4 +1,7 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
+import 'package:mca_flutter_sdk/src/services/services.dart';
 
 import '../const.dart';
 import '../theme.dart';
@@ -27,11 +30,13 @@ class MyCover extends StatefulWidget {
       required this.publicKey,
       required this.reference,
       required this.paymentOption,
-      required this.form})
+      required this.form,
+      required this.productCat})
       : super(key: key);
   final List? productId;
   final String publicKey;
   final String email;
+  final String productCat;
   final PaymentOption? paymentOption;
   final String? reference;
   final productData;
@@ -47,7 +52,7 @@ class _MyCoverState extends State<MyCover> {
   String provider = '';
   String businessName = '';
   String businessId = '';
-  String productCategory = '';
+
   String productId = '';
   String logo = '';
   String instanceId = '';
@@ -65,17 +70,31 @@ class _MyCoverState extends State<MyCover> {
     super.dispose();
   }
 
-  fetchProductDetail() async {
+  getProductCat() async {
+    var response = await WebServices.getProductCategory(
+        widget.productData['data']['productDetails'][0]['product_category_id'],
+        widget.publicKey);
+
+    log("category response $response");
+
+    if (response is Map &&
+        (response["responseText"] as String)
+            .contains("Product category fetched successfully")) {
+      return response["data"]["product_category"]["name"];
+    }
+
+    return "health";
+  }
+
+  Future fetchProductDetail() async {
     setState(() {
       productDetail = widget.productData;
+
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       inspectable =
           productDetail['data']['productDetails'][0]['inspectable'] ?? false;
       provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
-      productCategory = productDetail['data']['productDetails'][0]
-              ['name']
-          .toString()
-          .toLowerCase();
+
       businessName =
           productDetail['data']['businessDetails']['trading_name'] ?? '';
       logo = productDetail['data']['businessDetails']['logo'] ?? '';
@@ -132,10 +151,10 @@ class _MyCoverState extends State<MyCover> {
             ? Dialogs.confirmClose(context)
             : setState(() => bodyType = BodyType.introPage);
       },
-      body: openIntro(productCategory),
+      body: openIntro(widget.productCat.toLowerCase()),
     );
 
-     /* Padding(
+    /* Padding(
         padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
         child: Column(
           children: [
@@ -235,9 +254,11 @@ class _MyCoverState extends State<MyCover> {
   }
 
   openIntro(String productType) {
-    if (productType.contains('auto') || productType.contains('life')) {
+    if (productType.contains('auto') ||
+        productType.toLowerCase().contains('life')) {
       return const AutoScreen();
-    } else if (productType.contains('health')) {
+    } else if (productType.contains('health') ||
+        productType.contains('hospital')) {
       return const HealthScreen();
     } else if (productType.contains('travel')) {
       return const TravelScreen();

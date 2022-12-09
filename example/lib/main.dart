@@ -49,12 +49,14 @@ class _MyHomePageState extends State<MyHomePage> {
         productId: [productId],
         form: {
           'email': userEmail,
-          'name': 'Damilare Peter',
-          'phone': '08108257228'
+          'name': '',
+          'phone': ''
         },
         paymentOption: PaymentOption.gateway,
         transactionType: TransactionType.purchase);
+
     var response = await myCover.initialise();
+
     if (response != null) {
       showLoading('$response');
     } else {
@@ -99,7 +101,8 @@ class _MyHomePageState extends State<MyHomePage> {
       'https://staging.api.mycover.ai/v1/sdk/initialize';
 
   getAllProducts() async {
-    var data = {"payment_option": 'gateway'};
+    var data = {"payment_option": 'gateway', "action": "purchase"};
+
     try {
       var res = await makePostRequest(
           apiUrl: productUrl, data: data, token: publicKey);

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 
 import '../../mca_flutter_sdk.dart';
@@ -10,6 +12,7 @@ import 'failed.dart';
 import 'homeForm.dart';
 
 enum TypeOfProduct { auto, health, gadget, travel }
+
 enum TransactionType { purchase, inspection }
 
 class MyCoverAI {
@@ -34,7 +37,6 @@ class MyCoverAI {
   final form;
 
   initialise() async {
-
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
     var payOption = paymentOption ?? PaymentOption.gateway;
     var inspectionOption = InspectionType.vehicle;
@@ -72,6 +74,8 @@ class MyCoverAI {
           reference: reference,
           paymentOption: payOption.toString().replaceAll('PaymentOption.', ''));
 
+      log("Response $response");
+
       Navigator.pop(context);
 
       if (response is String) {
@@ -81,6 +85,24 @@ class MyCoverAI {
           MaterialPageRoute(builder: (context) => const Failed()),
         );
       } else {
+        getProductCat() async {
+          var res = await WebServices.getProductCategory(
+              response['data']['productDetails'][0]['product_category_id'],
+              publicKey);
+
+          log("category response $response");
+
+          if (res is Map &&
+              (res["responseText"] as String)
+                  .contains("Product category fetched successfully")) {
+            return res["data"]["product_category"]["name"];
+          }
+
+          return "health";
+        }
+
+        var prodctCat = await getProductCat();
+
         return await Navigator.push(
           context,
           MaterialPageRoute(
@@ -94,6 +116,7 @@ class MyCoverAI {
                     paymentOption: payOption)
                 : MyCover(
                     form: form,
+                    productCat: prodctCat,
                     email: email,
                     publicKey: publicKey,
                     productId: productId,

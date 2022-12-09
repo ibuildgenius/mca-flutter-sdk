@@ -16,17 +16,14 @@ class WebServices {
   static const String submitInspectionUrl = '/sdk/inspections/vehicle';
   static const String inspectionInfo = '/sdk/inspection-info';
 
-
-  static getBaseUrl(publicKey){
+  static getBaseUrl(publicKey) {
     print('===> $publicKey');
-    if(publicKey.toString().toLowerCase().contains('test')){
+    if (publicKey.toString().toLowerCase().contains('test')) {
       return 'https://staging.api.mycover.ai/v1';
-    }else{
+    } else {
       return 'https://api.mycover.ai/v1';
-
     }
   }
-
 
   static initialiseSdk(
       {required String publicKey,
@@ -46,17 +43,18 @@ class WebServices {
         data = {
           "product_id": productId,
           "payment_option": paymentOption,
-          "debit_wallet_reference": reference
+          "debit_wallet_reference": reference,
+          "action": "purchase"
         };
       }
-print('=======> Initi data $data');
-print(publicKey);
+      print('=======> Initi data $data');
+      print(publicKey);
       return await ApiScheme.initialisePostRequest(
-          url: '${getBaseUrl(publicKey)}' + _initialiseSdkUrl, data: data, token: publicKey);
+          url: '${getBaseUrl(publicKey)}' + _initialiseSdkUrl,
+          data: data,
+          token: publicKey);
     }
   }
-
-
 
   static verifyPayment(String reference, businessId, publicKey) async {
     var data = {
@@ -67,6 +65,11 @@ print(publicKey);
         data: data,
         apiKey: businessId,
         token: publicKey);
+  }
+
+  static getProductCategory(String id, token) async {
+    return await ApiScheme.initialiseGetRequest(
+        url: getBaseUrl(token) + "/products/get-product-category/$id", token: token);
   }
 
   static uploadFile(context, businessId, File image, token, {fileType}) async {
@@ -98,7 +101,8 @@ print(publicKey);
   static getPurchaseInfo(businessId, reference, publicKey) async {
     String queryString = 'reference=$reference';
 
-    var requestUrl = '${getBaseUrl(publicKey)}' + _purchaseInfoUrl + '?' + queryString;
+    var requestUrl =
+        '${getBaseUrl(publicKey)}' + _purchaseInfoUrl + '?' + queryString;
 
     return await ApiScheme.initialiseGetRequest(
         url: requestUrl, apiKey: businessId, token: publicKey);
@@ -109,9 +113,12 @@ print(publicKey);
         url: '${getBaseUrl(publicKey)}' + _ussdProviderUrl, token: publicKey);
   }
 
-  static getInspectionInfo(reference,publicKey) async {
+  static getInspectionInfo(reference, publicKey) async {
     return await ApiScheme.initialiseGetRequest(
-        url: '${getBaseUrl(publicKey)}' +  inspectionInfo+'?reference=$reference', token: publicKey);
+        url: '${getBaseUrl(publicKey)}' +
+            inspectionInfo +
+            '?reference=$reference',
+        token: publicKey);
   }
 
   static buyProduct({
@@ -128,7 +135,10 @@ print(publicKey);
     };
 
     return await ApiScheme.initialisePostRequest(
-        url: '${getBaseUrl(publicKey)}' + _buySdkUrl, data: data, apiKey: businessId, token: publicKey);
+        url: '${getBaseUrl(publicKey)}' + _buySdkUrl,
+        data: data,
+        apiKey: businessId,
+        token: publicKey);
   }
 
   static initiatePurchase({
@@ -147,9 +157,9 @@ print(publicKey);
       "payment_channel": paymentChannel,
     };
 
-print(data);
+    print(data);
     return await ApiScheme.initialisePostRequest(
-        url:'${getBaseUrl(publicKey)}' + _initiatePurchaseUrl,
+        url: '${getBaseUrl(publicKey)}' + _initiatePurchaseUrl,
         data: data,
         apiKey: businessId,
         token: publicKey);
@@ -237,7 +247,6 @@ print(data);
     request.fields['video_url'] = videoUrl;
     request.fields['longitude'] = lon.toString();
     request.fields['latitude'] = lat.toString();
-
 
     print(request.fields);
 
