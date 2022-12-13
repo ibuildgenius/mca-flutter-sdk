@@ -47,7 +47,7 @@ class WebServices {
           "action": "purchase"
         };
       }
-      print('=======> Initi data $data');
+      print('=======> Init data $data');
       print(publicKey);
       return await ApiScheme.initialisePostRequest(
           url: '${getBaseUrl(publicKey)}' + _initialiseSdkUrl,
