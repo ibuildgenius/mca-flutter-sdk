@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
@@ -47,7 +48,7 @@ class MyCover extends StatefulWidget {
   State<MyCover> createState() => _MyCoverState();
 }
 
-class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
+class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
   var productDetail;
   String productName = '';
   String provider = '';
@@ -64,6 +65,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
 
   @override
   void initState() {
+    getProductCat();
     fetchProductDetail();
     super.initState();
   }
@@ -73,7 +75,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
     super.dispose();
   }
 
-  getProductCat() async {
+  Future<void> getProductCat() async {
     var response = await WebServices.getProductCategory(
         widget.productData['data']['productDetails'][0]['product_category_id'],
         widget.publicKey);
@@ -83,10 +85,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
     if (response is Map &&
         (response["responseText"] as String)
             .contains("Product category fetched successfully")) {
-     setState(() {
-       productCat = response["data"]["product_category"]["name"];
-     });
-
+      productCat = response["data"]["product_category"]["name"];
     }
   }
 
@@ -107,6 +106,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
     });
+
   }
 
   @override
@@ -324,6 +324,6 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
 
   @override
   FutureOr<void> afterFirstLayout(BuildContext context) {
-    getProductCat();
+    //getProductCat();
   }
 }
