@@ -1,6 +1,9 @@
+import 'dart:async';
 import 'dart:developer';
 
+import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:mca_flutter_sdk/mca_flutter_sdk.dart';
 import 'package:mca_flutter_sdk/src/services/services.dart';
 
 import '../const.dart';
@@ -30,13 +33,11 @@ class MyCover extends StatefulWidget {
       required this.publicKey,
       required this.reference,
       required this.paymentOption,
-      required this.form,
-      required this.productCat})
+      required this.form})
       : super(key: key);
   final List? productId;
   final String publicKey;
   final String email;
-  final String productCat;
   final PaymentOption? paymentOption;
   final String? reference;
   final productData;
@@ -46,7 +47,7 @@ class MyCover extends StatefulWidget {
   State<MyCover> createState() => _MyCoverState();
 }
 
-class _MyCoverState extends State<MyCover> {
+class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover>{
   var productDetail;
   String productName = '';
   String provider = '';
@@ -58,6 +59,8 @@ class _MyCoverState extends State<MyCover> {
   String instanceId = '';
   BodyType bodyType = BodyType.introPage;
   bool inspectable = false;
+
+  String productCat = 'health';
 
   @override
   void initState() {
@@ -80,10 +83,11 @@ class _MyCoverState extends State<MyCover> {
     if (response is Map &&
         (response["responseText"] as String)
             .contains("Product category fetched successfully")) {
-      return response["data"]["product_category"]["name"];
-    }
+     setState(() {
+       productCat = response["data"]["product_category"]["name"];
+     });
 
-    return "health";
+    }
   }
 
   Future fetchProductDetail() async {
@@ -151,7 +155,7 @@ class _MyCoverState extends State<MyCover> {
             ? Dialogs.confirmClose(context)
             : setState(() => bodyType = BodyType.introPage);
       },
-      body: openIntro(widget.productCat.toLowerCase()),
+      body: openIntro(productCat),
     );
 
     /* Padding(
@@ -316,5 +320,10 @@ class _MyCoverState extends State<MyCover> {
         ),
       ),
     );
+  }
+
+  @override
+  FutureOr<void> afterFirstLayout(BuildContext context) {
+    getProductCat();
   }
 }
