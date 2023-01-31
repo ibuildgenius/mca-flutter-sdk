@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:sentry_flutter/sentry_flutter.dart';
 
 import '../../mca_flutter_sdk.dart';
 import '../const.dart';
@@ -9,14 +12,18 @@ class AllProducts extends StatefulWidget {
   const AllProducts(
       {Key? key,
       required this.productData,
-        required this.reference,
-        required  this.typeOfTransaction,
-      required this.userId})
+      required this.reference,
+      required this.paymentOption,
+      required this.publicKey,
+      required this.email,
+      required this.form})
       : super(key: key);
-  final String userId;
+  final String publicKey;
+  final String email;
   final productData;
-  final PurchaseStage ?typeOfTransaction;
-  final String ?reference;
+  final form;
+  final PaymentOption? paymentOption;
+  final String? reference;
 
   @override
   State<AllProducts> createState() => _AllProductsState();
@@ -26,15 +33,28 @@ class _AllProductsState extends State<AllProducts> {
   final searchController = TextEditingController();
   var searchList;
 
-  initialiseSdk(context, {productId}) {
+  initialiseSdk(context, productId) {
     final mycover = MyCoverAI(
         context: context,
-        userId: widget.userId,
-        productId: productId ?? '',
-        typeOfTransaction: widget.typeOfTransaction,
-        reference: widget.reference);
-     mycover.initialise();
-
+        form: widget.form,
+        productId: [productId],
+        publicKey: '2aa4f6ec-0111-42f4-88f9-466c7ef41727',
+        paymentOption: widget.paymentOption,
+        reference: widget.reference, transactionType: TransactionType.purchase, email: widget.email);
+    runZonedGuarded(() async {
+      await Sentry.init(
+            (options) {
+              options.dsn = 'https://b38daa0de05c465a9425719e8dccc46c@o1144473.ingest.sentry.io/6617317';
+              // Set tracesSampleRate to 1.0 to capture 100% of transactions for performance monitoring.
+              // We recommend adjusting this value in production.
+              options.tracesSampleRate = 0.5;
+        },
+      );
+      // Init your App.
+      mycover.initialise();
+    }, (exception, stackTrace) async {
+      await Sentry.captureException(exception, stackTrace: stackTrace);
+    });
   }
 
   getImages(String category) {
@@ -165,8 +185,8 @@ class _AllProductsState extends State<AllProducts> {
                                         fontSize: 16,
                                         color: DARK)),
                                 subtitle: Text(item['productCategory']['name']),
-                                onTap: () => initialiseSdk(context,
-                                    productId: item['id']));
+                                onTap: () =>
+                                    initialiseSdk(context, item['id']));
                           },
                           separatorBuilder: (c, i) => const SizedBox(height: 5),
                           itemCount: searchList.length),

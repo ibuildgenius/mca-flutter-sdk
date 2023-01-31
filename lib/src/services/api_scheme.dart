@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
+
 import 'package:http/http.dart' as http;
 
-class ApiScheme{
-
+class ApiScheme {
   static _handleError(http.Response response) {
     switch (response.statusCode) {
       case 400:
@@ -16,10 +16,8 @@ class ApiScheme{
         throw 'Forbidden Error - ${jsonDecode(response.body)['responseText']}';
       case 404:
         throw 'Not Found - ${jsonDecode(response.body)['responseText']}';
-
       case 422:
         throw 'Unable to process - ${jsonDecode(response.body)['responseText']}';
-
       case 500:
         throw 'Server error - ${jsonDecode(response.body)['responseText']}';
       default:
@@ -31,68 +29,39 @@ class ApiScheme{
     return statusCode! >= 200 && statusCode < 300;
   }
 
-  static _makeGetRequest({apiUrl, token,apiKey}) async {
+  static _makeGetRequest({apiUrl, token, apiKey}) async {
     final uri = Uri.parse(apiUrl);
 
-    var headers;
-    if (token != null) {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-        HttpHeaders.authorizationHeader: 'Bearer $token',
-        'x-api-id': '$apiKey',
-      };
-    }
-    else if (apiKey == null) {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-      };
-    }
-    else {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-        'x-api-id': '$apiKey',
+    var headers = {
+      HttpHeaders.contentTypeHeader: 'application/json',
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+      'x-api-id': '$apiKey',
+    };
 
-      };
-    }
     return await http.get(uri, headers: headers);
   }
 
   static _makePostRequest({apiUrl, data, token, apiKey}) async {
     final uri = Uri.parse(apiUrl);
     final jsonString = json.encode(data);
-    var headers;
-    if (token != null) {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-        HttpHeaders.authorizationHeader: 'Bearer $token',
-        'x-api-id': '$apiKey',
-      };
-    }
-    else if (apiKey == null) {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-      };
-    }
-    else {
-      headers = {
-        HttpHeaders.contentTypeHeader: 'application/json',
-        'x-api-id': '$apiKey',
-
-      };
-    }
+    var headers = {
+      HttpHeaders.contentTypeHeader: 'application/json',
+      HttpHeaders.authorizationHeader: 'Bearer $token',
+      'x-api-id': '$apiKey',
+    };
     return await http.post(uri, body: jsonString, headers: headers);
   }
 
-
-
   static initialisePostRequest(
       {required Map<String, dynamic> data,
-        required String url,
-        token,
-        apiKey}) async {
+      required String url,
+      apiKey,
+      required String token}) async {
+    print(url);
+
     try {
-      var response = await _makePostRequest(
-          apiUrl: url, data: data, token: token, apiKey: apiKey);
+      var response =
+          await _makePostRequest(apiUrl: url, data: data, token: token);
       var body = jsonDecode(response.body);
       if (_isRequestSuccessful(response.statusCode)) {
         return body;
@@ -104,11 +73,10 @@ class ApiScheme{
     }
   }
 
-
-
-  static initialiseGetRequest({required String url, token,apiKey}) async {
+  static initialiseGetRequest({required String url, token, apiKey}) async {
     try {
-      var response = await _makeGetRequest(apiUrl: url, token: token, apiKey: apiKey);
+      print(url);
+      var response = await _makeGetRequest(apiUrl: url, token: token);
       var body = jsonDecode(response.body);
       if (_isRequestSuccessful(response.statusCode)) {
         return body;

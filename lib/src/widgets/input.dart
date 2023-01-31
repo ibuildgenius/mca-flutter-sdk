@@ -4,7 +4,8 @@ import '../theme.dart';
 
 Text textBoxTitle(text) => Text(' $text',
     style: const TextStyle(
-        fontSize: 13, fontWeight: FontWeight.w500, color: DARK));
+        fontSize: 13, fontWeight: FontWeight.w500, color: DARK,                          fontFamily: 'Space',
+    ));
 
 class InputFormField extends StatelessWidget {
   const InputFormField({
@@ -53,7 +54,8 @@ class InputFormField extends StatelessWidget {
         enabled: enabled,
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(fontSize: 14, color: DARK),
+        style: const TextStyle(fontSize: 14, color: DARK,                          fontFamily: 'Space',
+        ),
         textCapitalization: textCapitalization,
         validator: validator,
         onChanged: onChanged,
@@ -85,8 +87,10 @@ class InputFormField extends StatelessWidget {
           prefixIcon: prefixIcon,
           labelText: label,
           hintText: hint,
-          labelStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4)),
-          hintStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4)),
+          labelStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4),                          fontFamily: 'Space',
+          ),
+          hintStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4),                          fontFamily: 'Space',
+          ),
           contentPadding:
            EdgeInsets.symmetric(vertical: padding??15.0, horizontal: 15.0),
         ),

@@ -1,7 +1,15 @@
+import 'dart:async';
+import 'dart:developer';
+import 'dart:io';
+
+import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:mca_flutter_sdk/mca_flutter_sdk.dart';
+import 'package:mca_flutter_sdk/src/services/services.dart';
 
 import '../const.dart';
 import '../theme.dart';
+import '../widgets/body_scaffold.dart';
 import '../widgets/buttons.dart';
 import '../widgets/common.dart';
 import '../widgets/dialogs.dart';
@@ -13,6 +21,8 @@ import 'travel.dart';
 
 enum BodyType { introPage, detail, success }
 
+enum PaymentOption { wallet, gateway }
+
 enum PurchaseStage { payment, purchase }
 
 class MyCover extends StatefulWidget {
@@ -21,34 +31,41 @@ class MyCover extends StatefulWidget {
       required this.productData,
       required this.productId,
       required this.email,
+      required this.publicKey,
       required this.reference,
-      required this.typeOfTransaction,
-      required this.userId})
+      required this.paymentOption,
+      required this.form})
       : super(key: key);
-  final String? productId;
-  final String userId;
+  final List? productId;
+  final String publicKey;
   final String email;
-  final PurchaseStage? typeOfTransaction;
+  final PaymentOption? paymentOption;
   final String? reference;
   final productData;
+  final form;
 
   @override
   State<MyCover> createState() => _MyCoverState();
 }
 
-class _MyCoverState extends State<MyCover> {
+class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
   var productDetail;
   String productName = '';
   String provider = '';
   String businessName = '';
   String businessId = '';
-  String productCategory = '';
+
   String productId = '';
   String logo = '';
+  String instanceId = '';
   BodyType bodyType = BodyType.introPage;
+  bool inspectable = false;
+
+  String productCat = 'health';
 
   @override
   void initState() {
+    getProductCat();
     fetchProductDetail();
     super.initState();
   }
@@ -58,23 +75,38 @@ class _MyCoverState extends State<MyCover> {
     super.dispose();
   }
 
-  fetchProductDetail() async {
+  Future<void> getProductCat() async {
+    var response = await WebServices.getProductCategory(
+        widget.productData['data']['productDetails'][0]['product_category_id'],
+        widget.publicKey);
+
+    log("category response $response");
+
+    if (response is Map &&
+        (response["responseText"] as String)
+            .contains("Product category fetched successfully")) {
+      productCat = response["data"]["product_category"]["name"];
+    }
+  }
+
+  Future fetchProductDetail() async {
     setState(() {
       productDetail = widget.productData;
 
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
+      inspectable =
+          productDetail['data']['productDetails'][0]['inspectable'] ?? false;
       provider = productDetail['data']['productDetails'][0]['prefix'] ?? '';
-      productCategory = productDetail['data']['productDetails'][0]
-              ['productCategory']['name']
-          .toString()
-          .toLowerCase();
 
       businessName =
           productDetail['data']['businessDetails']['trading_name'] ?? '';
       logo = productDetail['data']['businessDetails']['logo'] ?? '';
+      instanceId =
+          productDetail['data']['businessDetails']['instance_id'] ?? '';
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
     });
+
   }
 
   @override
@@ -84,68 +116,7 @@ class _MyCoverState extends State<MyCover> {
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    InkWell(
-                      onTap: () {
-                        bodyType == BodyType.introPage
-                            ? Dialogs.confirmClose(context)
-                            : setState(() => bodyType = BodyType.introPage);
-                      },
-                      child: Container(
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: WHITE.withOpacity(0.7)),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child:
-                                Icon(Icons.arrow_back, color: BLACK, size: 15),
-                          )),
-                    ),
-                    InkWell(
-                      onTap: () => Dialogs.confirmClose(context),
-                      child: Container(
-                          decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: RED.withOpacity(0.2)),
-                          child: const Padding(
-                            padding: EdgeInsets.all(8.0),
-                            child: Icon(Icons.close, color: RED, size: 15),
-                          )),
-                    ),
-                  ],
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    logo == ''
-                        ? Image.asset(mca,
-                            height: 30, package: 'mca_flutter_sdk')
-                        : Image.network(
-                            logo,
-                            height: 30,
-                          ),
-                  ],
-                ),
-                const SizedBox(height: 10),
-                selectBody(bodyType),
-                const SizedBox(height: 10),
-                Padding(
-                  padding: const EdgeInsets.only(top: 5.0),
-                  child: Image.asset(myCover,
-                      width: 170,
-                      fit: BoxFit.fitWidth,
-                      color: LIGHT_GREY,
-                      package: 'mca_flutter_sdk'),
-                ),
-              ],
-            ),
-          ),
+          child: selectBody(bodyType),
         ),
       ),
     );
@@ -158,10 +129,14 @@ class _MyCoverState extends State<MyCover> {
       case BodyType.detail:
         return FormScreen(
           productDetail: widget.productData,
-          email: widget.email,
-          userId: widget.userId,
-          typeOfTransaction: widget.typeOfTransaction,
+          publicKey: widget.publicKey,
+          paymentOption: widget.paymentOption,
           reference: widget.reference,
+          instanceId: instanceId,
+          form: widget.form,
+          provider: provider,
+          inspectable: inspectable,
+          email: widget.email,
         );
       case BodyType.success:
         return successScreen();
@@ -169,37 +144,125 @@ class _MyCoverState extends State<MyCover> {
   }
 
   Widget introBodyScreen() {
-    return Expanded(
-      child: Container(
-        decoration:
-            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 15.0),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: <Widget>[
-              verticalSpace(),
-              openIntro(productCategory),
-              smallVerticalSpace(),
-              const Divider(),
-              button(
-                  text: 'Get Covered',
-                  onTap: () => setState(() => bodyType = BodyType.detail)),
-              smallVerticalSpace(),
-              getProductName(provider.toUpperCase()),
-              smallVerticalSpace(),
-            ],
-          ),
-        ),
-      ),
+    return BodyScaffold(
+      logo: logo,
+      text: 'Get Covered',
+      buttonAction: () {
+        setState(() => bodyType = BodyType.detail);
+      },
+      backAction: () {
+        bodyType == BodyType.introPage
+            ? Dialogs.confirmClose(context)
+            : setState(() => bodyType = BodyType.introPage);
+      },
+      body: openIntro(productCat),
     );
+
+    /* Padding(
+        padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
+        child: Column(
+          children: [
+            const SizedBox(height: 10),
+            // selectBody(bodyType),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 2.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: () {
+                      bodyType == BodyType.introPage
+                          ? Dialogs.confirmClose(context)
+                          : setState(() => bodyType = BodyType.introPage);
+                    },
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: WHITE.withOpacity(0.7)),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child:
+                          Icon(Icons.arrow_back, color: BLACK, size: 15),
+                        )),
+                  ),
+                  InkWell(
+                    onTap: () => Dialogs.confirmClose(context),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: RED.withOpacity(0.2)),
+                        child: const Padding(
+                          padding: EdgeInsets.all(8.0),
+                          child: Icon(Icons.close, color: RED, size: 15),
+                        )),
+                  ),
+                ],
+              ),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                logo == ''
+                    ? Image.asset(mca,
+                    height: 30, package: 'mca_flutter_sdk')
+                    : Image.network(
+                  logo,
+                  height: 30,
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            Expanded(
+              child: Padding(
+                padding: const EdgeInsets.all(4.0),
+                child: Container(
+                  decoration:
+                  BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 15.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+
+                        verticalSpace(),
+
+                        openIntro(productCategory),
+                        smallVerticalSpace(),
+                        const Divider(),
+                        button(
+                            text: 'Get Covered',
+                            onTap: () => setState(() => bodyType = BodyType.detail)),
+                        smallVerticalSpace(),
+                        Image.asset(myCover,
+                            width: 160,
+                            fit: BoxFit.fitWidth,
+                            package: 'mca_flutter_sdk'),
+
+                        smallVerticalSpace(),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 10),
+            verticalSpace(),
+
+          ],
+
+      ),
+
+    ); */
   }
 
   openIntro(String productType) {
-
-    if (productType.contains('auto') || productType.contains('life')) {
+    if (productType.contains('auto') ||
+        productType.toLowerCase().contains('life')) {
       return const AutoScreen();
-    } else if (productType.contains('health')) {
+    } else if (productType.contains('health') ||
+        productType.contains('hospital')) {
       return const HealthScreen();
     } else if (productType.contains('travel')) {
       return const TravelScreen();
@@ -257,5 +320,10 @@ class _MyCoverState extends State<MyCover> {
         ),
       ),
     );
+  }
+
+  @override
+  FutureOr<void> afterFirstLayout(BuildContext context) {
+    //getProductCat();
   }
 }

@@ -28,6 +28,10 @@
 	<string>This app needs pictures for profile update</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app needs pictures for profile update</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location for inspection</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs location for inspection</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
