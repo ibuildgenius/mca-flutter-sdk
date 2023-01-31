@@ -11,15 +11,13 @@ A Flutter plugin for buying insurance, supports both iOS and Android platforms .
 Get your insurance and make payment
 
 ## Getting started
-
-1. Add package mca_flutter_sdk to your pubspec.yaml file
+1. Add package mca_official_flutter_sdk to your pubspec.yaml file
 2. Run flutter pub get
 3. Add required permission for the image pickers and camera
 4. Add required permission for the geolocation
 
 
 ## Usage
-
 Initialise the sdk in two ways
 
 Some parameters are required to initialise the SDK, namely:
@@ -59,7 +57,7 @@ such as
 
 
 ```dart
-import 'package:mca_flutter_sdk/mca_flutter_sdk.dart';
+import 'package:mca_flutter_sdk/mca_official_flutter_sdk.dart';
 
 PurchaseStage typeOfTransaction = PurchaseStage.purchase;String reference = 'BUY-BWBJMPABGFWKB';
 

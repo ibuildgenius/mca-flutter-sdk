@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 
-import '../../mca_flutter_sdk.dart';
+import '../../mca_official_flutter_sdk.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/input.dart';

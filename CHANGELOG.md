@@ -10,6 +10,5 @@
 * Added inspection to purchase process for both platforms
 * Added payment method to the purchase process
 
-
 ## 0.0.4 -  2022-08-04
 * Initial beta release.

@@ -1,13 +1,11 @@
-name: mca_flutter_sdk
+name: mca_official_flutter_sdk
 description: The Official Flutter MyCover.ai SDK for insurance purchase and payment. Completely supports Android and iOS.
 version: 0.6.0
 homepage: https://github.com/ibuildgenius/mca-flutter-sdk
 
-
 environment:
   sdk: ">=2.16.2 <3.0.0"
   flutter: ">=1.17.0"
-
 
 dependencies:
   flutter:
@@ -39,4 +37,3 @@ flutter:
     - family: Space
       fonts:
         - asset: assets/fonts/space-grotesk.ttf
-

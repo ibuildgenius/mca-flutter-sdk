@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
-import 'package:mca_flutter_sdk/mca_flutter_sdk.dart';
-import 'package:mca_flutter_sdk/src/services/services.dart';
+import 'package:mca_official_flutter_sdk/mca_official_flutter_sdk.dart';
+import 'package:mca_official_flutter_sdk/src/services/services.dart';
 
 import '../const.dart';
 import '../theme.dart';

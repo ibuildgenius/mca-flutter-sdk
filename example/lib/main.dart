@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'package:mca_flutter_sdk/mca_flutter_sdk.dart';
+import 'package:mca_official_flutter_sdk/mca_official_flutter_sdk.dart';
 
 void main() {
   runApp(const MyApp());

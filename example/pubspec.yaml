@@ -29,7 +29,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  mca_flutter_sdk:
+  mca_official_flutter_sdk:
     path: "../"
   image_picker: ^0.8.1
 

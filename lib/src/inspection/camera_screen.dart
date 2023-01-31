@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:mca_flutter_sdk/src/services/services.dart';
+import 'package:mca_official_flutter_sdk/src/services/services.dart';
 import 'package:video_compress/video_compress.dart';
 
 import '../const.dart';

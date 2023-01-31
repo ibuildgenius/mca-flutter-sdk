@@ -2,7 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 
-import '../../mca_flutter_sdk.dart';
+import '../../mca_official_flutter_sdk.dart';
 import '../inspection/demo.dart';
 import '../inspection/inspection.dart';
 import '../services/services.dart';
