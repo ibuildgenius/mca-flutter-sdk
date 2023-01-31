@@ -14,7 +14,7 @@ dependencies:
   fluttertoast: ^8.0.8
   image_picker: ^0.8.1
   mockito: ^5.0.3
-  camera: ^0.9.4+14
+  camera: ^0.10.3
   get: ^4.6.4
   video_compress: ^3.1.0
   permission_handler: ^9.2.0
