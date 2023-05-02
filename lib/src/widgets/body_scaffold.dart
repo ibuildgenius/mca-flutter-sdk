@@ -54,7 +54,7 @@ class BodyScaffold extends StatelessWidget {
             children: [
               logo == ''
                   ? Image.asset(mca,
-                  height: 30, package: 'mca_flutter_sdk')
+                  height: 30, package: 'mca_official_flutter_sdk')
                   : Image.network(
                 logo,
                 height: 30,
@@ -86,7 +86,7 @@ class BodyScaffold extends StatelessWidget {
                       Image.asset(myCover,
                           width: 160,
                           fit: BoxFit.fitWidth,
-                          package: 'mca_flutter_sdk'),
+                          package: 'mca_official_flutter_sdk'),
 
                       smallVerticalSpace(),
                     ],
@@ -157,7 +157,7 @@ class FormBodyScaffold extends StatelessWidget {
               children: [
                 logo == ''
                     ? Image.asset(mca,
-                    height: 30, package: 'mca_flutter_sdk')
+                    height: 30, package: 'mca_official_flutter_sdk')
                     : Image.network(
                   logo,
                   height: 30,
@@ -188,7 +188,7 @@ class FormBodyScaffold extends StatelessWidget {
                       Image.asset(myCover,
                           width: 160,
                           fit: BoxFit.fitWidth,
-                          package: 'mca_flutter_sdk'),
+                          package: 'mca_official_flutter_sdk'),
 
                       smallVerticalSpace(),
                     ],

@@ -181,7 +181,7 @@ class _InspectionScreenState extends State<InspectionScreen>
                                               Image.asset(
                                                 'assets/images/direction.png',
                                                 width: width(context) * 0.8,
-                                                package: 'mca_flutter_sdk',
+                                                package: 'mca_official_flutter_sdk',
                                               ),
                                               const Text('Go in this direction',
                                                   style: TextStyle(
@@ -211,11 +211,11 @@ class _InspectionScreenState extends State<InspectionScreen>
                                                   Image.asset(
                                                       'assets/images/leftTop.png',
                                                       package:
-                                                          'mca_flutter_sdk'),
+                                                          'mca_official_flutter_sdk'),
                                                   Image.asset(
                                                       'assets/images/rightTop.png',
                                                       package:
-                                                          'mca_flutter_sdk'),
+                                                          'mca_official_flutter_sdk'),
                                                 ],
                                               ),
                                               SizedBox(
@@ -229,11 +229,11 @@ class _InspectionScreenState extends State<InspectionScreen>
                                                   Image.asset(
                                                       'assets/images/leftBottom.png',
                                                       package:
-                                                          'mca_flutter_sdk'),
+                                                          'mca_official_flutter_sdk'),
                                                   Image.asset(
                                                       'assets/images/rightBottom.png',
                                                       package:
-                                                          'mca_flutter_sdk'),
+                                                          'mca_official_flutter_sdk'),
                                                 ],
                                               ),
                                               SizedBox(
@@ -355,7 +355,7 @@ class _InspectionScreenState extends State<InspectionScreen>
                                                     .imageAsset,
                                                 height: width(context) * 0.25,
                                                 fit: BoxFit.contain,
-                                                package: 'mca_flutter_sdk',
+                                                package: 'mca_official_flutter_sdk',
                                               ),
                                             ),
                                             const SizedBox(height: 15),

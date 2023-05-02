@@ -174,7 +174,7 @@ class _AllProductsState extends State<AllProducts> {
                                     getImages(item['productCategory']['name']),
                                     height: 40,
                                     width: 40,
-                                    package: 'mca_flutter_sdk'),
+                                    package: 'mca_official_flutter_sdk'),
                                 title: Text(item['name']),
                                 trailing: Text(
                                     item['is_dynamic_pricing']

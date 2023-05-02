@@ -148,7 +148,7 @@ inspectionSummary(context,
           child: Image.asset(
             'assets/images/checkout.png',
             width: width(context) * 0.2,
-            package: 'mca_flutter_sdk',
+            package: 'mca_official_flutter_sdk',
           ),
         ),
         const Center(

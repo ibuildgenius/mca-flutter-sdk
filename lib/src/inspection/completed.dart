@@ -20,7 +20,7 @@ class _CompletedScreenState extends State<CompletedScreen> {
             SizedBox(height: height(context) * 0.1),
             Image.asset(
               'assets/images/completed.png',
-              width: width(context) * 0.8,package: 'mca_flutter_sdk',
+              width: width(context) * 0.8,package: 'mca_official_flutter_sdk',
             ),
             const SizedBox(height: 20),
             const Text('Great job',

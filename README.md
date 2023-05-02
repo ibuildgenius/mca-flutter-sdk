@@ -57,7 +57,7 @@ such as
 
 
 ```dart
-import 'package:mca_flutter_sdk/mca_official_flutter_sdk.dart';
+import 'package:mca_official_flutter_sdk/mca_official_flutter_sdk.dart';
 
 PurchaseStage typeOfTransaction = PurchaseStage.purchase;String reference = 'BUY-BWBJMPABGFWKB';
 

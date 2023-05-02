@@ -90,7 +90,7 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(book, height: 25,                      package: 'mca_flutter_sdk'
+                child: Image.asset(book, height: 25,                      package: 'mca_official_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),
@@ -118,7 +118,7 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(insight, height: 25,                      package: 'mca_flutter_sdk'
+                child: Image.asset(insight, height: 25,                      package: 'mca_official_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),
@@ -146,7 +146,7 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(layer, height: 25,                      package: 'mca_flutter_sdk'
+                child: Image.asset(layer, height: 25,                      package: 'mca_official_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),

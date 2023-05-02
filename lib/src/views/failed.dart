@@ -60,7 +60,7 @@ class Failed extends StatelessWidget {
                                       child: Image.asset(failed,
                                           height: 30,
                                           width: 30,
-                                          package: 'mca_flutter_sdk'),
+                                          package: 'mca_official_flutter_sdk'),
                                     ))),
                             verticalSpace(),
                             const Center(

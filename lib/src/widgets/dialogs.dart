@@ -49,7 +49,7 @@ class Dialogs {
                     child: Image.asset(
                       'assets/images/checkout.png',
                       width: width(context) * 0.2,
-                      package: 'mca_flutter_sdk',
+                      package: 'mca_official_flutter_sdk',
                     ),
                   ),
                   const Center(
@@ -238,7 +238,7 @@ class Dialogs {
                                     child: Image.asset(checkOut,
                                         height: 55,
                                         width: 55,
-                                        package: 'mca_flutter_sdk'),
+                                        package: 'mca_official_flutter_sdk'),
                                   ))),
                           verticalSpace(),
                           Center(
@@ -414,7 +414,7 @@ class Dialogs {
                                     child: Image.asset(failed,
                                         height: 55,
                                         width: 55,
-                                        package: 'mca_flutter_sdk'),
+                                        package: 'mca_official_flutter_sdk'),
                                   ))),
                           verticalSpace(),
                           const Center(

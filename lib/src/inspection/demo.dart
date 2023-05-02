@@ -69,7 +69,7 @@ class _DemoScreenState extends State<DemoScreen> {
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Image.asset('assets/images/BACKGROUND.png',
-                    package: 'mca_flutter_sdk',
+                    package: 'mca_official_flutter_sdk',
                     height: height(context) * 0.25),
               ],
             ),
@@ -85,7 +85,7 @@ class _DemoScreenState extends State<DemoScreen> {
                       borderRadius: BorderRadius.circular(48),
                       child: Image.asset('assets/images/hqvdw.gif',
                           width: height(context) * 0.28,
-                          package: 'mca_flutter_sdk'),
+                          package: 'mca_official_flutter_sdk'),
                     ),
                   ),
                   SizedBox(height: height(context) * 0.04),

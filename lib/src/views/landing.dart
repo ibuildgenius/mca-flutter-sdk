@@ -204,7 +204,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
               children: [
                 logo == ''
                     ? Image.asset(mca,
-                    height: 30, package: 'mca_flutter_sdk')
+                    height: 30, package: 'mca_official_flutter_sdk')
                     : Image.network(
                   logo,
                   height: 30,
@@ -237,7 +237,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
                         Image.asset(myCover,
                             width: 160,
                             fit: BoxFit.fitWidth,
-                            package: 'mca_flutter_sdk'),
+                            package: 'mca_official_flutter_sdk'),
 
                         smallVerticalSpace(),
                       ],
@@ -293,7 +293,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Image.asset(checkOut,
-                            height: 55, width: 55, package: 'mca_flutter_sdk'),
+                            height: 55, width: 55, package: 'mca_official_flutter_sdk'),
                       ))),
               verticalSpace(),
               const Center(

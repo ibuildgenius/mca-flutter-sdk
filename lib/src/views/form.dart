@@ -322,7 +322,7 @@ class _FormScreenState extends State<FormScreen> {
           //       }),
           // ),
           // Image.asset(myCover,
-          //     width: 170, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
+          //     width: 170, fit: BoxFit.fitWidth, package: 'mca_official_flutter_sdk'),
         ],
       ),
     );
@@ -337,7 +337,7 @@ class _FormScreenState extends State<FormScreen> {
     //         mainAxisAlignment: MainAxisAlignment.center,
     //         children: [
     //           logo == ''
-    //               ? Image.asset(mca, height: 30, package: 'mca_flutter_sdk')
+    //               ? Image.asset(mca, height: 30, package: 'mca_official_flutter_sdk')
     //               : Image.network(
     //             logo,
     //             height: 30,
@@ -1102,7 +1102,7 @@ class _FormScreenState extends State<FormScreen> {
           child: Row(
             children: [
               Image.asset(image,
-                  height: 45, fit: BoxFit.fitWidth, package: 'mca_flutter_sdk'),
+                  height: 45, fit: BoxFit.fitWidth, package: 'mca_official_flutter_sdk'),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
