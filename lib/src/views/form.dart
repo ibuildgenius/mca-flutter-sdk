@@ -215,7 +215,7 @@ class _FormScreenState extends State<FormScreen> {
       },
       body: Column(
         children: [
-          verticalSpace(height: 10),
+        /*  verticalSpace(height: 10),
           if (widget.publicKey.toString().toLowerCase().contains('test'))
             Row(
               mainAxisAlignment: MainAxisAlignment.end,
@@ -242,7 +242,7 @@ class _FormScreenState extends State<FormScreen> {
                     child:
                         Container(height: 0.7, color: GREY.withOpacity(0.3))),
               ],
-            ),
+            ),*/
 
           verticalSpace(height: 15),
           Text(productName,
