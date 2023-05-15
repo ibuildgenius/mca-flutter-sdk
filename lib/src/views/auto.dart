@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
 class AutoScreen extends StatefulWidget {
-  const AutoScreen({Key? key}) : super(key: key);
+   AutoScreen({Key? key, required this.data}) : super(key: key);
 
+   final Map<String, dynamic> data;
 
   @override
   State<AutoScreen> createState() => _AutoScreenState();
@@ -94,14 +96,11 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
                 ))),
         verticalSpace(),
         const Divider(),
-        verticalSpace(),
-        textTile('Get this Auto Insurance Plan'),
-        verticalSpace(),
-        textTile('Provide Vehicle Details'),
-        verticalSpace(),
-        textTile('Get your Insurance Certificate'),
-        verticalSpace(),
-        textTile('Inspect your vehicle, from anywhere'),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Html(data: widget.data["how_it_works"]  ?? "<p>no data</p>", style: htmlStyle,),
+          ),
+        )
       ],
     ),
   );
@@ -123,13 +122,15 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
         verticalSpace(),
         const Divider(),
         verticalSpace(),
-        textTile('3rd Party Bodily Injury'),
-        verticalSpace(),
-        textTile('3rd party Property Damage Up to 1 Million'),
-        verticalSpace(),
-        textTile('Own Accident Damage'),
-        verticalSpace(),
-        textTile('Excess Buy Back'),
+        Expanded(child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:  (widget.data["full_benefits"] != null && widget.data["full_benefits"] is List) ?
+            List<Widget>.generate((widget.data["full_benefits"] as List).length, (index) {
+              return textTile(widget.data["full_benefits"][index]["name"] + " - " + widget.data["full_benefits"][index]["description"]);
+            }) : [Html(data: widget.data["key_benefits"] ?? "<p>no data</p>", style: htmlStyle,)],
+          ),
+        ))
       ],
     ),
   );
@@ -151,11 +152,11 @@ class _AutoScreenState extends State<AutoScreen> with TickerProviderStateMixin {
         verticalSpace(),
         const Divider(),
         verticalSpace(),
-        textTile('Take pictures of damage'),
-        verticalSpace(),
-        textTile('Track the progress of your Claim'),
-        verticalSpace(),
-        textTile('Get paid'),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Html(data: widget.data["how_to_claim"]  ?? "<p>no data</p>", style: htmlStyle,),
+          ),
+        )
       ],
     ),
   );

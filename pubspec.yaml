@@ -21,6 +21,7 @@ dependencies:
   geolocator: ^9.0.2
   sentry_flutter: ^6.9.0
   after_layout: ^1.2.0
+  flutter_html: ^2.2.1
 
 
 dev_dependencies:

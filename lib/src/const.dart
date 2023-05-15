@@ -1,5 +1,7 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
+import 'package:mca_official_flutter_sdk/src/theme.dart';
 
 const String insight = 'assets/images/insight.png';
 const String book = 'assets/images/book.png';
@@ -44,3 +46,10 @@ double width(BuildContext context) => MediaQuery.of(context).size.width;
 
 //MediaQuery Height
 double height(BuildContext context) => MediaQuery.of(context).size.height;
+
+
+var htmlStyle = {
+  "ul": Style(padding: const EdgeInsets.all(8)),
+  "li": Style(padding: const EdgeInsets.all(8),
+    listStyleType: ListStyleType.fromWidget(Container(width: 8, height: 8, decoration: const BoxDecoration(color: PRIMARY, shape: BoxShape.circle),)), )
+};

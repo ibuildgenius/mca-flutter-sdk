@@ -35,6 +35,24 @@ class MyCoverAI {
   final List? productId;
   final form;
 
+
+  Future<String> getProductCat(catID) async {
+    var response = await WebServices.getProductCategory(catID,
+        publicKey);
+
+    log("category response $response");
+
+    if (response is Map &&
+        (response["responseText"] as String)
+            .contains("Product category fetched successfully")) {
+
+
+          return response["data"]["product_category"]["name"];
+
+    }
+    return "";
+  }
+
   initialise() async {
     Dialogs.showLoading(context: context, text: 'Initializing MyCover...');
     var payOption = paymentOption ?? PaymentOption.gateway;
@@ -85,6 +103,12 @@ class MyCoverAI {
           MaterialPageRoute(builder: (context) => const Failed()),
         );
       } else {
+        var id = response['data']['productDetails'][0]['product_category_id'];
+
+        var productCat  = await getProductCat(id);
+
+        print("Product Cat is "+ productCat);
+
         return await Navigator.push(
           context,
           MaterialPageRoute(
@@ -102,6 +126,7 @@ class MyCoverAI {
                 email: email,
                 publicKey: publicKey,
                 productId: productId,
+                productCategory: productCat.toLowerCase(),
                 productData: response,
                 reference: reference,
                 paymentOption: payOption),

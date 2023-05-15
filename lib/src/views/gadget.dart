@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
 class GadgetScreen extends StatefulWidget {
-  const GadgetScreen({Key? key}) : super(key: key);
+  const GadgetScreen({Key? key, required this.data}) : super(key: key);
+
+  final Map<String, dynamic> data;
 
   @override
   State<GadgetScreen> createState() => _GadgetScreenState();
@@ -17,7 +20,7 @@ class _GadgetScreenState extends State<GadgetScreen>
 
   @override
   initState() {
-    tabController = TabController(vsync: this, length: 3);
+    tabController = TabController(vsync: this, length: 2);
     tabController!.addListener(() {
       setState(() {
         selectedTabIndex = tabController!.index;
@@ -62,18 +65,18 @@ class _GadgetScreenState extends State<GadgetScreen>
                   onTap: () => onTabSelected(1),
                   child:
                   tabDeco(context, "What we cover", selectedTabIndex, 1)),
-              InkWell(
+       /*       InkWell(
                   onTap: () => onTabSelected(2),
                   child: tabDeco(
-                      context, "Special Condition", selectedTabIndex, 2)),
+                      context, "Special Condition", selectedTabIndex, 2)),*/
             ],
           ),
           verticalSpace(),
           Expanded(
             child: TabBarView(controller: tabController, children: [
               gadgetHowItWorks(),
-              gadgetWhatCover(),
-              gadgetSpecialCondition()
+              gadgetWhatCover()
+              //gadgetSpecialCondition()
             ]),
           ),
         ],
@@ -96,14 +99,11 @@ class _GadgetScreenState extends State<GadgetScreen>
                 child: Image.asset(book, height: 25, package: 'mca_official_flutter_sdk'))),
         verticalSpace(),
         const Divider(),
-        verticalSpace(),
-        textTile('Covers your mobile phone and similar handheld Gadget'),
-        verticalSpace(),
-        textTile('Your premium is paid annually (i.e pay per year)'),
-        verticalSpace(),
-        textTile(
-            'Once the Claim balance available to you has been paid, this cover ends and is due for renewal.'),
-        verticalSpace(),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Html(data: widget.data["how_it_works"]  ?? "<p>no data</p>", style: htmlStyle,),
+          ),
+        )
       ],
     ),
   );
@@ -125,20 +125,21 @@ class _GadgetScreenState extends State<GadgetScreen>
         verticalSpace(),
         const Divider(),
         verticalSpace(),
-        textTile('Any Unauthorised repair'),
-        verticalSpace(),
-        textTile('Wear and tear to your device'),
-        verticalSpace(),
-        textTile(
-            'Other expenses that are not related to the damage screen'),
-        verticalSpace(),
-        textTile('Repairs due to defect from the manufacturer.'),
-        verticalSpace(),
-        textTile('Other Exclusion are listed in the policy document'),
+
+        Expanded(child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:  (widget.data["full_benefits"] != null && widget.data["full_benefits"] is List) ?
+            List<Widget>.generate((widget.data["full_benefits"] as List).length, (index) {
+              return textTile(widget.data["full_benefits"][index]["name"] + " - " + widget.data["full_benefits"][index]["description"]);
+            }) : [Html(data: widget.data["key_benefits"] ?? "<p>no data</p>", style: htmlStyle,)],
+          ),
+        ))
+
       ],
     ),
   );
-
+/*
   gadgetSpecialCondition() => Container(
     color: LIGHT_GREY,
     child: Column(
@@ -164,6 +165,6 @@ class _GadgetScreenState extends State<GadgetScreen>
         verticalSpace(),
       ],
     ),
-  );
+  );*/
 }
 

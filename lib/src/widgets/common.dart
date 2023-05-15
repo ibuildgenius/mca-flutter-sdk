@@ -7,19 +7,39 @@ SizedBox smallVerticalSpace() => const SizedBox(height: 10);
 
 SizedBox verticalSpace({double height=20.0}) =>  SizedBox(height: height);
 
-RichText getProductName(name) {
-  return RichText(
-      textAlign: TextAlign.justify,
-      text: TextSpan(
-          style: const TextStyle(
-              fontSize: 12, fontWeight: FontWeight.w400, color: DARK),
-          children: [
-            const TextSpan(text: 'Underwritten by:  '),
-            TextSpan(
-              text: name,
-              style: const TextStyle(fontWeight: FontWeight.w600),
-            ),
-          ]));
+Widget getProductName(name) {
+
+  return Row(
+    mainAxisSize: MainAxisSize.min,
+    children: [
+      const Text('Underwritten by:', style: TextStyle(fontWeight: FontWeight.w600),),
+      const SizedBox(width: 10,),
+      getLogo(name)
+    ],
+  );
+}
+
+Widget getLogo(String name) {
+  var newName = name.toLowerCase();
+
+
+  if (newName.contains("mcg") || newName.contains("mycovergenius")) {
+    return Image.asset("assets/images/mcg.png", package: 'mca_official_flutter_sdk');
+  }else if (newName.contains("aiico") ) {
+    return Image.asset("assets/images/aiico.png", package: 'mca_official_flutter_sdk');
+  } else if (newName.contains("sti") ) {
+    return Image.asset("assets/images/sti.png", package: 'mca_official_flutter_sdk');
+  } else if (newName.contains("flexicare")) {
+    return Image.asset("assets/images/flexicare.png", package: 'mca_official_flutter_sdk');
+  } else if (newName.contains("leadway")) {
+    return Image.asset("assets/images/leadway.png", package: 'mca_official_flutter_sdk');
+  } else {
+    return Text(
+       name,
+      style: const TextStyle(fontWeight: FontWeight.w600),
+    );
+  }
+
 }
 
  selectDate(BuildContext context) async {
@@ -33,22 +53,25 @@ RichText getProductName(name) {
 }
 
 
-Row textTile(text) {
-  return Row(
-    crossAxisAlignment: CrossAxisAlignment.start,
-    children: [
-      const SizedBox(width: 10),
-      const Padding(
-        padding: EdgeInsets.all(5.0),
-        child: Icon(Icons.circle, color: PRIMARY, size: 10),
-      ),
-      const SizedBox(width: 15),
-      Expanded(
-          child: Text(
-            text,
-            textAlign: TextAlign.start,
-          ))
-    ],
+Widget textTile(text) {
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const SizedBox(width: 10),
+        const Padding(
+          padding: EdgeInsets.all(5.0),
+          child: Icon(Icons.circle, color: PRIMARY, size: 10),
+        ),
+        const SizedBox(width: 15),
+        Expanded(
+            child: Text(
+              text,
+              textAlign: TextAlign.start,
+            ))
+      ],
+    ),
   );
 }
 

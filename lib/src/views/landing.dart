@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:mca_official_flutter_sdk/mca_official_flutter_sdk.dart';
 import 'package:mca_official_flutter_sdk/src/services/services.dart';
 
@@ -34,11 +35,12 @@ class MyCover extends StatefulWidget {
       required this.publicKey,
       required this.reference,
       required this.paymentOption,
-      required this.form})
+      required this.form, required this.productCategory})
       : super(key: key);
   final List? productId;
   final String publicKey;
   final String email;
+  final String productCategory;
   final PaymentOption? paymentOption;
   final String? reference;
   final productData;
@@ -51,6 +53,7 @@ class MyCover extends StatefulWidget {
 class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
   var productDetail;
   String productName = '';
+  String productCat = '';
   String provider = '';
   String businessName = '';
   String businessId = '';
@@ -61,11 +64,8 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
   BodyType bodyType = BodyType.introPage;
   bool inspectable = false;
 
-  String productCat = 'health';
-
   @override
   void initState() {
-    getProductCat();
     fetchProductDetail();
     super.initState();
   }
@@ -75,23 +75,11 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
     super.dispose();
   }
 
-  Future<void> getProductCat() async {
-    var response = await WebServices.getProductCategory(
-        widget.productData['data']['productDetails'][0]['product_category_id'],
-        widget.publicKey);
-
-    log("category response $response");
-
-    if (response is Map &&
-        (response["responseText"] as String)
-            .contains("Product category fetched successfully")) {
-      productCat = response["data"]["product_category"]["name"];
-    }
-  }
-
   Future fetchProductDetail() async {
     setState(() {
       productDetail = widget.productData;
+
+      productCat = widget.productCategory;
 
       productName = productDetail['data']['productDetails'][0]['name'] ?? '';
       inspectable =
@@ -258,18 +246,21 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
   }
 
   openIntro(String productType) {
+
+    var data = productDetail['data']['productDetails'][0] as Map<String, dynamic>;
+
     if (productType.contains('auto') ||
         productType.toLowerCase().contains('life')) {
-      return const AutoScreen();
+      return AutoScreen(data: data);
     } else if (productType.contains('health') ||
         productType.contains('hospital')) {
-      return const HealthScreen();
+      return HealthScreen(data: data);
     } else if (productType.contains('travel')) {
-      return const TravelScreen();
+      return TravelScreen(data: data);
     } else if (productType.contains('gadget') ||
         productType.contains('home') ||
         productType.contains('content')) {
-      return const GadgetScreen();
+      return GadgetScreen(data: data);
     } else {
       Navigator.pop(context);
     }

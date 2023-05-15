@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
 class TravelScreen extends StatefulWidget {
-  const TravelScreen({Key? key}) : super(key: key);
+  const TravelScreen({Key? key, required this.data}) : super(key: key);
+
+  final Map<String, dynamic> data;
 
   @override
   State<TravelScreen> createState() => _TravelScreenState();
@@ -91,12 +94,11 @@ class _TravelScreenState extends State<TravelScreen>
                 child: Image.asset(book, height: 25,package: 'mca_official_flutter_sdk'))),
         verticalSpace(),
         const Divider(),
-        verticalSpace(),
-        textTile('Buy a Travel Insurance Plan'),
-        verticalSpace(),
-        textTile('Provide details'),
-        verticalSpace(),
-        textTile('Get your Insurance Certificate'),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Html(data: widget.data["how_it_works"] ?? "<p>no data</p>", style: htmlStyle,),
+          ),
+        )
       ],
     ),
   );
@@ -117,18 +119,15 @@ class _TravelScreenState extends State<TravelScreen>
         verticalSpace(),
         const Divider(),
         verticalSpace(),
-        textTile('Medical expenses Injury and Illness'),
-        verticalSpace(),
-        textTile('Excess'),
-        verticalSpace(),
-        textTile(
-            'Medical evacuation, repatriation or transport to medical offline'),
-        verticalSpace(),
-        textTile('Optical & expenses - Injury'),
-        verticalSpace(),
-        textTile('Follow up treatment in Nigeria'),
-        verticalSpace(),
-        textTile('Other cover are listed in the document'),
+        Expanded(child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:  (widget.data["full_benefits"] != null && widget.data["full_benefits"] is List) ?
+            List<Widget>.generate((widget.data["full_benefits"] as List).length, (index) {
+              return textTile(widget.data["full_benefits"][index]["name"] + " - " + widget.data["full_benefits"][index]["description"]);
+            }) : [Html(data: widget.data["key_benefits"] ?? "<p>no data</p>", style: htmlStyle,)],
+          ),
+        ))
       ],
     ),
   );

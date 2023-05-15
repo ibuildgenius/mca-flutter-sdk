@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_html/flutter_html.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
 class HealthScreen extends StatefulWidget {
-  const HealthScreen({Key? key}) : super(key: key);
+  const HealthScreen({Key? key, required this.data}) : super(key: key);
 
+  final Map<String, dynamic> data;
   @override
   State<HealthScreen> createState() => _HealthScreenState();
 }
@@ -43,6 +45,8 @@ class _HealthScreenState extends State<HealthScreen>
   Widget build(BuildContext context) {
     return  healthIntro();
   }
+
+
 
   Widget healthIntro() {
     return Expanded(
@@ -85,16 +89,16 @@ class _HealthScreenState extends State<HealthScreen>
                 color: FILL_GREEN),
             child: Padding(
                 padding: const EdgeInsets.all(20.0),
-                child: Image.asset(book, height: 25,                      package: 'mca_official_flutter_sdk'
+                child: Image.asset(book, height: 25, package: 'mca_official_flutter_sdk'
                 ))),
         verticalSpace(),
         const Divider(),
         verticalSpace(),
-        textTile(
-            'You will get a Electronic HMO ID generated automatically which is all you need to access healthcare'),
-        verticalSpace(),
-        textTile(
-            'Take your new E-ID to any hospital under this plan, anywhere. You will be attended to like any other person.'),
+        Expanded(
+          child: SingleChildScrollView(
+            child: Html(data: widget.data["how_it_works"]  ?? "<p>no data</p>", style: htmlStyle,),
+          ),
+        )
       ],
     ),
   );
@@ -115,14 +119,17 @@ class _HealthScreenState extends State<HealthScreen>
                 ))),
         verticalSpace(),
         const Divider(),
-        verticalSpace(),
-        textTile('Delivery and Antinatal Care'),
-        verticalSpace(),
-        textTile('Treatment of Everyday Illness,Like malaria e.t.c'),
-        verticalSpace(),
-        textTile('26 Different types of surgeries'),
-        verticalSpace(),
-        textTile('And more'),
+
+        Expanded(child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children:  (widget.data["full_benefits"] != null && widget.data["full_benefits"] is List) ?
+            List<Widget>.generate((widget.data["full_benefits"] as List).length, (index) {
+              return textTile(widget.data["full_benefits"][index]["name"] + " - " + widget.data["full_benefits"][index]["description"]);
+            }) : [Html(data: widget.data["key_benefits"] ?? "<p>no data</p>", style: htmlStyle,)],
+          ),
+        ))
+
       ],
     ),
   );
