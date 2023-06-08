@@ -19,7 +19,7 @@ class WebServices {
   static getBaseUrl(publicKey) {
     print('===> $publicKey');
     if (publicKey.toString().toLowerCase().contains('test')) {
-      return 'https://api.mycover.ai/v1';
+      return 'https://staging.api.mycover.ai/v1';
     } else {
       return 'https://api.mycover.ai/v1';
     }

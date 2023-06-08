@@ -98,7 +98,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   static const String productUrl =
-      'https://api.mycover.ai/v1/sdk/initialize';
+      'https://staging.api.mycover.ai/v1/sdk/initialize';
 
   getAllProducts() async {
     var data = {"payment_option": 'gateway', "action": "purchase"};
