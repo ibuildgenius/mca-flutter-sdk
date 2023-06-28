@@ -73,7 +73,6 @@ class _FormScreenState extends State<FormScreen> {
   PaymentOption? paymentOption;
   PurchaseStage? stage;
   int initialPage = 0;
-  double _opacity = 0;
   var chunks = [];
   var pageData = [];
   bool enabledUssd = false;
@@ -97,7 +96,6 @@ class _FormScreenState extends State<FormScreen> {
     setData();
     Future.delayed(const Duration(seconds: 14), () {
       setState(() {
-        _opacity = 1.0;
         go = true;
       });
     });
@@ -365,7 +363,6 @@ class _FormScreenState extends State<FormScreen> {
           var item = data[i];
           purchaseData['product_id'] = productId;
           purchaseData['amount'] = price;
-          purchaseData['vehicle_registration_number'] = 'AKD91HR';
           final controller = _getControllerOf(item['name'].toString(),
               initValue: getInitialValue(item['label'].toString()));
 
@@ -382,7 +379,21 @@ class _FormScreenState extends State<FormScreen> {
                         item['label'], onSelect: (value) {
                       Navigator.pop(context);
                       controller.text = value.toString();
-                      purchaseData[item['name']] = controller.text;
+
+
+                      switch( item["data_type"].toLowerCase()) {
+                        case "boolean":
+                          purchaseData[item['name']] = controller.text.toLowerCase() == "true";
+                          break;
+                        case "number":
+                          purchaseData[item['name']] = int.parse(controller.text);
+                              break;
+                        default:
+                          purchaseData[item['name']] = controller.text;
+                      }
+
+
+
                       if (item['name'].contains('make')) {
                         make = controller.text;
                       }
@@ -695,7 +706,6 @@ class _FormScreenState extends State<FormScreen> {
       logo: logo,
       text: 'Get Covered',
       buttonAction: () {
-        print("I am here");
         if (stage == PurchaseStage.payment) {
           if (paymentMethod != '') {
             purchaseData['product_id'] = productId;
@@ -942,16 +952,6 @@ class _FormScreenState extends State<FormScreen> {
             ),
             const Divider(),
             verticalSpace(),
-            // AnimatedOpacity(
-            //   duration: const Duration(seconds: 15),
-            //   opacity: _opacity,
-            //   child: Padding(
-            //     padding: const EdgeInsets.symmetric(vertical: 20.0),
-            //     child: button(
-            //         text: 'I have sent the money',
-            //         onTap: () => verifyPayment(true)),
-            //   ),
-            // ),
             Center(
               child: getProductName(provider.toUpperCase()),
             ),
@@ -1069,16 +1069,6 @@ class _FormScreenState extends State<FormScreen> {
             ),
             const Divider(),
             verticalSpace(),
-            // AnimatedOpacity(
-            //   duration: const Duration(seconds: 15),
-            //   opacity: _opacity,
-            //   child: Padding(
-            //     padding: const EdgeInsets.symmetric(vertical: 20.0),
-            //     child: button(
-            //         text: 'I have sent the money',
-            //         onTap: () => verifyPayment(true)),
-            //   ),
-            // ),
             Center(
               child: getProductName(provider.toUpperCase()),
             ),
@@ -1773,6 +1763,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   getPurchaseInfo(isLoading) async {
+/*
     var res = await WebServices.getPurchaseInfo(
         businessId, reference, widget.publicKey);
     if (res is String) {
@@ -1787,9 +1778,15 @@ class _FormScreenState extends State<FormScreen> {
       if (isLoading) {
         Navigator.pop(context);
       }
+*/
+
+    if (isLoading) {
+      Navigator.pop(context);
+    }
 
       setState(() {
         stage = PurchaseStage.purchase;
+        /*
         purchaseData['amount'] = res['data']['amount'];
         purchaseData['vehicle_category'] = res['data']['vehicle_category'];
         purchaseData['date_of_birth'] = res['data']['date_of_birth'];
@@ -1797,14 +1794,14 @@ class _FormScreenState extends State<FormScreen> {
         purchaseData['phone'] = res['data']['phone'];
         purchaseData['last_name'] = res['data']['last_name'];
         purchaseData['first_name'] = res['data']['first_name'];
-        purchaseData['email'] = res['data']['email'];
+        purchaseData['email'] = res['data']['email'];*/
         initialPage = 0;
         chunks = [];
         pageData = [];
         splitList();
         bodyType = 'form';
       });
-    }
+    //}
   }
 
   uploadImage() async {
