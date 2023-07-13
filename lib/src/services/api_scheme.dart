@@ -63,6 +63,9 @@ class ApiScheme {
       var response =
           await _makePostRequest(apiUrl: url, data: data, token: token);
       var body = jsonDecode(response.body);
+
+      print(body);
+
       if (_isRequestSuccessful(response.statusCode)) {
         return body;
       } else {

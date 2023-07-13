@@ -840,9 +840,9 @@ class _FormScreenState extends State<FormScreen> {
                   ],
                 ),
           SizedBox(height: height(context) * 0.1),
-          Center(
+        /*  Center(
             child: getProductName(provider.toUpperCase()),
-          ),
+          ),*/
         ],
       ),
     );
@@ -951,10 +951,10 @@ class _FormScreenState extends State<FormScreen> {
               ],
             ),
             const Divider(),
-            verticalSpace(),
+         /*   verticalSpace(),
             Center(
               child: getProductName(provider.toUpperCase()),
-            ),
+            ),*/
           ],
         ),
       ),
@@ -1068,10 +1068,10 @@ class _FormScreenState extends State<FormScreen> {
               ],
             ),
             const Divider(),
-            verticalSpace(),
+        /*    verticalSpace(),
             Center(
               child: getProductName(provider.toUpperCase()),
-            ),
+            ),*/
           ],
         ),
       ),
@@ -1646,7 +1646,7 @@ class _FormScreenState extends State<FormScreen> {
         debitWalletReference: debitWalletReference,
         paymentChannel: paymentChannel);
 
-    print(res);
+    print("Response is $res");
     Navigator.pop(context);
     if (res is String) {
       Dialogs.showErrorMessage(res);
