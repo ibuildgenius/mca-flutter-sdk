@@ -13,3 +13,5 @@ const FILL_GREEN = Color(0xFFF6FEF9);
 const FILL_DEEP_GREEN = Color(0xFFE6F4F2);
 const BLACK = Color(0xFF000000);
 const DARK = Color(0xFF344054);
+const DARK_GREY = Color(0xFF475467);
+const ASH = Color(0xFF98A2B3);

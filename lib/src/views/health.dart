@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:mca_official_flutter_sdk/src/views/hospital_list.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
 
 class HealthScreen extends StatefulWidget {
-  const HealthScreen({Key? key, required this.data}) : super(key: key);
+  const HealthScreen({Key? key, required this.data, this.publicKey = ""})
+      : super(key: key);
 
   final Map<String, dynamic> data;
+  final String publicKey;
+
   @override
   State<HealthScreen> createState() => _HealthScreenState();
 }
@@ -19,7 +23,7 @@ class _HealthScreenState extends State<HealthScreen>
 
   @override
   initState() {
-    tabController = TabController(vsync: this, length: 2);
+    tabController = TabController(vsync: this, length: 3);
     tabController!.addListener(() {
       setState(() {
         selectedTabIndex = tabController!.index;
@@ -43,10 +47,8 @@ class _HealthScreenState extends State<HealthScreen>
 
   @override
   Widget build(BuildContext context) {
-    return  healthIntro();
+    return healthIntro();
   }
-
-
 
   Widget healthIntro() {
     return Expanded(
@@ -64,13 +66,20 @@ class _HealthScreenState extends State<HealthScreen>
               InkWell(
                   onTap: () => onTabSelected(1),
                   child: tabDeco(context, "Benefits", selectedTabIndex, 1)),
+              InkWell(
+                  onTap: () => onTabSelected(2),
+                  child:
+                      tabDeco(context, "Hospital List", selectedTabIndex, 2)),
             ],
           ),
           verticalSpace(),
           Expanded(
-            child: TabBarView(
-                controller: tabController,
-                children: [healthHowItWorks(), healthBenefits()]),
+            child: TabBarView(controller: tabController, children: [
+              healthHowItWorks(),
+              healthBenefits(),
+              HospitalList(
+                  productId: widget.data['id'], publicKey: widget.publicKey)
+            ]),
           ),
         ],
       ),
@@ -78,60 +87,72 @@ class _HealthScreenState extends State<HealthScreen>
   }
 
   healthHowItWorks() => Container(
-    color: LIGHT_GREY,
-    child: Column(
-      children: [
-        verticalSpace(),
-        Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: GREEN, width: 0.1),
-                shape: BoxShape.circle,
-                color: FILL_GREEN),
-            child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Image.asset(book, height: 25, package: 'mca_official_flutter_sdk'
-                ))),
-        verticalSpace(),
-        const Divider(),
-        verticalSpace(),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Html(data: widget.data["how_it_works"]  ?? "<p>no data</p>", style: htmlStyle,),
-          ),
-        )
-      ],
-    ),
-  );
+        color: LIGHT_GREY,
+        child: Column(
+          children: [
+            verticalSpace(),
+            Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: GREEN, width: 0.1),
+                    shape: BoxShape.circle,
+                    color: FILL_GREEN),
+                child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Image.asset(book,
+                        height: 25, package: 'mca_official_flutter_sdk'))),
+            verticalSpace(),
+            const Divider(),
+            verticalSpace(),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Html(
+                  data: widget.data["how_it_works"] ?? "<p>no data</p>",
+                  style: htmlStyle,
+                ),
+              ),
+            )
+          ],
+        ),
+      );
 
   healthBenefits() => Container(
-    color: LIGHT_GREY,
-    child: Column(
-      children: [
-        verticalSpace(),
-        Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: GREEN, width: 0.1),
-                shape: BoxShape.circle,
-                color: FILL_GREEN),
-            child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Image.asset(insight, height: 25,                      package: 'mca_official_flutter_sdk'
-                ))),
-        verticalSpace(),
-        const Divider(),
-
-        Expanded(child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children:  (widget.data["full_benefits"] != null && widget.data["full_benefits"] is List) ?
-            List<Widget>.generate((widget.data["full_benefits"] as List).length, (index) {
-              return textTile(widget.data["full_benefits"][index]["name"] + " - " + widget.data["full_benefits"][index]["description"]);
-            }) : [Html(data: widget.data["key_benefits"] ?? "<p>no data</p>", style: htmlStyle,)],
-          ),
-        ))
-
-      ],
-    ),
-  );
+        color: LIGHT_GREY,
+        child: Column(
+          children: [
+            verticalSpace(),
+            Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: GREEN, width: 0.1),
+                    shape: BoxShape.circle,
+                    color: FILL_GREEN),
+                child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Image.asset(insight,
+                        height: 25, package: 'mca_official_flutter_sdk'))),
+            verticalSpace(),
+            const Divider(),
+            Expanded(
+                child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: (widget.data["full_benefits"] != null &&
+                        widget.data["full_benefits"] is List)
+                    ? List<Widget>.generate(
+                        (widget.data["full_benefits"] as List).length, (index) {
+                        return textTile(widget.data["full_benefits"][index]
+                                ["name"] +
+                            " - " +
+                            widget.data["full_benefits"][index]["description"]);
+                      })
+                    : [
+                        Html(
+                          data: widget.data["key_benefits"] ?? "<p>no data</p>",
+                          style: htmlStyle,
+                        )
+                      ],
+              ),
+            ))
+          ],
+        ),
+      );
 }
-

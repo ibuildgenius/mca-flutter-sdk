@@ -5,6 +5,7 @@ import 'package:mca_official_flutter_sdk/src/theme.dart';
 
 const String insight = 'assets/images/insight.png';
 const String book = 'assets/images/book.png';
+const String hospital = 'assets/images/hospital.png';
 const String checkOut = 'assets/images/check_icon.png';
 const String failed = 'assets/images/fail_icon.png';
 const String myCover = 'assets/images/my_cover.png';

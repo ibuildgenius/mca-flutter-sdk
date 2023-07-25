@@ -254,7 +254,7 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
       return AutoScreen(data: data);
     } else if (productType.contains('health') ||
         productType.contains('hospital')) {
-      return HealthScreen(data: data);
+      return HealthScreen(data: data, publicKey: widget.publicKey);
     } else if (productType.contains('travel')) {
       return TravelScreen(data: data);
     } else if (productType.contains('gadget') ||
