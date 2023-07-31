@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:mca_official_flutter_sdk/src/services/api_scheme.dart';
 import 'package:mca_official_flutter_sdk/src/views/hospital_list.dart';
 import '../const.dart';
 import '../theme.dart';
@@ -23,7 +24,10 @@ class _HealthScreenState extends State<HealthScreen>
 
   @override
   initState() {
-    tabController = TabController(vsync: this, length: 3);
+    tabController = TabController(
+        vsync: this,
+        length: (shouldShowHospitalList(widget.data["name"])) ? 3 : 2);
+
     tabController!.addListener(() {
       setState(() {
         selectedTabIndex = tabController!.index;
@@ -66,10 +70,11 @@ class _HealthScreenState extends State<HealthScreen>
               InkWell(
                   onTap: () => onTabSelected(1),
                   child: tabDeco(context, "Benefits", selectedTabIndex, 1)),
-              InkWell(
-                  onTap: () => onTabSelected(2),
-                  child:
-                      tabDeco(context, "Hospital List", selectedTabIndex, 2)),
+              if (shouldShowHospitalList(widget.data["name"]))
+                InkWell(
+                    onTap: () => onTabSelected(2),
+                    child:
+                        tabDeco(context, "Hospital List", selectedTabIndex, 2)),
             ],
           ),
           verticalSpace(),
@@ -77,8 +82,12 @@ class _HealthScreenState extends State<HealthScreen>
             child: TabBarView(controller: tabController, children: [
               healthHowItWorks(),
               healthBenefits(),
-              HospitalList(
-                  productId: widget.data['id'], publicKey: widget.publicKey)
+              if (shouldShowHospitalList(widget.data["name"]))
+                HospitalList(
+                  productId: widget.data['id'],
+                  publicKey: widget.publicKey,
+                  productName: widget.data["name"],
+                )
             ]),
           ),
         ],

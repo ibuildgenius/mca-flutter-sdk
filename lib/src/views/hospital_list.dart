@@ -2,6 +2,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:mca_official_flutter_sdk/src/models/hospital.dart';
+import 'package:mca_official_flutter_sdk/src/services/api_scheme.dart';
 
 import '../const.dart';
 import '../services/services.dart';
@@ -9,11 +10,12 @@ import '../theme.dart';
 import '../widgets/common.dart';
 
 class HospitalList extends StatefulWidget {
-  const HospitalList({Key? key, this.productId, this.publicKey})
+  const HospitalList({Key? key,this.productName, this.productId, this.publicKey})
       : super(key: key);
 
   final String? publicKey;
   final String? productId;
+  final String? productName;
 
   @override
   State<HospitalList> createState() => _HospitalListState();
@@ -38,7 +40,7 @@ class _HospitalListState extends State<HospitalList> {
     });
 
     var result =
-        await WebServices.getHospitalList(widget.productId, widget.publicKey);
+        await WebServices.getHospitalList(widget.productId, widget.publicKey, resolveHospitalCode(widget.productName!!));
 
     setState(() {
       isLoading = false;
@@ -90,6 +92,17 @@ class _HospitalListState extends State<HospitalList> {
             : Expanded(
                 child: Column(
                   children: [
+                    Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Text(
+                        "${hospitalList.length} Hospitals",
+                        style: const TextStyle(
+                            fontSize: 14,
+                            color: PRIMARY,
+                            fontWeight: FontWeight.w600,
+                            fontFamily: "Space"),
+                      ),
+                    ),
                     Card(
                       elevation: 0.4,
                       shape: RoundedRectangleBorder(

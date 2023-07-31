@@ -91,3 +91,29 @@ class ApiScheme {
     }
   }
 }
+
+int resolveHospitalCode(String productName) {
+  var name = productName.toLowerCase();
+
+  if (name.contains("flexicare mini")) {
+    return 20;
+  } else if (name.contains("flexicare")) {
+    return 9;
+  } else if (name.contains("zencare plus")) {
+    return 18;
+  } else if (name.contains("zencare")) {
+    return 16;
+  }
+
+  return 0;
+}
+
+bool shouldShowHospitalList(String productName) {
+  var name = productName.toLowerCase();
+
+  if (name.contains("flexicare") || name.contains("zencare")) {
+    return true;
+  }
+
+  return false;
+}

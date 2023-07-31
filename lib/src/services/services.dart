@@ -72,8 +72,8 @@ class WebServices {
         url: getBaseUrl(token) + "/products/get-product-category/$id", token: token);
   }
 
-  static getHospitalList(productId, token) async {
-    return await ApiScheme.initialiseGetRequest(url: getBaseUrl(token) + "/products/mcg/flexi-care-hospitals/$productId", token: token);
+  static getHospitalList(productId, token, int productCode) async {
+    return await ApiScheme.initialiseGetRequest(url: getBaseUrl(token) + "/products/mcg/flexi-care-hospitals/$productCode", token: token);
   }
 
   static uploadFile(context, businessId, File image, token, {fileType}) async {
