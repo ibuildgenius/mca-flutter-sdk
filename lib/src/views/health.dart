@@ -84,9 +84,8 @@ class _HealthScreenState extends State<HealthScreen>
               healthBenefits(),
               if (shouldShowHospitalList(widget.data["name"]))
                 HospitalList(
-                  productId: widget.data['id'],
                   publicKey: widget.publicKey,
-                  productName: widget.data["name"],
+                  routeName: widget.data["route_name"],
                 )
             ]),
           ),

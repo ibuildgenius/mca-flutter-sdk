@@ -10,12 +10,11 @@ import '../theme.dart';
 import '../widgets/common.dart';
 
 class HospitalList extends StatefulWidget {
-  const HospitalList({Key? key,this.productName, this.productId, this.publicKey})
+  const HospitalList({Key? key,this.routeName, this.publicKey})
       : super(key: key);
 
   final String? publicKey;
-  final String? productId;
-  final String? productName;
+  final String? routeName;
 
   @override
   State<HospitalList> createState() => _HospitalListState();
@@ -40,7 +39,7 @@ class _HospitalListState extends State<HospitalList> {
     });
 
     var result =
-        await WebServices.getHospitalList(widget.productId, widget.publicKey, resolveHospitalCode(widget.productName!!));
+        await WebServices.getHospitalList(widget.publicKey, widget.routeName!!);
 
     setState(() {
       isLoading = false;
