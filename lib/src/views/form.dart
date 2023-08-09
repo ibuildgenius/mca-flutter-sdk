@@ -18,16 +18,17 @@ import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen({Key? key,
-    required this.productDetail,
-    required this.instanceId,
-    required this.form,
-    required this.provider,
-    required this.reference,
-    required this.inspectable,
-    required this.email,
-    required this.publicKey,
-    required this.paymentOption})
+  const FormScreen(
+      {Key? key,
+      required this.productDetail,
+      required this.instanceId,
+      required this.form,
+      required this.provider,
+      required this.reference,
+      required this.inspectable,
+      required this.email,
+      required this.publicKey,
+      required this.paymentOption})
       : super(key: key);
   final productDetail;
   final form;
@@ -205,7 +206,9 @@ class _FormScreenState extends State<FormScreen> {
         if (initialPage > 0) {
           initialPage--;
           setState(() => pageData = chunks[initialPage]);
-        } else {}
+        } else {
+          Dialogs.confirmClose(context);
+        }
         // bodyType == BodyType.introPage
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
@@ -255,18 +258,18 @@ class _FormScreenState extends State<FormScreen> {
                 borderRadius: BorderRadius.circular(3)),
             child: Padding(
               padding:
-              const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
               child: Row(
                 children: const [
                   Icon(Icons.info, color: GREEN),
                   SizedBox(width: 15),
                   Expanded(
                     child:
-                    Text('Enter details as it appear on legal documents.',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontFamily: 'Space',
-                        )),
+                        Text('Enter details as it appear on legal documents.',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontFamily: 'Space',
+                            )),
                   )
                 ],
               ),
@@ -280,18 +283,18 @@ class _FormScreenState extends State<FormScreen> {
           productDetail == null
               ? const Center(child: CircularProgressIndicator.adaptive())
               : forms == null
-              ? const Center(child: CircularProgressIndicator.adaptive())
-              : Form(
-            key: _formKey,
-            child: ListView.separated(
-                physics: const NeverScrollableScrollPhysics(),
-                separatorBuilder: (c, i) => smallVerticalSpace(),
-                itemCount: 1,
-                shrinkWrap: true,
-                itemBuilder: (c, i) {
-                  return form(pageData);
-                }),
-          ),
+                  ? const Center(child: CircularProgressIndicator.adaptive())
+                  : Form(
+                      key: _formKey,
+                      child: ListView.separated(
+                          physics: const NeverScrollableScrollPhysics(),
+                          separatorBuilder: (c, i) => smallVerticalSpace(),
+                          itemCount: 1,
+                          shrinkWrap: true,
+                          itemBuilder: (c, i) {
+                            return form(pageData);
+                          }),
+                    ),
           if (pageData.length < 3) verticalSpace(height: height(context) * 0.1),
 
           // Padding(
@@ -379,7 +382,6 @@ class _FormScreenState extends State<FormScreen> {
                       Navigator.pop(context);
                       controller.text = value.toString();
 
-
                       switch (item["data_type"].toLowerCase()) {
                         case "boolean":
                           purchaseData[item['name']] =
@@ -393,7 +395,6 @@ class _FormScreenState extends State<FormScreen> {
                           purchaseData[item['name']] = controller.text;
                       }
 
-
                       if (item['name'].contains('make')) {
                         make = controller.text;
                       }
@@ -404,7 +405,7 @@ class _FormScreenState extends State<FormScreen> {
                       Navigator.pop(context);
                       controller.text = value.toString();
                       purchaseData[item['name']] =
-                      controller.text == 'Full year' ? true : false;
+                          controller.text == 'Full year' ? true : false;
                     });
                   } else if (item['name']
                       .toString()
@@ -414,7 +415,7 @@ class _FormScreenState extends State<FormScreen> {
                       Navigator.pop(context);
                       controller.text = value.toString();
                       purchaseData[item['name']] =
-                      controller.text == 'Yes' ? true : false;
+                          controller.text == 'Yes' ? true : false;
                     });
                   } else if (item['label']
                       .toString()
@@ -456,253 +457,245 @@ class _FormScreenState extends State<FormScreen> {
                 child: item['data_type'] == 'array'
                     ? buildContentForm(context, item)
                     : InputFormField(
-                    controller: controller,
-                    onChanged: (value) {
-                      print(item);
-                      if (item['name'].toString().contains('cost') ||
-                          item['name'] == 'vehicle_value' ||
-                          item['name'] == 'vehicle_cost' ||
-                          item['name'] == 'units' ||
-                          item['name'] == 'stock_amount' ||
-                          item['name'] == 'payment_plan') {
-                        if (controller.text.isNotEmpty) {
-                          purchaseData[item['name']] =
-                              int.parse(controller.text);
-                        }
-                      }
+                        controller: controller,
+                        onChanged: (value) {
+                          print(item);
+                          if (item['name'].toString().contains('cost') ||
+                              item['name'] == 'vehicle_value' ||
+                              item['name'] == 'vehicle_cost' ||
+                              item['name'] == 'units' ||
+                              item['name'] == 'stock_amount' ||
+                              item['name'] == 'payment_plan') {
+                            if (controller.text.isNotEmpty) {
+                              purchaseData[item['name']] =
+                                  int.parse(controller.text);
+                            }
+                          }
 
-                      if (item['name'].contains('state')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
+                          if (item['name'].contains('state')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
 
-                        state = controller.text;
-                      }
-                      if (item['name'] == 'registration_number') {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
+                            state = controller.text;
+                          }
+                          if (item['name'] == 'registration_number') {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
 
-                      if (item['name']
-                          .toString()
-                          .toLowerCase()
-                          .contains('address')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-
-                      if (item['name'].toString().contains('email')) {
-                        email = controller.text;
-                      }
-                      if (item['name'].toString().contains('first_name')) {
-                        firstName = controller.text;
-                      }
-                      if (item['name'].toString().contains('phone') &&
-                          !item['name']
-                              .toString()
-                              .contains('next_of_kin_phone')) {
-                        phone = controller.text;
-                      }
-                      if (item['name'].toString().contains('last_name')) {
-                        lastName = controller.text;
-                      }
-
-                      if (item['name'].toString().contains('other_names')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name']
-                          .toString()
-                          .contains('nature_of_business')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('shop_type')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name']
-                          .toString()
-                          .contains('next_of_kin_name') ||
-                          item['name']
-                              .toString()
-                              .contains('next_of_kin_phone') ||
-                          item['name']
-                              .toString()
-                              .contains('next_of_kin_address')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name']
-                          .toString()
-                          .contains('marital_status')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('occupation')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('town')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('tenancy')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('description')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name']
-                          .toString()
-                          .contains('pre_ownership')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name'].toString().contains('owner_title')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name']
-                          .toString()
-                          .contains('chassis_number')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                      if (item['name']
-                          .toString()
-                          .contains('engine_number')) {
-                        purchaseData[item['name']] =
-                            controller.text.toString();
-                      }
-                    },
-                    keyboardType:
-                    (item['label'].toString().toLowerCase().contains('phone') ||
-                        item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('cost') ||
-                        item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('price') ||
-                        item['data_type']
-                            .toString()
-                            .toLowerCase()
-                            .contains('number') ||
-                        item['name']
-                            .toString()
-                            .toLowerCase()
-                            .contains('value') ||
-                        item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('bvn'))
-                        ? TextInputType.phone
-                        : TextInputType.text,
-                    textCapitalization: item['label']
-                        .toString()
-                        .toLowerCase()
-                        .contains('email')
-                        ? TextCapitalization.none
-                        : item['label']
-                        .toString()
-                        .toLowerCase()
-                        .contains('number')
-                        ? TextCapitalization.characters
-                        : TextCapitalization.sentences,
-                    inputFormatters: <TextInputFormatter>[
-                      (item['label']
-                          .toString()
-                          .toLowerCase()
-                          .contains('phone') ||
-                          item['label']
+                          if (item['name']
                               .toString()
                               .toLowerCase()
-                              .contains('cost') ||
-                          item['label']
+                              .contains('address')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+
+                          if (item['name'].toString().contains('email')) {
+                            email = controller.text;
+                          }
+                          if (item['name'].toString().contains('first_name')) {
+                            firstName = controller.text;
+                          }
+                          if (item['name'].toString().contains('phone') &&
+                              !item['name']
+                                  .toString()
+                                  .contains('next_of_kin_phone')) {
+                            phone = controller.text;
+                          }
+                          if (item['name'].toString().contains('last_name')) {
+                            lastName = controller.text;
+                          }
+
+                          if (item['name'].toString().contains('other_names')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
                               .toString()
-                              .toLowerCase()
-                              .contains('price') ||
-                          item['label']
+                              .contains('nature_of_business')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('shop_type')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                                  .toString()
+                                  .contains('next_of_kin_name') ||
+                              item['name']
+                                  .toString()
+                                  .contains('next_of_kin_phone') ||
+                              item['name']
+                                  .toString()
+                                  .contains('next_of_kin_address')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
                               .toString()
-                              .toLowerCase()
-                              .contains('bvn'))
-                          ? FilteringTextInputFormatter.digitsOnly
-                          : FilteringTextInputFormatter.deny(
-                          RegExp(r'[/\\]'))
-                    ],
-                    enabled: item['data_url'].toString() != 'null' ||
-                        item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('date') ||
-                        item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('image') ||
-                        item['label']
-                            .toString()
-                            .toLowerCase()
-                            .contains('product') ||
-                        item['name'].toString().toLowerCase().contains(
-                            'is_full_year') ||
-                        item['name'].toString().toLowerCase().contains(
-                            'stock_keeping')
-                        ? false
-                        : true,
-                    hint: item['description'],
-                    prefixIcon: item['label'].toString().toLowerCase().contains(
-                        'image')
-                        ? Row(
-                      mainAxisAlignment: MainAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const SizedBox(width: 10),
-                        Container(
-                            decoration: BoxDecoration(
-                                borderRadius:
-                                BorderRadius.circular(3),
-                                border: Border.all(color: GREY)),
-                            child: const Padding(
-                              padding:
-                              EdgeInsets.fromLTRB(10, 5, 10, 5),
-                              child: Text(
-                                'Select Image',
-                                style: TextStyle(fontSize: 12),
-                              ),
-                            )),
-                        const SizedBox(width: 10),
-                      ],
-                    )
-                        : null,
-                    suffixIcon: (item['data_url'].toString() != 'null' ||
-                        item['name'].toString().toLowerCase().contains(
-                            'is_full_year') ||
-                        item['name'].toString().toLowerCase().contains(
-                            'stock_keeping'))
-                        ? const Icon(Icons.expand_more)
-                        : item['label'].toString().toLowerCase().contains(
-                        'date')
-                        ? const Icon(Icons.event_note)
-                        : null,
-                    validator: (value) {
-                      var label = item['label'].toString().toLowerCase();
-                      if (label.contains('phone')) {
-                        return PhoneNumberValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else if (label.contains('email')) {
-                        return EmailValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else if (label.contains('bvn')) {
-                        return BVNValidator.validate(value,
-                            error: item['errorMsg']);
-                      } else {
-                        return FieldValidator.validate(value,
-                            error: item['errorMsg']);
-                      }
-                    }),
+                              .contains('marital_status')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('occupation')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('town')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('tenancy')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('description')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('pre_ownership')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name'].toString().contains('owner_title')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('chassis_number')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                          if (item['name']
+                              .toString()
+                              .contains('engine_number')) {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
+                          }
+                        },
+                        keyboardType:
+                            (item['label'].toString().toLowerCase().contains('phone') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('cost') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('price') ||
+                                    item['data_type']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('number') ||
+                                    item['name']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('value') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('bvn'))
+                                ? TextInputType.phone
+                                : TextInputType.text,
+                        textCapitalization: item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('email')
+                            ? TextCapitalization.none
+                            : item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('number')
+                                ? TextCapitalization.characters
+                                : TextCapitalization.sentences,
+                        inputFormatters: <TextInputFormatter>[
+                          (item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('phone') ||
+                                  item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('cost') ||
+                                  item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('price') ||
+                                  item['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('bvn'))
+                              ? FilteringTextInputFormatter.digitsOnly
+                              : FilteringTextInputFormatter.deny(
+                                  RegExp(r'[/\\]'))
+                        ],
+                        enabled: item['data_url'].toString() != 'null' ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('date') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('image') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('product') ||
+                                item['name'].toString().toLowerCase().contains('is_full_year') ||
+                                item['name'].toString().toLowerCase().contains('stock_keeping')
+                            ? false
+                            : true,
+                        hint: item['description'],
+                        prefixIcon: item['label'].toString().toLowerCase().contains('image')
+                            ? Row(
+                                mainAxisAlignment: MainAxisAlignment.start,
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const SizedBox(width: 10),
+                                  Container(
+                                      decoration: BoxDecoration(
+                                          borderRadius:
+                                              BorderRadius.circular(3),
+                                          border: Border.all(color: GREY)),
+                                      child: const Padding(
+                                        padding:
+                                            EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                        child: Text(
+                                          'Select Image',
+                                          style: TextStyle(fontSize: 12),
+                                        ),
+                                      )),
+                                  const SizedBox(width: 10),
+                                ],
+                              )
+                            : null,
+                        suffixIcon: (item['data_url'].toString() != 'null' || item['name'].toString().toLowerCase().contains('is_full_year') || item['name'].toString().toLowerCase().contains('stock_keeping'))
+                            ? const Icon(Icons.expand_more)
+                            : item['label'].toString().toLowerCase().contains('date')
+                                ? const Icon(Icons.event_note)
+                                : null,
+                        validator: (value) {
+                          var label = item['label'].toString().toLowerCase();
+                          if (label.contains('phone')) {
+                            return PhoneNumberValidator.validate(value,
+                                error: item['errorMsg']);
+                          } else if (label.contains('email')) {
+                            return EmailValidator.validate(value,
+                                error: item['errorMsg']);
+                          } else if (label.contains('bvn')) {
+                            return BVNValidator.validate(value,
+                                error: item['errorMsg']);
+                          } else {
+                            return FieldValidator.validate(value,
+                                error: item['errorMsg']);
+                          }
+                        }),
               ),
             ],
           );
@@ -760,7 +753,7 @@ class _FormScreenState extends State<FormScreen> {
                 borderRadius: BorderRadius.circular(3)),
             child: Padding(
               padding:
-              const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
@@ -768,16 +761,16 @@ class _FormScreenState extends State<FormScreen> {
                   if (calcPrice != '')
                     RichText(
                         text: TextSpan(children: [
-                          const TextSpan(
-                              text: 'Pay ',
-                              style: TextStyle(fontSize: 12, color: DARK)),
-                          TextSpan(
-                              text: 'NGN$calcPrice',
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: PRIMARY))
-                        ]))
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: 'NGN$calcPrice',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
                 ],
               ),
             ),
@@ -785,68 +778,68 @@ class _FormScreenState extends State<FormScreen> {
           verticalSpace(),
           paymentMethod == 'ussd' && enabledUssd
               ? Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              !isBankSelected
-                  ? ussdProvidersCard()
-                  : Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  InkWell(
-                    onTap: () =>
-                        setState(() => isBankSelected = false),
-                    child: const InputFormField(
-                        enabled: false,
-                        hint: 'Search for bank of your choice',
-                        prefixIcon: Icon(Icons.search),
-                        textCapitalization:
-                        TextCapitalization.sentences,
-                        keyboardType: TextInputType.text),
-                  ),
-                  const SizedBox(height: 5),
-                  const Text('You want to make payment with USSD',
-                      style: TextStyle(
-                          fontSize: 13,
-                          color: PRIMARY,
-                          fontWeight: FontWeight.w600)),
-                  verticalSpace(),
-                  const Divider(),
-                  verticalSpace(),
-                  Text(bankName,
-                      textAlign: TextAlign.center,
-                      style: const TextStyle(
-                          fontSize: 23,
-                          color: DARK,
-                          fontWeight: FontWeight.w600)),
-                  Text('CODE - $bankCode',
-                      style: const TextStyle(
-                          fontSize: 20,
-                          color: DARK,
-                          fontWeight: FontWeight.w400)),
-                  verticalSpace(),
-                ],
-              ),
-            ],
-          )
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    !isBankSelected
+                        ? ussdProvidersCard()
+                        : Column(
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: [
+                              InkWell(
+                                onTap: () =>
+                                    setState(() => isBankSelected = false),
+                                child: const InputFormField(
+                                    enabled: false,
+                                    hint: 'Search for bank of your choice',
+                                    prefixIcon: Icon(Icons.search),
+                                    textCapitalization:
+                                        TextCapitalization.sentences,
+                                    keyboardType: TextInputType.text),
+                              ),
+                              const SizedBox(height: 5),
+                              const Text('You want to make payment with USSD',
+                                  style: TextStyle(
+                                      fontSize: 13,
+                                      color: PRIMARY,
+                                      fontWeight: FontWeight.w600)),
+                              verticalSpace(),
+                              const Divider(),
+                              verticalSpace(),
+                              Text(bankName,
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                      fontSize: 23,
+                                      color: DARK,
+                                      fontWeight: FontWeight.w600)),
+                              Text('CODE - $bankCode',
+                                  style: const TextStyle(
+                                      fontSize: 20,
+                                      color: DARK,
+                                      fontWeight: FontWeight.w400)),
+                              verticalSpace(),
+                            ],
+                          ),
+                  ],
+                )
               : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Text('Select Payment method',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                  )),
-              const SizedBox(height: 5),
-              const Text('Choose an option to proceed',
-                  style: TextStyle(fontSize: 12, color: DARK)),
-              verticalSpace(),
-              paymentMethodCard(transfer, 'Transfer',
-                  'Send to a bank Account', 'bank transfer'),
-              verticalSpace(),
-              paymentMethodCard(ussd, 'USSD',
-                  'Select any bank to generate USSD', 'ussd'),
-            ],
-          ),
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    const Text('Select Payment method',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        )),
+                    const SizedBox(height: 5),
+                    const Text('Choose an option to proceed',
+                        style: TextStyle(fontSize: 12, color: DARK)),
+                    verticalSpace(),
+                    paymentMethodCard(transfer, 'Transfer',
+                        'Send to a bank Account', 'bank transfer'),
+                    verticalSpace(),
+                    paymentMethodCard(ussd, 'USSD',
+                        'Select any bank to generate USSD', 'ussd'),
+                  ],
+                ),
           SizedBox(height: height(context) * 0.1),
           /*  Center(
             child: getProductName(provider.toUpperCase()),
@@ -874,7 +867,7 @@ class _FormScreenState extends State<FormScreen> {
       },
       body: Container(
         decoration:
-        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -896,28 +889,28 @@ class _FormScreenState extends State<FormScreen> {
                   borderRadius: BorderRadius.circular(3)),
               child: Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     Text(email, style: const TextStyle(fontSize: 12)),
                     RichText(
                         text: TextSpan(children: [
-                          const TextSpan(
-                              text: 'Pay ',
-                              style: TextStyle(fontSize: 12, color: DARK)),
-                          TextSpan(
-                              text: calcPrice == ''
-                                  ? productDetail['data']['productDetails'][0]
-                              ['is_dynamic_pricing']
+                      const TextSpan(
+                          text: 'Pay ',
+                          style: TextStyle(fontSize: 12, color: DARK)),
+                      TextSpan(
+                          text: calcPrice == ''
+                              ? productDetail['data']['productDetails'][0]
+                                      ['is_dynamic_pricing']
                                   ? '$price%'
                                   : 'NGN$price'
-                                  : 'NGN$calcPrice',
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w600,
-                                  color: PRIMARY))
-                        ]))
+                              : 'NGN$calcPrice',
+                          style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w600,
+                              color: PRIMARY))
+                    ]))
                   ],
                 ),
               ),
@@ -987,7 +980,7 @@ class _FormScreenState extends State<FormScreen> {
       },
       body: Container(
         decoration:
-        BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
+            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
         padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1012,7 +1005,7 @@ class _FormScreenState extends State<FormScreen> {
                   borderRadius: BorderRadius.circular(3)),
               child: Padding(
                 padding:
-                const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
@@ -1020,20 +1013,20 @@ class _FormScreenState extends State<FormScreen> {
                     if (calcPrice != '')
                       RichText(
                           text: TextSpan(children: [
-                            const TextSpan(
-                                text: 'Pay ',
-                                style: TextStyle(
-                                    fontFamily: 'Space',
-                                    fontSize: 12,
-                                    color: DARK)),
-                            TextSpan(
-                                text: 'NGN$calcPrice',
-                                style: const TextStyle(
-                                    fontFamily: 'Space',
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: PRIMARY))
-                          ]))
+                        const TextSpan(
+                            text: 'Pay ',
+                            style: TextStyle(
+                                fontFamily: 'Space',
+                                fontSize: 12,
+                                color: DARK)),
+                        TextSpan(
+                            text: 'NGN$calcPrice',
+                            style: const TextStyle(
+                                fontFamily: 'Space',
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: PRIMARY))
+                      ]))
                   ],
                 ),
               ),
@@ -1150,7 +1143,6 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   void pickItem(list, title, {onSelect}) {
-
     String getString(String string) {
       switch (string.toLowerCase()) {
         case "true":
@@ -1162,49 +1154,43 @@ class _FormScreenState extends State<FormScreen> {
       }
     }
 
-
     showModalBottomSheet(
         context: context,
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
-        builder: (context) =>
-            Container(
-                decoration: BoxDecoration(
-                    color: WHITE, borderRadius: BorderRadius.circular(15)),
-                height: MediaQuery
-                    .of(context)
-                    .size
-                    .height * 0.45,
-                padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
-                child: Column(
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: Center(
-                          child: Text('$title',
-                              style: const TextStyle(
-                                  fontFamily: 'Space',
-                                  fontWeight: FontWeight.w700,
-                                  fontSize: 16))),
-                    ),
-                    Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                            children: List.generate(
-                                list.length,
-                                    (i) =>
-                                    ListTile(
-                                      title: Text(getString(list[i].toString()),
-                                          style: const TextStyle(
-                                              fontFamily: 'Space',
-                                              fontWeight: FontWeight.w500,
-                                              fontSize: 16)),
-                                      onTap: () => onSelect(list[i]),
-                                    ))),
-                      ),
-                    ),
-                  ],
-                )));
+        builder: (context) => Container(
+            decoration: BoxDecoration(
+                color: WHITE, borderRadius: BorderRadius.circular(15)),
+            height: MediaQuery.of(context).size.height * 0.45,
+            padding: const EdgeInsets.fromLTRB(20, 20, 0, 0),
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Center(
+                      child: Text('$title',
+                          style: const TextStyle(
+                              fontFamily: 'Space',
+                              fontWeight: FontWeight.w700,
+                              fontSize: 16))),
+                ),
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                        children: List.generate(
+                            list.length,
+                            (i) => ListTile(
+                                  title: Text(getString(list[i].toString()),
+                                      style: const TextStyle(
+                                          fontFamily: 'Space',
+                                          fontWeight: FontWeight.w500,
+                                          fontSize: 16)),
+                                  onTap: () => onSelect(list[i]),
+                                ))),
+                  ),
+                ),
+              ],
+            )));
   }
 
   search() {
@@ -1214,8 +1200,7 @@ class _FormScreenState extends State<FormScreen> {
     if (mounted) {
       setState(() {
         searchList = ussdProviders
-            .where((i) =>
-            i['bank_name']
+            .where((i) => i['bank_name']
                 .toString()
                 .toLowerCase()
                 .replaceAll(' ', '')
@@ -1231,11 +1216,8 @@ class _FormScreenState extends State<FormScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration:
-      BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(15)),
-      height: MediaQuery
-          .of(context)
-          .size
-          .height * 0.56,
+          BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(15)),
+      height: MediaQuery.of(context).size.height * 0.56,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1281,8 +1263,7 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  void openUssdProvider() =>
-      showModalBottomSheet(
+  void openUssdProvider() => showModalBottomSheet(
         isScrollControlled: true,
         backgroundColor: Colors.transparent,
         context: context,
@@ -1291,10 +1272,7 @@ class _FormScreenState extends State<FormScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 22),
             decoration: BoxDecoration(
                 color: WHITE, borderRadius: BorderRadius.circular(15)),
-            height: MediaQuery
-                .of(context)
-                .size
-                .height * 0.85,
+            height: MediaQuery.of(context).size.height * 0.85,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1357,20 +1335,13 @@ class _FormScreenState extends State<FormScreen> {
   void _showDialog(Widget child) {
     showCupertinoModalPopup<void>(
         context: context,
-        builder: (BuildContext context) =>
-            Container(
+        builder: (BuildContext context) => Container(
               padding: const EdgeInsets.only(top: 6.0),
               margin: EdgeInsets.only(
-                  bottom: MediaQuery
-                      .of(context)
-                      .viewInsets
-                      .bottom),
+                  bottom: MediaQuery.of(context).viewInsets.bottom),
               decoration: BoxDecoration(
                   color: WHITE, borderRadius: BorderRadius.circular(15)),
-              height: MediaQuery
-                  .of(context)
-                  .size
-                  .height * 0.45,
+              height: MediaQuery.of(context).size.height * 0.45,
               child: SafeArea(
                 top: false,
                 child: child,
@@ -1526,9 +1497,9 @@ class _FormScreenState extends State<FormScreen> {
     if (url != null) {
       var response = await WebServices.getListData(url, widget.publicKey);
       if (response['responseText']
-          .toString()
-          .toLowerCase()
-          .contains('vehicle category') ||
+              .toString()
+              .toLowerCase()
+              .contains('vehicle category') ||
           response['responseText']
               .toString()
               .toLowerCase()
@@ -1596,8 +1567,7 @@ class _FormScreenState extends State<FormScreen> {
       if (url.contains('model')) {
         var models = [];
         var data = response['data']
-            .where((element) =>
-            element['make']
+            .where((element) => element['make']
                 .toString()
                 .toLowerCase()
                 .contains(make.toString().toLowerCase()))
@@ -1798,7 +1768,7 @@ class _FormScreenState extends State<FormScreen> {
       Dialogs.successDialog(
           context: context,
           message:
-          'You paid for $productName\nKindly Continue to complete your purchase',
+              'You paid for $productName\nKindly Continue to complete your purchase',
           onTap: () {
             Navigator.pop(context);
             getPurchaseInfo(true);
