@@ -5,7 +5,14 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mca_official_flutter_sdk/src/globals.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_string.dart';
+import 'package:mca_official_flutter_sdk/src/utils/spacers.dart';
+import 'package:mca_official_flutter_sdk/src/widgets/clipboard_toaster.dart';
 
 import '../../mca_official_flutter_sdk.dart';
 import '../const.dart';
@@ -18,18 +25,18 @@ import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen(
-      {Key? key,
-      required this.productDetail,
-      required this.instanceId,
-      required this.form,
-      required this.provider,
-      required this.reference,
-      required this.inspectable,
-      required this.email,
-      required this.publicKey,
-      required this.paymentOption})
-      : super(key: key);
+  const FormScreen({
+    Key? key,
+    required this.productDetail,
+    required this.instanceId,
+    required this.form,
+    required this.provider,
+    required this.reference,
+    required this.inspectable,
+    required this.email,
+    required this.publicKey,
+    required this.paymentOption,
+  }) : super(key: key);
   final productDetail;
   final form;
   final String instanceId;
@@ -124,8 +131,8 @@ class _FormScreenState extends State<FormScreen> {
       if (widget.form != null) {
         var inputForm = widget.form;
         phone = inputForm['phone'] ?? '';
-        firstName = '';
-        lastName = '';
+        firstName = inputForm['first_name'] ?? '';
+        lastName = inputForm['last_name'] ?? '';
       }
 
       if (paymentOption == PaymentOption.gateway && reference != '') {
@@ -183,7 +190,7 @@ class _FormScreenState extends State<FormScreen> {
   Widget inputBody() {
     return FormBodyScaffold(
       logo: logo,
-      text: 'Get Covered',
+      text: (initialPage < (chunks.length - 1)) ? 'Continue' : 'Get Covered',
       buttonAction: () {
         FocusScope.of(context).unfocus();
         if (_formKey.currentState!.validate()) {
@@ -213,146 +220,63 @@ class _FormScreenState extends State<FormScreen> {
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
       },
-      body: Column(
-        children: [
-        /*  verticalSpace(height: 10),
-          if (widget.publicKey.toString().toLowerCase().contains('test'))
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Expanded(
-                    child:
-                        Container(height: 0.7, color: GREY.withOpacity(0.3))),
-                Container(
-                  decoration: BoxDecoration(
-                      color: Colors.amberAccent.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
-                    child: Text('TEST',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontFamily: 'Space',
-                            color: DARK.withOpacity(0.8),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400)),
-                  ),
+      body: Expanded(
+        child: Column(
+          children: [
+            verticalSpace(height: 15),
+            Text(productName,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.spaceGrotesk(
+                    fontSize: 15, fontWeight: FontWeight.w700)),
+            verticalSpace(height: 25),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: GREEN),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child:
+                          Text('Enter details as it appear on legal documents.',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 12,
+                              )),
+                    )
+                  ],
                 ),
-                Expanded(
-                    child:
-                        Container(height: 0.7, color: GREY.withOpacity(0.3))),
-              ],
-            ),*/
-
-          verticalSpace(height: 15),
-          Text(productName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'Space',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700)),
-          verticalSpace(height: 25),
-          Container(
-            decoration: BoxDecoration(
-                color: GREEN.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(3)),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-              child: Row(
-                children: const [
-                  Icon(Icons.info, color: GREEN),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child:
-                        Text('Enter details as it appear on legal documents.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Space',
-                            )),
-                  )
-                ],
               ),
             ),
-          ),
-          smallVerticalSpace(),
-          Align(
-              alignment: Alignment.topRight,
-              child: getProductName(provider.toUpperCase())),
-          verticalSpace(),
-          productDetail == null
-              ? const Center(child: CircularProgressIndicator.adaptive())
-              : forms == null
-                  ? const Center(child: CircularProgressIndicator.adaptive())
-                  : Form(
-                      key: _formKey,
-                      child: ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          separatorBuilder: (c, i) => smallVerticalSpace(),
-                          itemCount: 1,
-                          shrinkWrap: true,
-                          itemBuilder: (c, i) {
-                            return form(pageData);
-                          }),
-                    ),
-          if (pageData.length < 3) verticalSpace(height: height(context) * 0.1),
-
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(vertical: 15.0),
-          //   child: button(
-          //       text: 'Get Covered',
-          //       onTap: () async {
-          //         FocusScope.of(context).unfocus();
-          //         if (_formKey.currentState!.validate()) {
-          //           if (initialPage < (chunks.length - 1)) {
-          //             initialPage++;
-          //             setState(() => pageData = chunks[initialPage]);
-          //           } else {
-          //             if (stage == PurchaseStage.payment &&
-          //                 paymentOption == PaymentOption.gateway) {
-          //               setState(() => bodyType = 'bank');
-          //             } else if (stage == PurchaseStage.payment &&
-          //                 paymentOption == PaymentOption.wallet) {
-          //               makePayment();
-          //             } else {
-          //               uploadImage();
-          //             }
-          //           }
-          //         }
-          //       }),
-          // ),
-          // Image.asset(myCover,
-          //     width: 170, fit: BoxFit.fitWidth, package: 'mca_official_flutter_sdk'),
-        ],
+            smallVerticalSpace(),
+            Align(
+                alignment: Alignment.topRight,
+                child: getProductName(provider.toUpperCase())),
+            verticalSpace(),
+            productDetail == null
+                ? const Center(child: CircularProgressIndicator.adaptive())
+                : forms == null
+                    ? const Center(child: CircularProgressIndicator.adaptive())
+                    : Form(
+                        key: _formKey,
+                        child: ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            separatorBuilder: (c, i) => smallVerticalSpace(),
+                            itemCount: 1,
+                            shrinkWrap: true,
+                            itemBuilder: (c, i) {
+                              return form(pageData);
+                            }),
+                      ),
+            if (pageData.length < 3)
+              verticalSpace(height: height(context) * 0.1),
+          ],
+        ),
       ),
     );
-
-    //   Padding(
-    //   padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-    //   child: Column(
-    //     children: [
-    //       const SizedBox(height: 10),
-    //
-    //       Row(
-    //         mainAxisAlignment: MainAxisAlignment.center,
-    //         children: [
-    //           logo == ''
-    //               ? Image.asset(mca, height: 30, package: 'mca_official_flutter_sdk')
-    //               : Image.network(
-    //             logo,
-    //             height: 30,
-    //           ),
-    //         ],
-    //       ),
-    //       const SizedBox(height: 10),
-    //
-    //
-    //
-    //       const SizedBox(height: 10),
-    //       verticalSpace(),
-    //     ],
-    //   ),
-    // );
   }
 
   form(data) {
@@ -691,7 +615,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   payment() {
-    return FormBodyScaffold(
+    return PaymentBodyScaffold(
       logo: logo,
       text: 'Get Covered',
       buttonAction: () {
@@ -722,124 +646,136 @@ class _FormScreenState extends State<FormScreen> {
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
       },
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          verticalSpace(),
-          Row(
-            children: [
-              Expanded(
-                  child: Text(productName,
-                      textAlign: TextAlign.end,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)))
-            ],
-          ),
-          smallVerticalSpace(),
-          Container(
-            decoration: BoxDecoration(
-                color: GREEN.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(3)),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(email, style: const TextStyle(fontSize: 12)),
-                  if (calcPrice != '')
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text: 'NGN$calcPrice',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
-                ],
-              ),
-            ),
-          ),
-          verticalSpace(),
-          paymentMethod == 'ussd' && enabledUssd
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    !isBankSelected
-                        ? ussdProvidersCard()
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              InkWell(
-                                onTap: () =>
-                                    setState(() => isBankSelected = false),
-                                child: const InputFormField(
-                                    enabled: false,
-                                    hint: 'Search for bank of your choice',
-                                    prefixIcon: Icon(Icons.search),
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    keyboardType: TextInputType.text),
-                              ),
-                              const SizedBox(height: 5),
-                              const Text('You want to make payment with USSD',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: PRIMARY,
-                                      fontWeight: FontWeight.w600)),
-                              verticalSpace(),
-                              const Divider(),
-                              verticalSpace(),
-                              Text(bankName,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      fontSize: 23,
-                                      color: DARK,
-                                      fontWeight: FontWeight.w600)),
-                              Text('CODE - $bankCode',
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      color: DARK,
-                                      fontWeight: FontWeight.w400)),
-                              verticalSpace(),
-                            ],
-                          ),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text('Select Payment method',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        )),
-                    const SizedBox(height: 5),
-                    const Text('Choose an option to proceed',
-                        style: TextStyle(fontSize: 12, color: DARK)),
-                    verticalSpace(),
-                    paymentMethodCard(transfer, 'Transfer',
-                        'Send to a bank Account', 'bank transfer'),
-                    verticalSpace(),
-                    paymentMethodCard(ussd, 'USSD',
-                        'Select any bank to generate USSD', 'ussd'),
-                  ],
+      body: Expanded(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                verticalSpacer(5),
+
+                smallVerticalSpace(),
+                Container(
+                  decoration: BoxDecoration(
+                      color: GREEN.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(3)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Text(productName,
+                                    textAlign: TextAlign.end,
+                                    style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700)))
+                          ],
+                        ),
+                        verticalSpacer(2),
+                        Text(email, style: const TextStyle(fontSize: 12)),
+                        if (calcPrice != '')
+                          RichText(
+                              text: TextSpan(children: [
+                            const TextSpan(
+                                text: 'Pay ',
+                                style: TextStyle(fontSize: 12, color: DARK)),
+                            TextSpan(
+                                text: 'NGN$calcPrice',
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: PRIMARY))
+                          ]))
+                      ],
+                    ),
+                  ),
                 ),
-          SizedBox(height: height(context) * 0.1),
-          Center(
-            child: getProductName(provider.toUpperCase()),
-          ),
-        ],
+                verticalSpacer(30),
+                paymentMethod == 'ussd' && enabledUssd
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          !isBankSelected
+                              ? ussdProvidersCard()
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    InkWell(
+                                      onTap: () => setState(
+                                          () => isBankSelected = false),
+                                      child: const InputFormField(
+                                          enabled: false,
+                                          hint:
+                                              'Search for bank of your choice',
+                                          prefixIcon: Icon(Icons.search),
+                                          textCapitalization:
+                                              TextCapitalization.sentences,
+                                          keyboardType: TextInputType.text),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text('You want to make payment with USSD',
+                                        style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 13,
+                                            color: PRIMARY,
+                                            fontWeight: FontWeight.w600)),
+                                    verticalSpace(),
+                                    const Divider(),
+                                    verticalSpace(),
+                                    Text(bankName,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontSize: 23,
+                                            color: DARK,
+                                            fontWeight: FontWeight.w600)),
+                                    Text('CODE - $bankCode',
+                                        style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 20,
+                                            color: DARK,
+                                            fontWeight: FontWeight.w400)),
+                                    verticalSpace(),
+                                  ],
+                                ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Select Payment method',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              )),
+                          const SizedBox(height: 3),
+                          Text('Choose an option to proceed',
+                              style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12, color: DARK)),
+                          verticalSpacer(30),
+                          paymentMethodCard(transfer, 'Transfer',
+                              'Send to a bank Account', 'bank transfer'),
+                          verticalSpace(),
+                          paymentMethodCard(ussd, 'USSD',
+                              'Select any bank to generate USSD', 'ussd'),
+                        ],
+                      ),
+                // SizedBox(height: height(context) * 0.1),
+              ],
+            ),
+            Center(
+              child: getProductName(provider.toUpperCase()),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   bankDetailCard() {
-    return FormBodyScaffold(
+    return PaymentBodyScaffold(
       logo: logo,
       text: 'I have sent the money',
       buttonAction: () {
@@ -854,104 +790,153 @@ class _FormScreenState extends State<FormScreen> {
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
       },
-      body: Container(
-        decoration:
-            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+      body: Expanded(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            verticalSpace(),
-            Row(
-              children: [
-                Expanded(
-                    child: Text(productName,
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700)))
-              ],
-            ),
-            smallVerticalSpace(),
-            Container(
-              decoration: BoxDecoration(
-                  color: GREEN.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(3)),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                    color: WHITE, borderRadius: BorderRadius.circular(5)),
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(email, style: const TextStyle(fontSize: 12)),
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text: calcPrice == ''
-                              ? productDetail['data']['productDetails'][0]
-                                      ['is_dynamic_pricing']
-                                  ? '$price%'
-                                  : 'NGN$price'
-                              : 'NGN$calcPrice',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
+                    // verticalSpace(),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Text(productName,
+                                textAlign: TextAlign.end,
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 15, fontWeight: FontWeight.w700)))
+                      ],
+                    ),
+                    smallVerticalSpace(),
+                    Container(
+                      decoration: BoxDecoration(
+                          color: CustomColors.success25Color,
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 15),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(email,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  color: CustomColors.hintTextColor,
+                                )),
+                            verticalSpacer(5),
+                            RichText(
+                                text: TextSpan(children: [
+                              TextSpan(
+                                text: 'Pay  ',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  color: CustomColors.blackColor,
+                                ),
+                              ),
+                              TextSpan(
+                                  text: calcPrice == ''
+                                      ? productDetail['data']['productDetails']
+                                              [0]['is_dynamic_pricing']
+                                          ? '$price%'
+                                          : '₦$price'
+                                      : '₦$calcPrice',
+                                  style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: CustomColors.success600Color))
+                            ]))
+                          ],
+                        ),
+                      ),
+                    ),
+                    verticalSpace(),
+                    Expanded(
+                      child: Container(
+                        color: CustomColors.gray50Color,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 20),
+                            Text('Send to the Account No. below',
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 13,
+                                    color: PRIMARY,
+                                    fontWeight: FontWeight.w700)),
+                            verticalSpace(),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Divider(
+                                color: CustomColors.searchBorderColor,
+                              ),
+                            ),
+                            verticalSpace(),
+                            Text(bankName,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 25,
+                                    color: DARK,
+                                    fontWeight: FontWeight.w700)),
+                            Text('MyCover.ai',
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 25,
+                                    color: DARK,
+                                    fontWeight: FontWeight.w600)),
+                            verticalSpace(height: 10.0),
+                            Text(accountNumber,
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 28,
+                                    color: DARK,
+                                    fontWeight: FontWeight.w700)),
+                            verticalSpace(height: 10.0),
+                            GestureDetector(
+                              onTap: () async {
+                                await Clipboard.setData(
+                                    ClipboardData(text: accountNumber));
+                                ToastNotification.show(
+                                    context: context,
+                                    copiedText: accountNumber,
+                                    toastMessage: "Copied to clipboard!");
+                              },
+                              child: Container(
+                                height: 35,
+                                width: 35,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: CustomColors.bgWhiteColor,
+                                ),
+                                child: Center(
+                                    child: SvgPicture.asset(
+                                        ConstantString.copyIcon,
+                                        package: 'mca_official_flutter_sdk')),
+                              ),
+                            ),
+                            // verticalSpace(),
+                            // const Divider(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // const Divider(),
+                    // verticalSpace(),
+                    // AnimatedOpacity(
+                    //   duration: const Duration(seconds: 15),
+                    //   opacity: _opacity,
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    //     child: button(
+                    //         text: 'I have sent the money',
+                    //         onTap: () => verifyPayment(true)),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
             ),
-            verticalSpace(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 5),
-                const Text('Send to the Account No. below',
-                    style: TextStyle(
-                        fontFamily: 'Space',
-                        fontSize: 13,
-                        color: PRIMARY,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(),
-                const Divider(),
-                verticalSpace(),
-                Text(bankName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontFamily: 'Space',
-                        fontSize: 25,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                const Text('MyCover.ai',
-                    style: TextStyle(
-                        fontSize: 25,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(height: 10.0),
-                Text(accountNumber,
-                    style: const TextStyle(
-                        fontSize: 28,
-                        color: DARK,
-                        fontWeight: FontWeight.w700)),
-                verticalSpace(),
-                const Divider(),
-              ],
-            ),
-            const Divider(),
-            verticalSpace(),
-            // AnimatedOpacity(
-            //   duration: const Duration(seconds: 15),
-            //   opacity: _opacity,
-            //   child: Padding(
-            //     padding: const EdgeInsets.symmetric(vertical: 20.0),
-            //     child: button(
-            //         text: 'I have sent the money',
-            //         onTap: () => verifyPayment(true)),
-            //   ),
-            // ),
             Center(
               child: getProductName(provider.toUpperCase()),
             ),
@@ -1102,7 +1087,9 @@ class _FormScreenState extends State<FormScreen> {
           child: Row(
             children: [
               Image.asset(image,
-                  height: 45, fit: BoxFit.fitWidth, package: 'mca_official_flutter_sdk'),
+                  height: 45,
+                  fit: BoxFit.fitWidth,
+                  package: 'mca_official_flutter_sdk'),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
@@ -1138,7 +1125,7 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  final Map<String, TextEditingController> _controllerMap = Map();
+  final Map<String, TextEditingController> _controllerMap = {};
 
   TextEditingController _getControllerOf(String name, {initValue}) {
     var controller = _controllerMap[name];
@@ -1229,7 +1216,7 @@ class _FormScreenState extends State<FormScreen> {
               textCapitalization: TextCapitalization.sentences,
               suffixIcon: InkWell(
                   onTap: () => setState(() => isBankSelected = true),
-                  child: Icon(Icons.close)),
+                  child: const Icon(Icons.close)),
               keyboardType: TextInputType.text),
           Expanded(
               child: ListView.builder(
@@ -1352,7 +1339,7 @@ class _FormScreenState extends State<FormScreen> {
       var paymentList = forms.where((i) => i['show_first'] == true).toList();
       var purchaseList = forms.where((i) => i['show_first'] != true).toList();
       List lst = stage == PurchaseStage.payment ? paymentList : purchaseList;
-      int chunkSize = 4;
+      int chunkSize = 3;
       for (var i = 0; i < lst.length; i += chunkSize) {
         chunks.add(lst.sublist(
             i, i + chunkSize > lst.length ? lst.length : i + chunkSize));
@@ -1466,10 +1453,10 @@ class _FormScreenState extends State<FormScreen> {
                   decoration: BoxDecoration(
                       color: Colors.green,
                       borderRadius: BorderRadius.circular(3)),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
+                  child: const Padding(
+                    padding: EdgeInsets.fromLTRB(3, 1, 3, 1),
                     child: Row(
-                      children: const [
+                      children: [
                         Icon(Icons.add_circle, size: 15, color: Colors.white),
                         Padding(
                             padding: EdgeInsets.all(4.0),
@@ -1617,8 +1604,9 @@ class _FormScreenState extends State<FormScreen> {
 
   makePayment() async {
     Dialogs.showLoading(context: context, text: 'Submitting Payment');
+    // ignore: prefer_typing_uninitialized_variables
     var paymentChannel;
-    var debitWalletReference;
+    String? debitWalletReference;
     if (paymentOption == PaymentOption.gateway) {
       paymentChannel = {
         "channel": paymentMethod,
@@ -1654,6 +1642,7 @@ class _FormScreenState extends State<FormScreen> {
         instanceId: widget.instanceId,
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
+        paymentOption: paymentOption,
         paymentChannel: paymentChannel);
 
     print(res);
@@ -1686,7 +1675,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   initialiseSdk(context) {
-    final mycover = MyCoverAI(
+    final mycover = MyCoverAIInitializer(
         context: context,
         form: widget.form,
         productId: [productId],
@@ -1737,7 +1726,8 @@ class _FormScreenState extends State<FormScreen> {
             if (widget.inspectable) {
               initialiseSdk(context);
             } else {
-              Navigator.pop(context);
+              Global.onComplete!();
+              // Navigator.pop(context);
             }
           });
     }
@@ -1790,14 +1780,40 @@ class _FormScreenState extends State<FormScreen> {
 
       setState(() {
         stage = PurchaseStage.purchase;
-        purchaseData['amount'] = res['data']['amount'];
-        purchaseData['vehicle_category'] = res['data']['vehicle_category'];
-        purchaseData['date_of_birth'] = res['data']['date_of_birth'];
-        purchaseData['phone_number'] = res['data']['phone_number'];
-        purchaseData['phone'] = res['data']['phone'];
-        purchaseData['last_name'] = res['data']['last_name'];
-        purchaseData['first_name'] = res['data']['first_name'];
-        purchaseData['email'] = res['data']['email'];
+        print("purchaseData");
+        print(purchaseData);
+        if (res['data'].containsKey('amount')) {
+          purchaseData['amount'] = res['data']['amount'];
+        }
+
+        if (res['data'].containsKey('vehicle_category')) {
+          purchaseData['vehicle_category'] = res['data']['vehicle_category'];
+        }
+
+        if (res['data'].containsKey('date_of_birth')) {
+          purchaseData['date_of_birth'] = res['data']['date_of_birth'];
+        }
+
+        if (res['data'].containsKey('phone_number')) {
+          purchaseData['phone_number'] = res['data']['phone_number'];
+        }
+
+        if (res['data'].containsKey('phone')) {
+          purchaseData['phone'] = res['data']['phone'];
+        }
+
+        if (res['data'].containsKey('last_name')) {
+          purchaseData['last_name'] = res['data']['last_name'];
+        }
+
+        if (res['data'].containsKey('first_name')) {
+          purchaseData['first_name'] = res['data']['first_name'];
+        }
+
+        if (res['data'].containsKey('email')) {
+          purchaseData['email'] = res['data']['email'];
+        }
+
         initialPage = 0;
         chunks = [];
         pageData = [];

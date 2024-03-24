@@ -6,7 +6,9 @@ import 'package:after_layout/after_layout.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:mca_official_flutter_sdk/mca_official_flutter_sdk.dart';
+import 'package:mca_official_flutter_sdk/src/globals.dart';
 import 'package:mca_official_flutter_sdk/src/services/services.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
 
 import '../const.dart';
 import '../theme.dart';
@@ -27,16 +29,17 @@ enum PaymentOption { wallet, gateway }
 enum PurchaseStage { payment, purchase }
 
 class MyCover extends StatefulWidget {
-  const MyCover(
-      {Key? key,
-      required this.productData,
-      required this.productId,
-      required this.email,
-      required this.publicKey,
-      required this.reference,
-      required this.paymentOption,
-      required this.form, required this.productCategory})
-      : super(key: key);
+  const MyCover({
+    Key? key,
+    required this.productData,
+    required this.productId,
+    required this.email,
+    required this.publicKey,
+    required this.reference,
+    required this.paymentOption,
+    required this.form,
+    required this.productCategory,
+  }) : super(key: key);
   final List? productId;
   final String publicKey;
   final String email;
@@ -94,13 +97,12 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
       businessId = productDetail['data']['businessDetails']['id'] ?? '';
       productId = productDetail['data']['productDetails'][0]['id'] ?? '';
     });
-
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: BACKGROUND,
+      backgroundColor: CustomColors.whiteColor,
       body: GestureDetector(
         onTap: () => FocusScope.of(context).unfocus(),
         child: SafeArea(
@@ -140,7 +142,9 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
       },
       backAction: () {
         bodyType == BodyType.introPage
-            ? Dialogs.confirmClose(context)
+            ? Navigator.canPop(context)
+                ? Navigator.pop(context)
+                : Dialogs.confirmClose(context)
             : setState(() => bodyType = BodyType.introPage);
       },
       body: openIntro(productCat),
@@ -246,8 +250,8 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
   }
 
   openIntro(String productType) {
-
-    var data = productDetail['data']['productDetails'][0] as Map<String, dynamic>;
+    var data =
+        productDetail['data']['productDetails'][0] as Map<String, dynamic>;
 
     if (productType.contains('auto') ||
         productType.toLowerCase().contains('life')) {
@@ -284,7 +288,9 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Image.asset(checkOut,
-                            height: 55, width: 55, package: 'mca_official_flutter_sdk'),
+                            height: 55,
+                            width: 55,
+                            package: 'mca_official_flutter_sdk'),
                       ))),
               verticalSpace(),
               const Center(
@@ -301,9 +307,8 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
               verticalSpace(),
               Padding(
                 padding: const EdgeInsets.all(35.0),
-                child: successButton(
-                    text: 'Done',
-                    onTap: () => setState(() => bodyType = BodyType.introPage)),
+                child:
+                    successButton(text: 'Done', onTap: () => Global.onComplete),
               ),
               smallVerticalSpace(),
             ],
