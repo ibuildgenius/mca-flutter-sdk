@@ -10,18 +10,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  http: ^0.13.4
+  http: ^0.13.6
   fluttertoast: ^8.0.8
-  image_picker: ^0.8.1
+  image_picker: ^1.0.7
   mockito: ^5.0.3
   camera: ^0.10.3
   get: ^4.6.4
   video_compress: ^3.1.0
-  permission_handler: ^10.2.0
-  geolocator: ^9.0.2
-  sentry_flutter: ^6.9.0
+  permission_handler: ^11.3.0
+  geolocator: ^11.0.0
+  sentry_flutter: ^7.16.1
   after_layout: ^1.2.0
-  flutter_html: ^2.2.1
+  google_fonts: ^4.0.4
+  flutter_svg: ^2.0.9
+  flutter_widget_from_html_core: ^0.14.11
+  # flutter_html: ^3.0.0-beta.2
 
 
 dev_dependencies:
@@ -29,12 +32,25 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^1.0.0
 
+dependency_overrides:
+  flutter_math_fork: ^0.7.2
+
 
 flutter:
   assets:
     - assets/images/
+    - assets/icons/
+    - assets/fonts/
 
   fonts:
-    - family: Space
+    - family: SpaceGrotesk
       fonts:
-        - asset: assets/fonts/space-grotesk.ttf
+        - asset: assets/fonts/SpaceGrotesk-Regular.ttf
+        - asset: assets/fonts/SpaceGrotesk-Light.ttf
+          weight: 300
+        - asset: assets/fonts/SpaceGrotesk-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/SpaceGrotesk-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/SpaceGrotesk-Bold.ttf
+          weight: 700

@@ -1,17 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
 
 import '../theme.dart';
 
-Text textBoxTitle(text) => Text(' $text',
-    style: GoogleFonts.spaceGrotesk(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      color: DARK,
-    ));
+// Text textBoxTitle(text) => Text(' $text',
+//     style: const TextStyle(
+//       fontSize: 13,
+//       fontWeight: FontWeight.w500,
+//       color: DARK,
+//       fontFamily: 'Space',
+//     ));
 
-class InputFormField extends StatelessWidget {
-  const InputFormField({
+class SearchFormField extends StatelessWidget {
+  const SearchFormField({
     Key? key,
     this.suffixIcon,
     this.prefixIcon,
@@ -58,10 +60,9 @@ class InputFormField extends StatelessWidget {
         enabled: enabled,
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(
+        style: GoogleFonts.spaceGrotesk(
           fontSize: 14,
           color: DARK,
-          fontFamily: 'Space',
         ),
         textCapitalization: textCapitalization,
         validator: validator,
@@ -71,39 +72,36 @@ class InputFormField extends StatelessWidget {
         maxLength: maxLength,
         decoration: InputDecoration(
           filled: true,
-          fillColor: LIGHT_GREY,
+          fillColor: CustomColors.whiteColor,
           border: InputBorder.none,
-          enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: GREY.withOpacity(0.6), width: 0.3),
-              borderRadius: const BorderRadius.all(Radius.circular(4))),
-          disabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: GREY.withOpacity(0.6), width: 0.3),
-              borderRadius: const BorderRadius.all(Radius.circular(4))),
-          focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: GREY.withOpacity(0.7), width: 0.3),
-              borderRadius: const BorderRadius.all(Radius.circular(4))),
+          enabledBorder: const OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: CustomColors.searchBorderColor, width: 1),
+              borderRadius: BorderRadius.all(Radius.circular(25))),
+          disabledBorder: const OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: CustomColors.searchBorderColor, width: 1),
+              borderRadius: BorderRadius.all(Radius.circular(25))),
+          focusedBorder: const OutlineInputBorder(
+              borderSide:
+                  BorderSide(color: CustomColors.deepBlueTextColor, width: 1),
+              borderRadius: BorderRadius.all(Radius.circular(25))),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(8.0),
-            borderSide: const BorderSide(color: Colors.redAccent, width: 0.3),
+            borderSide: const BorderSide(color: Colors.redAccent, width: 1),
           ),
           focusedErrorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(4),
-            borderSide: BorderSide(color: GREY.withOpacity(0.6), width: 0.3),
+            borderSide: BorderSide(color: GREY.withOpacity(0.6), width: 1),
           ),
           suffixIcon: suffixIcon,
           prefixIcon: prefixIcon,
           labelText: label,
           hintText: hint,
-          labelStyle: TextStyle(
-            fontSize: 13,
-            color: GREY.withOpacity(0.4),
-            fontFamily: 'Space',
-          ),
-          hintStyle: TextStyle(
-            fontSize: 13,
-            color: GREY.withOpacity(0.4),
-            fontFamily: 'Space',
-          ),
+          labelStyle: GoogleFonts.spaceGrotesk(
+              fontSize: 13, color: CustomColors.hintTextColor),
+          hintStyle: GoogleFonts.spaceGrotesk(
+              fontSize: 13, color: CustomColors.hintTextColor),
           contentPadding:
               EdgeInsets.symmetric(vertical: padding ?? 15.0, horizontal: 15.0),
         ),

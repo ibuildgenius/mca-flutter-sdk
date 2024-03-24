@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
+import 'package:mca_official_flutter_sdk/mca_official_flutter_sdk.dart';
 
 import 'api_scheme.dart';
 
@@ -25,19 +26,21 @@ class WebServices {
     }
   }
 
-  static initialiseSdk(
-      {required String publicKey,
-      List? productId,
-      paymentOption,
-      reference}) async {
-    var data;
+  static initialiseSdk({
+    required String publicKey,
+    List? productId,
+    paymentOption,
+    reference,
+  }) async {
+    Map<String, dynamic> data;
     if (paymentOption == 'wallet' && (reference == '' || reference == null)) {
       return 'Reference must not be empty for a wallet payment option';
     } else {
       if (productId!.isEmpty) {
         data = {
           "payment_option": paymentOption,
-          "debit_wallet_reference": reference
+          "debit_wallet_reference": reference,
+          "action": "purchase"
         };
       } else {
         data = {
@@ -69,7 +72,8 @@ class WebServices {
 
   static getProductCategory(String id, token) async {
     return await ApiScheme.initialiseGetRequest(
-        url: getBaseUrl(token) + "/products/get-product-category/$id", token: token);
+        url: getBaseUrl(token) + "/products/get-product-category/$id",
+        token: token);
   }
 
   static uploadFile(context, businessId, File image, token, {fileType}) async {
@@ -144,18 +148,25 @@ class WebServices {
   static initiatePurchase({
     required String businessId,
     required String publicKey,
+    required PaymentOption? paymentOption,
     String? productId,
     instanceId,
     payload,
     paymentChannel,
     debitWalletReference,
   }) async {
-    var data = {
-      "payload": payload,
-      'debit_wallet_reference': debitWalletReference,
-      'instance_id': instanceId,
-      "payment_channel": paymentChannel,
-    };
+    var data = paymentOption == PaymentOption.wallet
+        ? {
+            "payload": payload,
+            'reference': debitWalletReference,
+            'instance_id': instanceId,
+          }
+        : {
+            "payload": payload,
+            'debit_wallet_reference': debitWalletReference,
+            'instance_id': instanceId,
+            "payment_channel": paymentChannel,
+          };
 
     print(data);
     return await ApiScheme.initialisePostRequest(
@@ -204,7 +215,7 @@ class WebServices {
 
     Map<String, String> headers = {
       "Accept": "application/json",
-      "x-api-id": "$businessId",
+      "x-api-id": businessId,
       HttpHeaders.authorizationHeader: 'Bearer $token',
     };
 
