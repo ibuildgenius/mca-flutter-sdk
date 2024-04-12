@@ -22,7 +22,7 @@ class WebServices {
     if (publicKey.toString().toLowerCase().contains('test')) {
       return 'https://staging.api.mycover.ai/v1';
     } else {
-      return 'https://staging.api.mycover.ai/v1';
+      return 'https://api.mycover.ai/v1';
     }
   }
 
