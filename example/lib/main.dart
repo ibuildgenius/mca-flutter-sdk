@@ -81,7 +81,7 @@ class _HomeScreenState extends State<HomeScreen> {
             },
             onComplete: _onComplete,
             reference: "BUY-RTGDCG1711269730758-WR",
-            paymentOption: PaymentOption.wallet,
+            // paymentOption: PaymentOption.wallet,
             transactionType: TransactionType.purchase));
   }
 }
