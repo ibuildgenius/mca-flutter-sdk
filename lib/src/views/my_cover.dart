@@ -51,22 +51,24 @@ class _MyCoverAIState extends State<MyCoverAI> {
         future: initialise(),
         builder: (context, rideSnapshot) {
           if (rideSnapshot.connectionState == ConnectionState.waiting) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: <Widget>[
-                  const Padding(
-                      padding: EdgeInsets.only(
-                          left: 15.0, right: 15.0, bottom: 15.0, top: 20),
-                      child: Center(
-                          child: CircularProgressIndicator.adaptive(
-                              backgroundColor: Colors.green))),
-                  Container(
-                    height: 10,
-                  ),
-                  const Text("Initializing MyCover..." ?? 'Please wait...',
-                      style: TextStyle(color: Colors.black))
-                ],
+            return Expanded(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: <Widget>[
+                    const Padding(
+                        padding: EdgeInsets.only(
+                            left: 15.0, right: 15.0, bottom: 15.0, top: 20),
+                        child: Center(
+                            child: CircularProgressIndicator.adaptive(
+                                backgroundColor: Colors.green))),
+                    Container(
+                      height: 10,
+                    ),
+                    const Text("Initializing MyCover..." ?? 'Please wait...',
+                        style: TextStyle(color: Colors.black))
+                  ],
+                ),
               ),
             );
 
