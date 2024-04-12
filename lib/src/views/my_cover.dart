@@ -46,13 +46,13 @@ class MyCoverAI extends StatefulWidget {
 class _MyCoverAIState extends State<MyCoverAI> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: FutureBuilder(
-        future: initialise(),
-        builder: (context, rideSnapshot) {
-          if (rideSnapshot.connectionState == ConnectionState.waiting) {
-            return Expanded(
-              child: Center(
+    return Expanded(
+      child: Scaffold(
+        body: FutureBuilder(
+          future: initialise(),
+          builder: (context, rideSnapshot) {
+            if (rideSnapshot.connectionState == ConnectionState.waiting) {
+              return Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
@@ -69,22 +69,22 @@ class _MyCoverAIState extends State<MyCoverAI> {
                         style: TextStyle(color: Colors.black))
                   ],
                 ),
-              ),
-            );
+              );
 
-            // return const CircularProgressIndicator();
-          } else if (rideSnapshot.hasError) {
-            return Text('Error loading ride: ${rideSnapshot.error}');
-          } else if (rideSnapshot.hasData) {
-            var driverRides = rideSnapshot.data!;
-            print(driverRides);
-            var newdd = driverRides;
+              // return const CircularProgressIndicator();
+            } else if (rideSnapshot.hasError) {
+              return Text('Error loading ride: ${rideSnapshot.error}');
+            } else if (rideSnapshot.hasData) {
+              var driverRides = rideSnapshot.data!;
+              print(driverRides);
+              var newdd = driverRides;
 
-            return Container();
-          } else {
-            return const Text('No data available');
-          }
-        },
+              return Container();
+            } else {
+              return const Text('No data available');
+            }
+          },
+        ),
       ),
     );
   }
