@@ -52,38 +52,20 @@ class _MyCoverAIState extends State<MyCoverAI> {
         builder: (context, rideSnapshot) {
           if (rideSnapshot.connectionState == ConnectionState.waiting) {
             return Center(
-              child: Wrap(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
                 children: <Widget>[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 15, 15, 20),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          width: double.infinity,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              const Padding(
-                                  padding: EdgeInsets.only(
-                                      left: 15.0,
-                                      right: 15.0,
-                                      bottom: 15.0,
-                                      top: 20),
-                                  child: Center(
-                                      child: CircularProgressIndicator.adaptive(
-                                          backgroundColor: Colors.green))),
-                              Container(
-                                height: 10,
-                              ),
-                              const Text(
-                                  "Initializing MyCover..." ?? 'Please wait...',
-                                  style: TextStyle(color: Colors.black))
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
+                  const Padding(
+                      padding: EdgeInsets.only(
+                          left: 15.0, right: 15.0, bottom: 15.0, top: 20),
+                      child: Center(
+                          child: CircularProgressIndicator.adaptive(
+                              backgroundColor: Colors.green))),
+                  Container(
+                    height: 10,
                   ),
+                  const Text("Initializing MyCover..." ?? 'Please wait...',
+                      style: TextStyle(color: Colors.black))
                 ],
               ),
             );
@@ -203,7 +185,7 @@ class _MyCoverAIState extends State<MyCoverAI> {
 
           // }
 //PUSH REPLACEMENT BELOW HERE
-          return await Navigator.push(
+          return await Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) =>
