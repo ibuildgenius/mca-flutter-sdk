@@ -56,6 +56,7 @@ class _FormScreenState extends State<FormScreen> {
   var productDetail;
   var forms;
   File? _image;
+  List<Map<String, File?>> imageList = [];
   String searchTerm = '';
   String firstName = '';
   String lastName = '';
@@ -353,10 +354,16 @@ class _FormScreenState extends State<FormScreen> {
                       setState(() {
                         _image = selectedImage;
                         controller.text = _image!.path.toString();
+                        print(_image?.path);
+                        Map<String, File?> selectedImagemap = {
+                          item['name']: selectedImage
+                        };
+                        imageList.add(selectedImagemap);
+                        print(imageList);
                       });
                     }
                   }
-                },
+                }, //HERER
 
                 // {id: 94fda736-7721-4470-9ba9-c3047a803a11, product_id: 0386fe30-a3be-4ff2-a64a-048d2c99504b,
                 // form_field_id: 1, description: Items in your home that want to insure, name: home_items,
@@ -371,34 +378,20 @@ class _FormScreenState extends State<FormScreen> {
                     : InputFormField(
                         controller: controller,
                         onChanged: (value) {
-                          print(item);
-                          if (item['name'].toString().contains('cost') ||
-                              item['name'] == 'vehicle_value' ||
-                              item['name'] == 'vehicle_cost' ||
-                              item['name'] == 'units' ||
-                              item['name'] == 'stock_amount' ||
-                              item['name'] == 'payment_plan') {
+                          if (item['data_type'] == 'number') {
                             if (controller.text.isNotEmpty) {
                               purchaseData[item['name']] =
                                   int.parse(controller.text);
                             }
+                          } else {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
                           }
 
                           if (item['name'].contains('state')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-
                             state = controller.text;
                           }
                           if (item['name'] == 'registration_number') {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-
-                          if (item['name']
-                              .toString()
-                              .toLowerCase()
-                              .contains('address')) {
                             purchaseData[item['name']] =
                                 controller.text.toString();
                           }
@@ -417,77 +410,6 @@ class _FormScreenState extends State<FormScreen> {
                           }
                           if (item['name'].toString().contains('last_name')) {
                             lastName = controller.text;
-                          }
-
-                          if (item['name'].toString().contains('other_names')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('nature_of_business')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('shop_type')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                                  .toString()
-                                  .contains('next_of_kin_name') ||
-                              item['name']
-                                  .toString()
-                                  .contains('next_of_kin_phone') ||
-                              item['name']
-                                  .toString()
-                                  .contains('next_of_kin_address')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('marital_status')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('occupation')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('town')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('tenancy')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('description')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('pre_ownership')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('owner_title')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('chassis_number')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('engine_number')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
                           }
                         },
                         keyboardType:
@@ -519,12 +441,14 @@ class _FormScreenState extends State<FormScreen> {
                                 .toLowerCase()
                                 .contains('email')
                             ? TextCapitalization.none
-                            : item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('number')
-                                ? TextCapitalization.characters
-                                : TextCapitalization.sentences,
+                            :
+                            //  item['label']
+                            //         .toString()
+                            //         .toLowerCase()
+                            //         .contains('number')
+                            //     ? TextCapitalization.characters
+                            //     :
+                            TextCapitalization.sentences,
                         inputFormatters: <TextInputFormatter>[
                           (item['label']
                                       .toString()
@@ -559,7 +483,10 @@ class _FormScreenState extends State<FormScreen> {
                                     .toString()
                                     .toLowerCase()
                                     .contains('product') ||
-                                item['name'].toString().toLowerCase().contains('is_full_year') ||
+                                item['name']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('is_full_year') ||
                                 item['name'].toString().toLowerCase().contains('stock_keeping')
                             ? false
                             : true,
@@ -594,7 +521,9 @@ class _FormScreenState extends State<FormScreen> {
                                 : null,
                         validator: (value) {
                           var label = item['label'].toString().toLowerCase();
-                          if (label.contains('phone')) {
+                          if (label.contains('phone') &&
+                              label.toLowerCase() !=
+                                  "phone about screen image") {
                             return PhoneNumberValidator.validate(value,
                                 error: item['errorMsg']);
                           } else if (label.contains('email')) {
@@ -1709,26 +1638,34 @@ class _FormScreenState extends State<FormScreen> {
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
+      /////TODO Change Inspection to inspectable
       Dialogs.successDialog(
           context: context,
           title: 'Purchase Successful',
-          message: !widget.inspectable
-              ? 'You have just purchased \n$productName,\nKindly Check your email\nfor purchase detail'
-              : 'You have just purchased \n$productName,\nContinue to inspection',
+          message:
+              // !widget.inspectable
+              //     ?
+              'You have just purchased \n$productName,\nKindly Check your email\nfor purchase detail'
+          // :
+          // 'You have just purchased \n$productName,\nContinue to inspection'
+          ,
           productName: productName,
-          isContinue: widget.inspectable ? true : false,
+          isContinue:
+              // widget.inspectable ? true :
+              false,
           onCancel: () {
             Navigator.pop(context);
             Navigator.pop(context);
           },
           onTap: () {
-            Navigator.pop(context);
-            if (widget.inspectable) {
-              initialiseSdk(context);
-            } else {
-              Global.onComplete!();
-              // Navigator.pop(context);
-            }
+            Global.onComplete!();
+            // Navigator.pop(context);
+            // if (widget.inspectable) {
+            //   initialiseSdk(context);
+            // } else {
+            //   Global.onComplete!();
+            //   // Navigator.pop(context);
+            // }
           });
     }
   }
@@ -1824,32 +1761,34 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   uploadImage() async {
-    if (_image != null) {
-      Dialogs.showLoading(context: context, text: 'Uploading Image');
-      var res = await WebServices.uploadFile(
-          context, businessId, _image!, widget.publicKey);
+    if (imageList.isNotEmpty) {
+      for (var imageMap in imageList) {
+        for (var entry in imageMap.entries) {
+          var key = entry.key; // String
+          var file = entry.value; // File?
+          Dialogs.showLoading(context: context, text: 'Uploading Image');
+          var res = await WebServices.uploadFile(
+              context, businessId, file!, widget.publicKey);
 
-      Navigator.pop(context);
-      if (res.statusCode.toString() == '200' ||
-          res.statusCode.toString() == '201') {
-        res.stream.transform(utf8.decoder).listen((value) {
-          setState(() {
-            var body = jsonDecode(value);
-            purchaseData['image'] = body['data']['file_url'];
-            purchaseData['identification_url'] = body['data']['file_url'];
-            purchaseData['identification_image_url'] = body['data']['file_url'];
-            purchaseData['image_url'] = body['data']['file_url'];
-            purchaseData['national_id_image'] = body['data']['file_url'];
-            completePurchase();
-          });
-        });
-      } else {
-        res.stream.transform(utf8.decoder).listen((value) {
-          var body = jsonDecode(value);
-          print(body['responseText']);
-          Dialogs.showErrorMessage(res.reas);
-        });
+          Navigator.pop(context);
+          if (res.statusCode.toString() == '200' ||
+              res.statusCode.toString() == '201') {
+            await res.stream.transform(utf8.decoder).listen((value) {
+              setState(() {
+                var body = jsonDecode(value);
+                purchaseData[key] = body['data']['file_url'];
+              });
+            });
+          } else {
+            await res.stream.transform(utf8.decoder).listen((value) {
+              var body = jsonDecode(value);
+              print(body['responseText']);
+              Dialogs.showErrorMessage(res.reas);
+            });
+          }
+        }
       }
+      completePurchase();
     } else {
       completePurchase();
     }

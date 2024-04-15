@@ -57,8 +57,7 @@ class _MyCoverAIState extends State<MyCoverAI> {
                   mainAxisSize: MainAxisSize.min,
                   children: <Widget>[
                     const Padding(
-                        padding: EdgeInsets.only(
-                            left: 15.0, right: 15.0, bottom: 15.0, top: 20),
+                        padding: EdgeInsets.only(left: 15.0, right: 15.0),
                         child: Center(
                             child: CircularProgressIndicator.adaptive(
                                 backgroundColor: Colors.green))),
@@ -187,7 +186,7 @@ class _MyCoverAIState extends State<MyCoverAI> {
 
           // }
 //PUSH REPLACEMENT BELOW HERE
-          return await Navigator.pushReplacement(
+          return await Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) =>

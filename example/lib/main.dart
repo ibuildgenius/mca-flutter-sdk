@@ -32,7 +32,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   var allProducts;
-  String userEmail = 'dami@mycovergenius.com';
+  String userEmail = 'fuhad@mycovergenius.com';
   String publicKey = 'MCAPUBK_TEST|44d8c41c-b436-40f6-bfc9-b0d52f0253bb';
 
   void _onComplete() {
@@ -80,8 +80,8 @@ class _HomeScreenState extends State<HomeScreen> {
               'phone': '08123232332',
             },
             onComplete: _onComplete,
-            reference: "BUY-RTGDCG1711269730758-WR",
-            // paymentOption: PaymentOption.wallet,
+            reference: "BUY-WSPMGZ1713208688701-WR",
+            paymentOption: PaymentOption.wallet,
             transactionType: TransactionType.purchase));
   }
 }
