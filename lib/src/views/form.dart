@@ -795,8 +795,8 @@ class _FormScreenState extends State<FormScreen> {
                                       ? productDetail['data']['productDetails']
                                               [0]['is_dynamic_pricing']
                                           ? '$price%'
-                                          : '₦$price'
-                                      : '₦$calcPrice',
+                                          : '₦ ${ConstantString.formatter.format(double.parse(price))}'
+                                      : '₦ ${ConstantString.formatter.format(double.parse(calcPrice))}',
                                   style: GoogleFonts.spaceGrotesk(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w700,
