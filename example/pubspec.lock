@@ -262,14 +262,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  flutter_hooks:
-    dependency: transitive
-    description:
-      name: flutter_hooks
-      sha256: cde36b12f7188c85286fba9b38cc5a902e7279f36dd676967106c041dc9dde70
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.20.5"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -286,14 +278,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.17"
-  flutter_riverpod:
-    dependency: transitive
-    description:
-      name: flutter_riverpod
-      sha256: "4bce556b7ecbfea26109638d5237684538d4abc509d253e6c5c4c5733b360098"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.10"
   flutter_svg:
     dependency: "direct main"
     description:
@@ -400,14 +384,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "4.0.4"
-  hooks_riverpod:
-    dependency: transitive
-    description:
-      name: hooks_riverpod
-      sha256: "758b07eba336e3cbacbd81dba481f2228a14102083fdde07045e8514e8054c49"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.10"
   html:
     dependency: transitive
     description:
@@ -496,6 +472,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.1+1"
+  intl:
+    dependency: transitive
+    description:
+      name: intl
+      sha256: d6f56758b7d3014a48af9701c085700aac781a92a87a62b1333b46d8879661cf
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.19.0"
   lints:
     dependency: transitive
     description:
@@ -727,14 +711,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.4"
-  riverpod:
-    dependency: transitive
-    description:
-      name: riverpod
-      sha256: "548e2192eb7aeb826eb89387f814edb76594f3363e2c0bb99dd733d795ba3589"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.5.0"
   sentry:
     dependency: transitive
     description:
@@ -780,14 +756,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.1"
-  state_notifier:
-    dependency: transitive
-    description:
-      name: state_notifier
-      sha256: b8677376aa54f2d7c58280d5a007f9e8774f1968d1fb1c096adcb4792fba29bb
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   stream_channel:
     dependency: transitive
     description:

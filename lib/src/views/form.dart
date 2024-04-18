@@ -12,6 +12,7 @@ import 'package:mca_official_flutter_sdk/src/globals.dart';
 import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
 import 'package:mca_official_flutter_sdk/src/utils/constants/custom_string.dart';
 import 'package:mca_official_flutter_sdk/src/utils/spacers.dart';
+import 'package:mca_official_flutter_sdk/src/utils/thousands_seperator.dart';
 import 'package:mca_official_flutter_sdk/src/widgets/clipboard_toaster.dart';
 
 import '../../mca_official_flutter_sdk.dart';
@@ -99,6 +100,7 @@ class _FormScreenState extends State<FormScreen> {
 
   var ussdProviders = [];
   var searchList = [];
+  bool isPickerLoading = false;
 
   @override
   void initState() {
@@ -193,10 +195,13 @@ class _FormScreenState extends State<FormScreen> {
       logo: logo,
       text: (initialPage < (chunks.length - 1)) ? 'Continue' : 'Get Covered',
       buttonAction: () {
+        print("I am here too");
+        print(logo);
         FocusScope.of(context).unfocus();
         if (_formKey.currentState!.validate()) {
           if (initialPage < (chunks.length - 1)) {
             initialPage++;
+            print("I am here too 1");
             setState(() => pageData = chunks[initialPage]);
           } else {
             if (stage == PurchaseStage.payment &&
@@ -204,8 +209,10 @@ class _FormScreenState extends State<FormScreen> {
               setState(() => bodyType = 'bank');
             } else if (stage == PurchaseStage.payment &&
                 paymentOption == PaymentOption.wallet) {
+              print("I am here too 3");
               makePayment();
             } else {
+              print("I am here too 4");
               uploadImage();
             }
           }
@@ -301,17 +308,26 @@ class _FormScreenState extends State<FormScreen> {
               InkWell(
                 onTap: () async {
                   if (item['data_url'].toString() != 'null') {
-                    pickItem(
-                        await getListData(item['data_url'],
-                            make: make, state: state),
-                        item['label'], onSelect: (value) {
-                      Navigator.pop(context);
-                      controller.text = value.toString();
-                      purchaseData[item['name']] = controller.text;
-                      if (item['name'].contains('make')) {
-                        make = controller.text;
-                      }
-                    });
+                    FocusScope.of(context).unfocus();
+                    if (!isPickerLoading) {
+                      setState(() {
+                        isPickerLoading = true;
+                      });
+                      pickItem(
+                          await getListData(item['data_url'],
+                              make: make, state: state),
+                          item['label'], onSelect: (value) {
+                        Navigator.pop(context);
+                        controller.text = value.toString();
+                        purchaseData[item['name']] = controller.text;
+                        if (item['name'].contains('make')) {
+                          make = controller.text;
+                        }
+                      });
+                      setState(() {
+                        isPickerLoading = false;
+                      });
+                    }
                   } else if (item['name'].toString().contains('is_full_year')) {
                     var list = ['Full year', 'Half year'];
                     pickItem(list, item['label'], onSelect: (value) {
@@ -380,8 +396,8 @@ class _FormScreenState extends State<FormScreen> {
                         onChanged: (value) {
                           if (item['data_type'] == 'number') {
                             if (controller.text.isNotEmpty) {
-                              purchaseData[item['name']] =
-                                  int.parse(controller.text);
+                              purchaseData[item['name']] = int.parse(
+                                  controller.text.replaceAll(",", ""));
                             }
                           } else {
                             purchaseData[item['name']] =
@@ -449,27 +465,36 @@ class _FormScreenState extends State<FormScreen> {
                             //     ? TextCapitalization.characters
                             //     :
                             TextCapitalization.sentences,
-                        inputFormatters: <TextInputFormatter>[
-                          (item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('phone') ||
-                                  item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('cost') ||
-                                  item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('price') ||
-                                  item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('bvn'))
-                              ? FilteringTextInputFormatter.digitsOnly
-                              : FilteringTextInputFormatter.deny(
-                                  RegExp(r'[/\\]'))
-                        ],
+                        inputFormatters: item['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('value')
+                            ? <TextInputFormatter>[
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9]')),
+                                ThousandsSeparatorInputFormatter(),
+                              ]
+                            : <TextInputFormatter>[
+                                (item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('phone') ||
+                                        item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('cost') ||
+                                        item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('price') ||
+                                        item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('bvn'))
+                                    ? FilteringTextInputFormatter.digitsOnly
+                                    : FilteringTextInputFormatter.deny(
+                                        RegExp(r'[/\\]'))
+                              ],
                         enabled: item['data_url'].toString() != 'null' ||
                                 item['label']
                                     .toString()
@@ -479,14 +504,8 @@ class _FormScreenState extends State<FormScreen> {
                                     .toString()
                                     .toLowerCase()
                                     .contains('image') ||
-                                item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('product') ||
-                                item['name']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('is_full_year') ||
+                                item['label'].toString().toLowerCase().contains('product') ||
+                                item['name'].toString().toLowerCase().contains('is_full_year') ||
                                 item['name'].toString().toLowerCase().contains('stock_keeping')
                             ? false
                             : true,
@@ -566,15 +585,24 @@ class _FormScreenState extends State<FormScreen> {
 
         // setState(() => bodyType = BodyType.detail);
       },
-      backAction: () {
-        bodyType = 'form';
-        // initialPage--;
-        // pageData = chunks[initialPage];
-        setState(() {});
-        // bodyType == BodyType.introPage
-        //     ? Dialogs.confirmClose(context)
-        //     : setState(() => bodyType = BodyType.introPage);
-      },
+      backAction: paymentMethod == 'ussd' && enabledUssd
+          ? isBankSelected
+              ? () => setState(() => isBankSelected = false)
+              : () {
+                  setState(() {
+                    enabledUssd = false;
+                    isBankSelected = false;
+                  });
+                }
+          : () {
+              bodyType = 'form';
+              // initialPage--;
+              // pageData = chunks[initialPage];
+              setState(() {});
+              // bodyType == BodyType.introPage
+              //     ? Dialogs.confirmClose(context)
+              //     : setState(() => bodyType = BodyType.introPage);
+            },
       body: Expanded(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -614,7 +642,8 @@ class _FormScreenState extends State<FormScreen> {
                                 text: 'Pay ',
                                 style: TextStyle(fontSize: 12, color: DARK)),
                             TextSpan(
-                                text: 'NGN$calcPrice',
+                                text:
+                                    'NGN ${ConstantString.formatter.format(double.parse(calcPrice))}',
                                 style: const TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
@@ -711,10 +740,11 @@ class _FormScreenState extends State<FormScreen> {
         verifyPayment(true);
       },
       backAction: () {
-        bodyType = 'form';
+        //TODO HERE
+        setState(() => bodyType = 'bank');
         // initialPage--;
         // pageData = chunks[initialPage];
-        setState(() {});
+        // setState(() {});
         // bodyType == BodyType.introPage
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
@@ -883,7 +913,8 @@ class _FormScreenState extends State<FormScreen> {
         verifyPayment(true);
       },
       backAction: () {
-        bodyType = 'form';
+        // isBankSelected = false;
+        bodyType = 'bank';
         // initialPage--;
         // pageData = chunks[initialPage];
         setState(() {});
@@ -933,7 +964,8 @@ class _FormScreenState extends State<FormScreen> {
                                 fontSize: 12,
                                 color: DARK)),
                         TextSpan(
-                            text: 'NGN$calcPrice',
+                            text:
+                                'NGN ${ConstantString.formatter.format(double.parse(calcPrice))}',
                             style: const TextStyle(
                                 fontFamily: 'Space',
                                 fontSize: 18,
@@ -1125,11 +1157,12 @@ class _FormScreenState extends State<FormScreen> {
   bool isBankSelected = false;
 
   ussdProvidersCard() {
+    //TODO HERE
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration:
           BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(15)),
-      height: MediaQuery.of(context).size.height * 0.56,
+      height: MediaQuery.of(context).size.height * 0.45,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

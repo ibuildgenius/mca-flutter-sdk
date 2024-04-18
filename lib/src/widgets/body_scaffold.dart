@@ -66,13 +66,15 @@ class BodyScaffold extends StatelessWidget {
                     ),
                   ],
                 ),
-                logo == ''
-                    ? Image.asset(ConstantString.myCoverLogo,
-                        height: 30, package: 'mca_official_flutter_sdk')
-                    : Image.network(
-                        logo,
-                        height: 30,
-                      ),
+                // logo == ''
+                //     ?
+                Image.asset(ConstantString.myCoverLogo,
+                    height: 30, package: 'mca_official_flutter_sdk')
+                // : Image.network(
+                //     logo,
+                //     height: 30,
+                //   )
+                ,
                 InkWell(
                   onTap: () => Dialogs.confirmClose(context),
                   child: Container(
@@ -191,13 +193,16 @@ class FormBodyScaffold extends StatelessWidget {
                       //       child: Icon(Icons.arrow_back, color: BLACK, size: 15),
                       //     )),
                     ),
-                    logo == ''
-                        ? Image.asset(ConstantString.myCoverLogo,
-                            height: 30, package: 'mca_official_flutter_sdk')
-                        : Image.network(
-                            logo,
-                            height: 30,
-                          ),
+                    //LOGO CHANGE HERE
+                    // logo == ''
+                    //     ?
+                    Image.asset(ConstantString.myCoverLogo,
+                        height: 30, package: 'mca_official_flutter_sdk')
+                    // : Image.network(
+                    //     logo,
+                    //     height: 30,
+                    //   )
+                    ,
                     InkWell(
                       onTap: () => Dialogs.confirmClose(context),
                       child: Container(
@@ -314,13 +319,15 @@ class PaymentBodyScaffold extends StatelessWidget {
                   //       child: Icon(Icons.arrow_back, color: BLACK, size: 15),
                   //     )),
                 ),
-                logo == ''
-                    ? Image.asset(ConstantString.myCoverLogo,
-                        height: 30, package: 'mca_official_flutter_sdk')
-                    : Image.network(
-                        logo,
-                        height: 30,
-                      ),
+                // logo == ''
+                //     ?
+                Image.asset(ConstantString.myCoverLogo,
+                    height: 30, package: 'mca_official_flutter_sdk')
+                // : Image.network(
+                //     logo,
+                //     height: 30,
+                //   )
+                ,
                 InkWell(
                   onTap: () => Dialogs.confirmClose(context),
                   child: Container(

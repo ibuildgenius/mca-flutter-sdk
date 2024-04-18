@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class ConstantString {
   static const userJson = "UserJson";
 
@@ -10,4 +12,6 @@ class ConstantString {
   static const backIcon = "assets/icons/back.svg";
   static const copyIcon = 'assets/icons/copy_icon.svg';
   // assets/images/aiico.png
+
+  static final NumberFormat formatter = NumberFormat('#,###');
 }
