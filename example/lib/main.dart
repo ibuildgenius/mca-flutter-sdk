@@ -73,8 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 "MCAPUBK_TEST|1acf339a-d36f-47e7-8e1b-fd0b76b61b0c", //publicKey,
             email: userEmail,
             // productId: const ["e6b4bca1-b870-4648-8704-11c1802a51d0"],
-            form: {
-              'email': userEmail,
+            form: const {
+              'email': "fuhad@mycovergenius.com",
               'first_name': 'Fuhad',
               'last_name': 'Aminu',
               'phone': '08123232332',
