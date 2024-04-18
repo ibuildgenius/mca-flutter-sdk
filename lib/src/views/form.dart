@@ -421,37 +421,38 @@ class _FormScreenState extends State<FormScreen> {
                           if (item['name'].toString().contains('phone') &&
                               !item['name']
                                   .toString()
-                                  .contains('next_of_kin_phone')) {
+                                  .contains('next_of_kin_phone') &&
+                              item['name'].toString().toLowerCase() !=
+                                  "phone about screen image") {
                             phone = controller.text;
                           }
                           if (item['name'].toString().contains('last_name')) {
                             lastName = controller.text;
                           }
                         },
-                        keyboardType:
-                            (item['label'].toString().toLowerCase().contains('phone') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('cost') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('price') ||
-                                    item['data_type']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('number') ||
-                                    item['name']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('value') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('bvn'))
-                                ? TextInputType.phone
-                                : TextInputType.text,
+                        keyboardType: (item['label'].toString().toLowerCase().contains('phone') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('cost') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('price') ||
+                                item['data_type']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('number') ||
+                                item['name']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('value') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('bvn'))
+                            ? TextInputType.phone
+                            : TextInputType.text,
                         textCapitalization: item['label']
                                 .toString()
                                 .toLowerCase()
@@ -465,45 +466,37 @@ class _FormScreenState extends State<FormScreen> {
                             //     ? TextCapitalization.characters
                             //     :
                             TextCapitalization.sentences,
-                        inputFormatters: item['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('value')
-                            ? <TextInputFormatter>[
-                                FilteringTextInputFormatter.allow(
-                                    RegExp(r'[0-9]')),
-                                ThousandsSeparatorInputFormatter(),
-                              ]
-                            : <TextInputFormatter>[
-                                (item['label']
-                                            .toString()
-                                            .toLowerCase()
-                                            .contains('phone') ||
-                                        item['label']
-                                            .toString()
-                                            .toLowerCase()
-                                            .contains('cost') ||
-                                        item['label']
-                                            .toString()
-                                            .toLowerCase()
-                                            .contains('price') ||
-                                        item['label']
-                                            .toString()
-                                            .toLowerCase()
-                                            .contains('bvn'))
-                                    ? FilteringTextInputFormatter.digitsOnly
-                                    : FilteringTextInputFormatter.deny(
-                                        RegExp(r'[/\\]'))
-                              ],
+                        inputFormatters:
+                            item['label'].toString().toLowerCase().contains('value') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('cost') ||
+                                    item['label']
+                                        .toString()
+                                        .toLowerCase()
+                                        .contains('price')
+                                ? <TextInputFormatter>[
+                                    FilteringTextInputFormatter.allow(
+                                        RegExp(r'[0-9]')),
+                                    ThousandsSeparatorInputFormatter(),
+                                  ]
+                                : <TextInputFormatter>[
+                                    (item['label']
+                                                .toString()
+                                                .toLowerCase()
+                                                .contains('phone') ||
+                                            item['label']
+                                                .toString()
+                                                .toLowerCase()
+                                                .contains('bvn'))
+                                        ? FilteringTextInputFormatter.digitsOnly
+                                        : FilteringTextInputFormatter.deny(
+                                            RegExp(r'[/\\]'))
+                                  ],
                         enabled: item['data_url'].toString() != 'null' ||
-                                item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('date') ||
-                                item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('image') ||
+                                item['label'].toString().toLowerCase().contains('date') ||
+                                item['label'].toString().toLowerCase().contains('image') ||
                                 item['label'].toString().toLowerCase().contains('product') ||
                                 item['name'].toString().toLowerCase().contains('is_full_year') ||
                                 item['name'].toString().toLowerCase().contains('stock_keeping')
@@ -1675,11 +1668,9 @@ class _FormScreenState extends State<FormScreen> {
       Dialogs.successDialog(
           context: context,
           title: 'Purchase Successful',
-          message:
-              // !widget.inspectable
-              //     ?
-              'You have just purchased \n$productName,\nKindly Check your email\nfor purchase detail'
-          // :
+          message: !widget.inspectable
+              ? 'You have just purchased \n$productName,\nKindly Check your email\nfor purchase detail'
+              : 'You have just purchased \n$productName,\nKindly Check your email\nto continue for inspection'
           // 'You have just purchased \n$productName,\nContinue to inspection'
           ,
           productName: productName,
