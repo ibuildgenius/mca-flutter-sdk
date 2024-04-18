@@ -1674,6 +1674,7 @@ class _FormScreenState extends State<FormScreen> {
           // 'You have just purchased \n$productName,\nContinue to inspection'
           ,
           productName: productName,
+          showOkButton: widget.inspectable ? true : false,
           isContinue:
               // widget.inspectable ? true :
               false,

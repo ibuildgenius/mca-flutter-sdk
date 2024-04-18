@@ -204,6 +204,7 @@ class Dialogs {
       productName,
       onCancel,
       onTap,
+      showOkButton = false,
       isContinue = false}) async {
     return showDialog(
         barrierDismissible: false,
@@ -260,8 +261,9 @@ class Dialogs {
                           verticalSpace(),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(35, 28, 35, 15),
-                            child:
-                                successButton(text: 'Continue', onTap: onTap),
+                            child: successButton(
+                                text: showOkButton ? 'Ok' : 'Continue',
+                                onTap: onTap),
                           ),
                           if (isContinue)
                             Center(
