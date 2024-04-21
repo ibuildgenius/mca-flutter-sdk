@@ -36,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String publicKey = 'MCAPUBK_TEST|44d8c41c-b436-40f6-bfc9-b0d52f0253bb';
 
   void _onComplete() {
-    Navigator.of(context).push(MaterialPageRoute(
+    Navigator.of(context).pushReplacement(MaterialPageRoute(
       builder: (context) => const MyHomePage(title: "title"),
     ));
   }
@@ -80,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'phone': '08123232332',
             },
             onComplete: _onComplete,
-            reference: "BUY-WSPMGZ1713208688701-WR",
+            // reference: "BUY-DRIPDM1713463188225-WR",
             paymentOption: PaymentOption.gateway,
             transactionType: TransactionType.purchase));
   }

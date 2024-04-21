@@ -144,9 +144,11 @@ class FormBodyScaffold extends StatelessWidget {
       this.text,
       this.buttonAction,
       this.logo,
+      this.isLoading = false,
       required this.body})
       : super(key: key);
   final logo, backAction, buttonAction, text;
+  final bool isLoading;
   final Widget body;
 
   @override
@@ -246,7 +248,9 @@ class FormBodyScaffold extends StatelessWidget {
                           smallVerticalSpace(),
                           // const Divider(),
                           button(
-                              text: text ?? 'Get Covered', onTap: buttonAction),
+                              text: text ?? 'Get Covered',
+                              onTap: buttonAction,
+                              isLoading: isLoading),
                           verticalSpacer(5),
                           Image.asset(myCover,
                               width: 160,

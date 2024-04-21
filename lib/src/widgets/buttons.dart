@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../theme.dart';
 
-Widget button({onTap, color, text}) => Padding(
+Widget button({onTap, color, text, bool isLoading = false}) => Padding(
       padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
       child: InkWell(
         onTap: onTap,
@@ -15,11 +15,18 @@ Widget button({onTap, color, text}) => Padding(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(0, 15, 0, 15),
             child: Center(
-                child: Text(
-              text ?? '',
-              style: GoogleFonts.spaceGrotesk(
-                  color: WHITE, fontSize: 15, fontWeight: FontWeight.w700),
-            )),
+                child: isLoading
+                    ? const SizedBox(
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(color: Colors.white))
+                    : Text(
+                        text ?? '',
+                        style: GoogleFonts.spaceGrotesk(
+                            color: WHITE,
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700),
+                      )),
           ),
         ),
       ),

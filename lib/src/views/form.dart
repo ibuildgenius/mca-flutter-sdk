@@ -87,6 +87,7 @@ class _FormScreenState extends State<FormScreen> {
   var pageData = [];
   bool enabledUssd = false;
   bool go = false;
+  bool isLoading = false;
   var identityList,
       titleList,
       stateList,
@@ -194,7 +195,8 @@ class _FormScreenState extends State<FormScreen> {
     return FormBodyScaffold(
       logo: logo,
       text: (initialPage < (chunks.length - 1)) ? 'Continue' : 'Get Covered',
-      buttonAction: () {
+      isLoading: isLoading,
+      buttonAction: () async {
         print("I am here too");
         print(logo);
         FocusScope.of(context).unfocus();
@@ -206,7 +208,16 @@ class _FormScreenState extends State<FormScreen> {
           } else {
             if (stage == PurchaseStage.payment &&
                 paymentOption == PaymentOption.gateway) {
-              setState(() => bodyType = 'bank');
+              if (calcPrice == '') {
+                print("I am here too 30");
+                print(double.parse(purchaseData['amount']));
+                bool calculatedAmount = await calculateAmount();
+                if (calculatedAmount) {
+                  setState(() => bodyType = 'bank');
+                }
+              } else {
+                setState(() => bodyType = 'bank');
+              }
             } else if (stage == PurchaseStage.payment &&
                 paymentOption == PaymentOption.wallet) {
               print("I am here too 3");
@@ -223,6 +234,11 @@ class _FormScreenState extends State<FormScreen> {
         if (initialPage > 0) {
           initialPage--;
           setState(() => pageData = chunks[initialPage]);
+        } else if (initialPage == 0) {
+          Navigator.canPop(context)
+              ? Navigator.pop(context)
+              : Dialogs.confirmClose(context);
+          // setState(() => bodyType = BodyType.introPage);
         } else {}
         // bodyType == BodyType.introPage
         //     ? Dialogs.confirmClose(context)
@@ -626,7 +642,7 @@ class _FormScreenState extends State<FormScreen> {
                                         fontWeight: FontWeight.w700)))
                           ],
                         ),
-                        verticalSpacer(2),
+                        verticalSpacer(4),
                         Text(email, style: const TextStyle(fontSize: 12)),
                         if (calcPrice != '')
                           RichText(
@@ -641,7 +657,32 @@ class _FormScreenState extends State<FormScreen> {
                                     fontSize: 18,
                                     fontWeight: FontWeight.w600,
                                     color: PRIMARY))
-                          ]))
+                          ])),
+                        if (calcPrice == '')
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: RichText(
+                                text: TextSpan(children: [
+                              TextSpan(
+                                text: 'Amount Due  ',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  color: CustomColors.blackColor,
+                                ),
+                              ),
+                              TextSpan(
+                                  text: calcPrice == ''
+                                      ? productDetail['data']['productDetails']
+                                              [0]['is_dynamic_pricing']
+                                          ? '$price%'
+                                          : '₦ ${ConstantString.formatter.format(double.parse(price))}'
+                                      : '₦ ${ConstantString.formatter.format(double.parse(calcPrice))}',
+                                  style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: CustomColors.success600Color))
+                            ])),
+                          )
                       ],
                     ),
                   ),
@@ -806,6 +847,7 @@ class _FormScreenState extends State<FormScreen> {
                         ),
                       ),
                     ),
+
                     verticalSpace(),
                     Expanded(
                       child: Container(
@@ -1554,6 +1596,66 @@ class _FormScreenState extends State<FormScreen> {
         bankName = searchList[0]['bank_name'];
         bankCode = searchList[0]['type'];
       });
+    }
+  }
+
+  Future<bool> calculateAmount() async {
+    // Dialogs.showLoading(context: context, text: 'Submitting Payment');
+    setState(() {
+      isLoading = true;
+    });
+    // ignore: prefer_typing_uninitialized_variables
+    var paymentChannel;
+    String? debitWalletReference;
+    if (paymentOption == PaymentOption.gateway) {
+      paymentChannel = {
+        "channel": "bank transfer",
+        "amount": double.parse(purchaseData['amount'])
+      };
+      if (paymentMethod.contains('ussd')) {
+        paymentChannel['bank_code'] = bankCode;
+      }
+    } else {
+      debitWalletReference = widget.reference;
+    }
+    if (purchaseData['email'] == null || purchaseData['email'] == '') {
+      purchaseData['email'] = email;
+    }
+    if (purchaseData['first_name'] == null ||
+        purchaseData['first_name'] == '') {
+      purchaseData['first_name'] = firstName;
+    }
+    if (purchaseData['last_name'] == null || purchaseData['last_name'] == '') {
+      purchaseData['last_name'] = lastName;
+    }
+    if (purchaseData['phone_number'] == null ||
+        purchaseData['phone_number'] == '') {
+      purchaseData['phone_number'] = phone;
+    }
+    if (purchaseData['phone'] == null || purchaseData['phone'] == '') {
+      purchaseData['phone'] = phone;
+      purchaseData['phone'] = phone;
+    }
+    var res = await WebServices.initiatePurchase(
+        publicKey: widget.publicKey,
+        businessId: businessId,
+        instanceId: widget.instanceId,
+        payload: purchaseData,
+        debitWalletReference: debitWalletReference,
+        paymentOption: PaymentOption.gateway,
+        paymentChannel: paymentChannel);
+
+    print(res);
+    // Navigator.pop(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (res is String) {
+      Dialogs.showErrorMessage(res);
+      return false;
+    } else {
+      setState(() => calcPrice = res['data']['amount'].toString());
+      return true;
     }
   }
 
