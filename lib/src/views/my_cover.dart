@@ -186,7 +186,7 @@ class _MyCoverAIState extends State<MyCoverAI> {
 
           // }
 //PUSH REPLACEMENT BELOW HERE
-          return await Navigator.push(
+          return await Navigator.pushReplacement(
             context,
             MaterialPageRoute(
               builder: (context) =>
