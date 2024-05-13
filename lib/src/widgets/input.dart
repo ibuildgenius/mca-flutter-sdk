@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../theme.dart';
 
-Text textBoxTitle(text) => Text(' $text',
+Text textBoxTitle(text) => Text('$text',
     style: GoogleFonts.spaceGrotesk(
       fontSize: 13,
       fontWeight: FontWeight.w500,
@@ -54,6 +54,7 @@ class InputFormField extends StatelessWidget {
         buildCounter: (context,
                 {required currentLength, required isFocused, maxLength}) =>
             null,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         inputFormatters: inputFormatters,
         enabled: enabled,
         controller: controller,

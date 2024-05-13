@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:intl/intl.dart';
 import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
 import 'package:mca_official_flutter_sdk/src/utils/constants/custom_string.dart';
 import 'package:mca_official_flutter_sdk/src/utils/spacers.dart';
@@ -333,7 +334,7 @@ class _AllProductsState extends State<AllProducts> {
                                           Text(
                                             item['is_dynamic_pricing']
                                                 ? '${_formatPrice(item['price'])}%'
-                                                : '₦ ${_formatPrice(item['price'])}',
+                                                : '₦ ${_formatPriceWithComma(item['price'])}',
                                             style: GoogleFonts.spaceGrotesk(
                                                 fontWeight: FontWeight.w700,
                                                 color:
@@ -367,5 +368,18 @@ class _AllProductsState extends State<AllProducts> {
     } else {
       return formattedPrice;
     }
+  }
+
+  String _formatPriceWithComma(String priceString) {
+    double price = double.tryParse(priceString) ?? 0.0;
+    String formattedPrice = price.toStringAsFixed(2);
+
+    if (formattedPrice.endsWith('.00')) {
+      formattedPrice = formattedPrice.substring(
+          0, formattedPrice.length - 3); // Remove the '.00'
+    }
+
+    return NumberFormat.currency(locale: 'en_US', decimalDigits: 0, symbol: '')
+        .format(double.parse(formattedPrice));
   }
 }

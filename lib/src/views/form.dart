@@ -339,7 +339,9 @@ class _FormScreenState extends State<FormScreen> {
                         if (item['name'].contains('make')) {
                           make = controller.text;
                         }
+                        // _formKey.currentState!..fields[];
                       });
+
                       setState(() {
                         isPickerLoading = false;
                       });
@@ -374,6 +376,8 @@ class _FormScreenState extends State<FormScreen> {
                         setState(() {
                           controller.text = newDate.toString().substring(0, 10);
                           purchaseData[item['name']] = controller.text;
+
+                          _formKey.currentState!.validate();
                         });
                       },
                     ));
@@ -395,8 +399,8 @@ class _FormScreenState extends State<FormScreen> {
                       });
                     }
                   }
-                }, //HERER
-
+                },
+                //HERER
                 // {id: 94fda736-7721-4470-9ba9-c3047a803a11, product_id: 0386fe30-a3be-4ff2-a64a-048d2c99504b,
                 // form_field_id: 1, description: Items in your home that want to insure, name: home_items,
                 // label: Home items, position: 17, full_description: Items in your home that want to insure,
@@ -549,19 +553,36 @@ class _FormScreenState extends State<FormScreen> {
                                 : null,
                         validator: (value) {
                           var label = item['label'].toString().toLowerCase();
-                          if (label.contains('phone') &&
-                              label.toLowerCase() !=
-                                  "phone about screen image") {
-                            return PhoneNumberValidator.validate(value,
+                          var dataType =
+                              item['data_type'].toString().toLowerCase();
+
+                          if (item['input_type'].toString().toLowerCase() ==
+                              "date") {
+                            return DateValidator.validate(value, item['label'],
+                                item["min_max_constraint"], item["min"],
                                 error: item['errorMsg']);
-                          } else if (label.contains('email')) {
-                            return EmailValidator.validate(value,
-                                error: item['errorMsg']);
-                          } else if (label.contains('bvn')) {
-                            return BVNValidator.validate(value,
-                                error: item['errorMsg']);
+                          } else if ((item['data_url'].toString() != 'null' ||
+                              item['name']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('is_full_year') ||
+                              item['name']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('stock_keeping'))) {
+                            return null;
+                            // return DropdownValidator.validate(
+                            //     value,
+                            //     item['label'],
+                            //     item["min_max_constraint"],
+                            //     item["min"],
+                            //     error: item['errorMsg']);
                           } else {
-                            return FieldValidator.validate(value,
+                            return CustomValidator.validate(
+                                value,
+                                item['label'],
+                                item["min_max_constraint"],
+                                item["min"],
                                 error: item['errorMsg']);
                           }
                         }),
@@ -1543,6 +1564,7 @@ class _FormScreenState extends State<FormScreen> {
     if (url != null) {
       var response = await WebServices.getListData(
           getUrl(url, make: make), widget.publicKey);
+      print(response);
       print(response['data']);
       if (url.contains('model')) {
         var models = [];
