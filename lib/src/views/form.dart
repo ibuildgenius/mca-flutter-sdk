@@ -577,6 +577,11 @@ class _FormScreenState extends State<FormScreen> {
                             //     item["min_max_constraint"],
                             //     item["min"],
                             //     error: item['errorMsg']);
+                          } else if (item['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('image')) {
+                            return null;
                           } else {
                             return CustomValidator.validate(
                                 value,
