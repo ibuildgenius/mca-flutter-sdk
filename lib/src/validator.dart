@@ -58,7 +58,15 @@ class FieldValidator {
 class CustomValidator {
   static String? validate(String value, String label, minMaxConstraint, min,
       {error}) {
-    if (minMaxConstraint == "value" && min != null) {
+    if (label.toLowerCase().contains("email")) {
+      // Regular expression for email validation
+      RegExp emailRegex =
+          RegExp(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$");
+
+      if (!emailRegex.hasMatch(value)) {
+        return "Please enter a valid $label";
+      }
+    } else if (minMaxConstraint == "value" && min != null) {
       int newValue = value.isEmpty ? 0 : int.tryParse(removeCommas(value)) ?? 0;
       if (newValue < min) {
         return "$label cannot be less than $min";
