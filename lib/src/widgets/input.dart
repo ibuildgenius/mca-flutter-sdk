@@ -28,8 +28,10 @@ class InputFormField extends StatelessWidget {
     this.keyboardType,
     this.maxLength,
     this.inputFormatters,
+    this.labelStyle,
   }) : super(key: key);
 
+  final TextStyle? labelStyle;
   final suffixIcon;
   final prefixIcon;
   final onChanged;
@@ -95,11 +97,12 @@ class InputFormField extends StatelessWidget {
           prefixIcon: prefixIcon,
           labelText: label,
           hintText: hint,
-          labelStyle: TextStyle(
-            fontSize: 13,
-            color: GREY.withOpacity(0.4),
-            fontFamily: 'Space',
-          ),
+          labelStyle: labelStyle ??
+              TextStyle(
+                fontSize: 13,
+                color: GREY.withOpacity(0.4),
+                fontFamily: 'Space',
+              ),
           hintStyle: TextStyle(
             fontSize: 13,
             color: GREY.withOpacity(0.4),

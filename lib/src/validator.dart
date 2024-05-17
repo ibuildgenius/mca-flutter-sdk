@@ -75,7 +75,7 @@ class CustomValidator {
       }
     } else if (minMaxConstraint == "length" && min != null) {
       if (value.toString().length < min) {
-        return "$label should not be less than $min";
+        return "$label length should not be less than $min";
       } else {
         return null;
       }

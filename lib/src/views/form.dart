@@ -102,6 +102,7 @@ class _FormScreenState extends State<FormScreen> {
   var ussdProviders = [];
   var searchList = [];
   bool isPickerLoading = false;
+  List<Map<String, dynamic>> globalItemPair = [];
 
   @override
   void initState() {
@@ -112,7 +113,7 @@ class _FormScreenState extends State<FormScreen> {
         go = true;
       });
     });
-    contentFormField.add(contentFormCard());
+    // contentFormField.add(contentFormCard());
 
     super.initState();
   }
@@ -410,7 +411,44 @@ class _FormScreenState extends State<FormScreen> {
                 // form_field: {id: 1, name: Input, label: Input form field, created_at: 2022-07-28T17:15:53.581Z, updated_at: 2022-07-28T17:15:53.581Z}}
 
                 child: item['data_type'] == 'array'
-                    ? buildContentForm(context, item)
+                    ?
+                    InkWell(
+                        onTap: () => _showBottomSheet(context, item),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 12),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15.0, horizontal: 15.0),
+                            decoration: BoxDecoration(
+                              color: LIGHT_GREY,
+                              border: Border.all(
+                                  color: GREY.withOpacity(0.6), width: 0.3),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    globalItemPair.isEmpty
+                                        ? item['description']
+                                        : "${globalItemPair.length} item(s) selected",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: DARK,
+                                      fontFamily: 'Space',
+                                    ),
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.add_circle,
+                                  color: PRIMARY,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
                     : InputFormField(
                         controller: controller,
                         onChanged: (value) {
@@ -1377,67 +1415,146 @@ class _FormScreenState extends State<FormScreen> {
   final contentTitleController = <TextEditingController>[];
   final contentDescController = <TextEditingController>[];
 
-  Widget contentFormCard() {
-    var _contentTitleController = TextEditingController();
-    contentTitleController.add(_contentTitleController);
-    var _contentDescController = TextEditingController();
-    contentDescController.add(_contentDescController);
 
-    var item = {
-      'name': _contentTitleController.text,
-      'amount': _contentDescController.text
-    };
+  List<Map<String, dynamic>> homeContent = [];
+  Map<String, dynamic> globalItem = {};
 
-    homeContent.add(item);
-    productDetail['home_items'] = homeContent;
-    return Row(
-      children: [
-        Expanded(
-          child: InputFormField(
-            label: "Name",
-            controller: _contentTitleController,
-            onChanged: (v) {
-              item['name'] = _contentTitleController.text;
-            },
-            // validator: (value) => FieldValidator.validate(value),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: InputFormField(
-            label: "Amount",
-            controller: _contentDescController,
-            keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
+  Widget contentFormCard(formItem) {
+    Map<String, TextEditingController> controllers = {};
+    Map<String, dynamic> item = {};
+
+    globalItem = item;
+
+    return Column(
+      children: formItem['child_data'].map<Widget>((field) {
+        String key = field['name'];
+        String label = field['label'];
+        String dataType = field['data_type'];
+
+        var controller = TextEditingController();
+        controllers[key] = controller;
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            children: [
+              Expanded(
+                child: InputFormField(
+                  label: label,
+                  controller: controller,
+                  labelStyle: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.black,
+                    fontFamily: 'Space',
+                  ),
+                  keyboardType: dataType == 'number'
+                      ? TextInputType.number
+                      : TextInputType.text,
+                  inputFormatters: dataType == 'number'
+                      ? [FilteringTextInputFormatter.digitsOnly]
+                      : null,
+                  onChanged: (v) {
+                    print(item);
+                    print(contentFormField);
+                    if (dataType == 'number') {
+                      if (controller.text.isNotEmpty) {
+                        item[key] =
+                            int.parse(controller.text.replaceAll(",", ""));
+                      }
+                    } else {
+                      item[key] = controller.text;
+                    }
+                  },
+                ),
+              ),
+              const SizedBox(width: 10),
             ],
-            onChanged: (v) {
-              item['amount'] = _contentDescController.text;
-            },
-            // validator: (value) => FieldValidator.validate(value),
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
-  var homeContent = [];
+  Widget buildContentForm(
+      BuildContext context, formItem, StateSetter setState) {
+    contentFormField.isEmpty
+        ? contentFormField.add(contentFormCard(formItem))
+        : null;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+      child: Column(
+        children: [
+          Stack(
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    border:
+                        Border.all(color: GREY.withOpacity(0.6), width: 0.5),
+                    borderRadius: BorderRadius.circular(10),
+                    shape: BoxShape.rectangle),
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(child: contentFormCard(formItem)),
+                    const SizedBox(width: 5),
+             
+                  ],
+                ),
+              ),
+              Positioned(
+                  bottom: 10,
+                  right: 8,
+                  child: InkWell(
+                    onTap: () => setState(() {
+                      print(contentFormCard);
+                      var vvv = contentFormCard;
+                      if (globalItem.isNotEmpty) {
+                        homeContent.add(globalItem);
+                        // productDetail[formItem['name']] = homeContent;
+                        globalItemPair = homeContent;
+                        productDetail[formItem['name']] = globalItemPair;
+                      }
 
-  Widget buildContentForm(BuildContext context, formItem) {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-              border: Border.all(color: GREY.withOpacity(0.6), width: 0.5),
-              borderRadius: BorderRadius.circular(10),
-              shape: BoxShape.rectangle),
-          // padding: const EdgeInsets.sy(10),
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          child: Scrollbar(
+                      contentFormField.add(contentFormCard(formItem));
+                      setState(() {});
+                      // Navigator.pop(context);
+                    }),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(3)),
+                        child: const Padding(
+                          padding: EdgeInsets.fromLTRB(3, 1, 3, 1),
+                          child: Row(
+                            children: [
+                              Icon(Icons.add_circle,
+                                  size: 15, color: Colors.white),
+                              Padding(
+                                  padding: EdgeInsets.all(4.0),
+                                  child: Text(
+                                    'Add Item',
+                                    style: TextStyle(
+                                        fontSize: 9,
+                                        fontFamily: 'Space',
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.white),
+                                  )),
+                            ],
+                          ),
+                        )),
+                  )),
+            ],
+          ),
+
+          const SizedBox(
+            height: 20,
+          ),
+          // const Expanded(child: SizedBox()),
+          Expanded(
             child: ListView.builder(
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: contentFormField.length,
+              // physics: const NeverScrollableScrollPhysics(),
+              itemCount: globalItemPair.length,
               itemBuilder: (BuildContext context, int index) {
                 // 'home_items':[
                 //   {'name': 'Home', 'amount': 500},
@@ -1445,57 +1562,100 @@ class _FormScreenState extends State<FormScreen> {
 
                 purchaseData[formItem['name']] = homeContent;
                 return Padding(
-                  padding: const EdgeInsets.only(left: 5.0),
-                  child: Row(
-                    children: [
-                      Expanded(child: contentFormField[index]),
-                      const SizedBox(width: 5),
-                      if (contentFormField.length > 1)
+                    padding: const EdgeInsets.only(left: 5.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Card(
+                            margin: const EdgeInsets.all(8.0),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 10.0, vertical: 5),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children:
+                                    globalItemPair[index].entries.map((entry) {
+                                  return Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 8.0),
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${entry.key[0].toUpperCase()}${entry.key.substring(1)}',
+                                          style: const TextStyle(
+                                              fontWeight: FontWeight.w700),
+                                        ),
+                                        const SizedBox(
+                                          height: 5,
+                                        ),
+                                        Text(entry.value.toString()),
+                                      ],
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
                         InkWell(
                           onTap: () {
-                            contentFormField.removeAt(index);
-                            setState(() {});
+                            globalItem = {};
+                            setState(() {
+                              contentFormField.removeAt(index);
+                              globalItemPair.removeAt(index);
+                            });
                           },
                           child: const Icon(Icons.remove_circle,
                               size: 20, color: Colors.red),
                         ),
-                    ],
-                  ),
-                );
+                      ],
+                    ));
               },
             ),
           ),
-        ),
-        Positioned(
-            bottom: 0,
-            right: 8,
-            child: InkWell(
-              onTap: () =>
-                  setState(() => contentFormField.add(contentFormCard())),
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(3)),
-                  child: const Padding(
-                    padding: EdgeInsets.fromLTRB(3, 1, 3, 1),
-                    child: Row(
-                      children: [
-                        Icon(Icons.add_circle, size: 15, color: Colors.white),
-                        Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text(
-                              'Add Item',
-                              style: TextStyle(
-                                  fontSize: 9,
-                                  fontFamily: 'Space',
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white),
-                            )),
-                      ],
-                    ),
-                  )),
-            )),
-      ],
+        ],
+      ),
+    );
+  }
+
+  void _showBottomSheet(BuildContext context, Map<String, dynamic> formItem) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: buildContentForm(context, formItem, setState),
+                  ),
+                ],
+              ),
+
+            );
+          },
+        );
+      },
     );
   }
 

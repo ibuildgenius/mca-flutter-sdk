@@ -5,4 +5,5 @@ class Global {
   static Function? onComplete = () {
     print("Done");
   };
+  // static List<Map<String, dynamic>> globalItemPair = [];
 }
