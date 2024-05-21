@@ -383,9 +383,10 @@ class _FormScreenState extends State<FormScreen> {
                       },
                     ));
                   } else if (item['label']
-                      .toString()
-                      .toLowerCase()
-                      .contains('image')) {
+                          .toString()
+                          .toLowerCase()
+                          .contains('image') ||
+                      item['input_type'] == "file") {
                     var selectedImage = await openGallery();
                     if (selectedImage != null) {
                       setState(() {
@@ -411,8 +412,7 @@ class _FormScreenState extends State<FormScreen> {
                 // form_field: {id: 1, name: Input, label: Input form field, created_at: 2022-07-28T17:15:53.581Z, updated_at: 2022-07-28T17:15:53.581Z}}
 
                 child: item['data_type'] == 'array'
-                    ?
-                    InkWell(
+                    ? InkWell(
                         onTap: () => _showBottomSheet(context, item),
                         child: Padding(
                           padding: const EdgeInsets.fromLTRB(0, 10, 0, 12),
@@ -452,6 +452,7 @@ class _FormScreenState extends State<FormScreen> {
                     : InputFormField(
                         controller: controller,
                         onChanged: (value) {
+                          print(item);
                           if (item['data_type'] == 'number') {
                             if (controller.text.isNotEmpty) {
                               purchaseData[item['name']] = int.parse(
@@ -524,44 +525,44 @@ class _FormScreenState extends State<FormScreen> {
                             //     ? TextCapitalization.characters
                             //     :
                             TextCapitalization.sentences,
-                        inputFormatters:
-                            item['label'].toString().toLowerCase().contains('value') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('cost') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('price')
-                                ? <TextInputFormatter>[
-                                    FilteringTextInputFormatter.allow(
-                                        RegExp(r'[0-9]')),
-                                    ThousandsSeparatorInputFormatter(),
-                                  ]
-                                : <TextInputFormatter>[
-                                    (item['label']
-                                                .toString()
-                                                .toLowerCase()
-                                                .contains('phone') ||
-                                            item['label']
-                                                .toString()
-                                                .toLowerCase()
-                                                .contains('bvn'))
-                                        ? FilteringTextInputFormatter.digitsOnly
-                                        : FilteringTextInputFormatter.deny(
-                                            RegExp(r'[/\\]'))
-                                  ],
+                        inputFormatters: item['label'].toString().toLowerCase().contains('value') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('cost') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('price')
+                            ? <TextInputFormatter>[
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9]')),
+                                ThousandsSeparatorInputFormatter(),
+                              ]
+                            : <TextInputFormatter>[
+                                (item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('phone') ||
+                                        item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('bvn'))
+                                    ? FilteringTextInputFormatter.digitsOnly
+                                    : FilteringTextInputFormatter.deny(
+                                        RegExp(r'[/\\]'))
+                              ],
                         enabled: item['data_url'].toString() != 'null' ||
                                 item['label'].toString().toLowerCase().contains('date') ||
                                 item['label'].toString().toLowerCase().contains('image') ||
+                                item['input_type'] == "file" ||
                                 item['label'].toString().toLowerCase().contains('product') ||
                                 item['name'].toString().toLowerCase().contains('is_full_year') ||
                                 item['name'].toString().toLowerCase().contains('stock_keeping')
                             ? false
                             : true,
                         hint: item['description'],
-                        prefixIcon: item['label'].toString().toLowerCase().contains('image')
+                        prefixIcon: item['label'].toString().toLowerCase().contains('image') || item['input_type'] == "file"
                             ? Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
@@ -1415,15 +1416,26 @@ class _FormScreenState extends State<FormScreen> {
   final contentTitleController = <TextEditingController>[];
   final contentDescController = <TextEditingController>[];
 
-
   List<Map<String, dynamic>> homeContent = [];
   Map<String, dynamic> globalItem = {};
 
+  Map<String, TextEditingController> _itemPairControllerMap = {};
+
+  TextEditingController _getItemPairControllerOf(String name, {initValue}) {
+    var controller = _itemPairControllerMap[name];
+    if (controller == null) {
+      controller = TextEditingController(text: initValue ?? '');
+      _itemPairControllerMap[name] = controller;
+    }
+    return controller;
+  }
+
+  Map<String, dynamic> itemPair = {};
+
   Widget contentFormCard(formItem) {
     Map<String, TextEditingController> controllers = {};
-    Map<String, dynamic> item = {};
 
-    globalItem = item;
+    globalItem = itemPair;
 
     return Column(
       children: formItem['child_data'].map<Widget>((field) {
@@ -1431,44 +1443,190 @@ class _FormScreenState extends State<FormScreen> {
         String label = field['label'];
         String dataType = field['data_type'];
 
-        var controller = TextEditingController();
-        controllers[key] = controller;
+        final controller = _getItemPairControllerOf(
+          field['name'].toString(),
+        );
 
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 5),
-          child: Row(
-            children: [
-              Expanded(
-                child: InputFormField(
-                  label: label,
-                  controller: controller,
-                  labelStyle: const TextStyle(
-                    fontSize: 13,
-                    color: Colors.black,
-                    fontFamily: 'Space',
-                  ),
-                  keyboardType: dataType == 'number'
-                      ? TextInputType.number
-                      : TextInputType.text,
-                  inputFormatters: dataType == 'number'
-                      ? [FilteringTextInputFormatter.digitsOnly]
-                      : null,
-                  onChanged: (v) {
-                    print(item);
-                    print(contentFormField);
-                    if (dataType == 'number') {
-                      if (controller.text.isNotEmpty) {
-                        item[key] =
-                            int.parse(controller.text.replaceAll(",", ""));
-                      }
-                    } else {
-                      item[key] = controller.text;
-                    }
-                  },
-                ),
-              ),
-              const SizedBox(width: 10),
-            ],
+        return InkWell(
+          onTap: () async {
+            if (field['data_url'].toString() != 'null') {
+              FocusScope.of(context).unfocus();
+              if (!isPickerLoading) {
+                setState(() {
+                  isPickerLoading = true;
+                });
+                pickItem(
+                    await getListData(field['data_url'],
+                        make: make, state: state),
+                    field['label'], onSelect: (value) {
+                  Navigator.pop(context);
+                  controller.text = value.toString();
+                  itemPair[key] = controller.text;
+                });
+
+                setState(() {
+                  isPickerLoading = false;
+                });
+              }
+            } else if (field['name'].toString().contains('is_full_year')) {
+              var list = ['Full year', 'Half year'];
+              pickItem(list, field['label'], onSelect: (value) {
+                Navigator.pop(context);
+                controller.text = value.toString();
+                itemPair[key] = controller.text == 'Full year' ? true : false;
+              });
+            } else if (field['name'].toString().contains('stock_keeping')) {
+              var list = ['Yes', 'No'];
+              pickItem(list, field['label'], onSelect: (value) {
+                Navigator.pop(context);
+                controller.text = value.toString();
+                itemPair[key] = controller.text == 'Full year' ? true : false;
+              });
+            } else if (field['label']
+                .toString()
+                .toLowerCase()
+                .contains('date')) {
+              _showDialog(CupertinoDatePicker(
+                initialDateTime: DateTime.now(),
+                mode: CupertinoDatePickerMode.date,
+                use24hFormat: true,
+                onDateTimeChanged: (DateTime newDate) {
+                  setState(() {
+                    controller.text = newDate.toString().substring(0, 10);
+                    itemPair[key] = controller.text;
+
+                    _formKey.currentState!.validate();
+                  });
+                },
+              ));
+            } else if (field['label']
+                    .toString()
+                    .toLowerCase()
+                    .contains('image') ||
+                field['input_type'] == "file") {
+              var selectedImage = await openGallery();
+              if (selectedImage != null) {
+                setState(() {
+                  controller.text = selectedImage!.path.toString();
+                });
+                String? uploadedUrl =
+                    await uploadSingleImage(key, selectedImage);
+                if (uploadedUrl != null) {
+                  setState(() {
+                    itemPair[key] = uploadedUrl;
+                  });
+                }
+              }
+            }
+          },
+          child: InputFormField(
+            controller: controller,
+            onChanged: (value) {
+              if (field['data_type'] == 'number') {
+                if (controller.text.isNotEmpty) {
+                  itemPair[key] =
+                      int.parse(controller.text.replaceAll(",", ""));
+                  print(itemPair);
+                }
+              } else {
+                itemPair[key] = controller.text.toString();
+              }
+            },
+            keyboardType: (field['label']
+                        .toString()
+                        .toLowerCase()
+                        .contains('phone') ||
+                    field['label'].toString().toLowerCase().contains('cost') ||
+                    field['label'].toString().toLowerCase().contains('price') ||
+                    field['data_type']
+                        .toString()
+                        .toLowerCase()
+                        .contains('number') ||
+                    field['name'].toString().toLowerCase().contains('value') ||
+                    field['label'].toString().toLowerCase().contains('bvn'))
+                ? TextInputType.phone
+                : TextInputType.text,
+            textCapitalization:
+                field['label'].toString().toLowerCase().contains('email')
+                    ? TextCapitalization.none
+                    : TextCapitalization.sentences,
+            inputFormatters: field['label']
+                        .toString()
+                        .toLowerCase()
+                        .contains('value') ||
+                    field['label'].toString().toLowerCase().contains('cost') ||
+                    field['label'].toString().toLowerCase().contains('price')
+                ? <TextInputFormatter>[
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                    ThousandsSeparatorInputFormatter(),
+                  ]
+                : <TextInputFormatter>[
+                    (field['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('phone') ||
+                            field['label']
+                                .toString()
+                                .toLowerCase()
+                                .contains('bvn'))
+                        ? FilteringTextInputFormatter.digitsOnly
+                        : FilteringTextInputFormatter.deny(RegExp(r'[/\\]'))
+                  ],
+            enabled: field['data_url'].toString() != 'null' ||
+                    field['label'].toString().toLowerCase().contains('date') ||
+                    field['label'].toString().toLowerCase().contains('image') ||
+                    field['input_type'] == "file" ||
+                    field['label']
+                        .toString()
+                        .toLowerCase()
+                        .contains('product') ||
+                    field['name']
+                        .toString()
+                        .toLowerCase()
+                        .contains('is_full_year') ||
+                    field['name']
+                        .toString()
+                        .toLowerCase()
+                        .contains('stock_keeping')
+                ? false
+                : true,
+            hint: field['description'],
+            prefixIcon:
+                field['label'].toString().toLowerCase().contains('image') ||
+                        field['input_type'] == "file"
+                    ? Row(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const SizedBox(width: 10),
+                          Container(
+                              decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(3),
+                                  border: Border.all(color: GREY)),
+                              child: const Padding(
+                                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                child: Text(
+                                  'Select Image',
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                              )),
+                          const SizedBox(width: 10),
+                        ],
+                      )
+                    : null,
+            suffixIcon: (field['data_url'].toString() != 'null' ||
+                    field['name']
+                        .toString()
+                        .toLowerCase()
+                        .contains('is_full_year') ||
+                    field['name']
+                        .toString()
+                        .toLowerCase()
+                        .contains('stock_keeping'))
+                ? const Icon(Icons.expand_more)
+                : field['label'].toString().toLowerCase().contains('date')
+                    ? const Icon(Icons.event_note)
+                    : null,
           ),
         );
       }).toList(),
@@ -1497,7 +1655,6 @@ class _FormScreenState extends State<FormScreen> {
                   children: [
                     Expanded(child: contentFormCard(formItem)),
                     const SizedBox(width: 5),
-             
                   ],
                 ),
               ),
@@ -1516,7 +1673,10 @@ class _FormScreenState extends State<FormScreen> {
                       }
 
                       contentFormField.add(contentFormCard(formItem));
-                      setState(() {});
+                      setState(() {
+                        itemPair = {};
+                        _itemPairControllerMap = {};
+                      });
                       // Navigator.pop(context);
                     }),
                     child: Container(
@@ -1570,30 +1730,39 @@ class _FormScreenState extends State<FormScreen> {
                             margin: const EdgeInsets.all(8.0),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 10.0, vertical: 5),
+                                  horizontal: 0.0, vertical: 5),
                               child: Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children:
                                     globalItemPair[index].entries.map((entry) {
-                                  return Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 8.0),
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          '${entry.key[0].toUpperCase()}${entry.key.substring(1)}',
-                                          style: const TextStyle(
-                                              fontWeight: FontWeight.w700),
-                                        ),
-                                        const SizedBox(
-                                          height: 5,
-                                        ),
-                                        Text(entry.value.toString()),
-                                      ],
+                                  return Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${entry.key[0].toUpperCase()}${entry.key.substring(1)}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12),
+                                          ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            entry.value.toString(),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   );
                                 }).toList(),
@@ -1651,7 +1820,6 @@ class _FormScreenState extends State<FormScreen> {
                   ),
                 ],
               ),
-
             );
           },
         );
@@ -2106,6 +2274,32 @@ class _FormScreenState extends State<FormScreen> {
     } else {
       completePurchase();
     }
+  }
+
+  Future<String?> uploadSingleImage(String key, File? file) async {
+    Dialogs.showLoading(context: context, text: 'Uploading Image');
+    var res = await WebServices.uploadFile(
+        context, businessId, file!, widget.publicKey);
+
+    Navigator.pop(context);
+
+    // Create a variable to hold the file URL
+    String? fileUrl;
+
+    // Listen to the stream once and handle both cases
+    await res.stream.transform(utf8.decoder).listen((value) {
+      var body = jsonDecode(value);
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        setState(() {
+          fileUrl = body['data']['file_url'];
+        });
+      } else {
+        print(body['responseText']);
+        Dialogs.showErrorMessage(body['responseText']);
+      }
+    });
+
+    return fileUrl;
   }
 }
 

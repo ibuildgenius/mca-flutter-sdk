@@ -263,7 +263,8 @@ class _MyCoverState extends State<MyCover> with AfterLayoutMixin<MyCover> {
       return TravelScreen(data: data);
     } else if (productType.contains('gadget') ||
         productType.contains('home') ||
-        productType.contains('content')) {
+        productType.contains('content') ||
+        productType.contains('package')) {
       return GadgetScreen(data: data);
     } else {
       Navigator.pop(context);
