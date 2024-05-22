@@ -25,6 +25,7 @@ class MyCoverAI extends StatefulWidget {
   final String email;
   final List? productId;
   final Function? onComplete;
+  final bool? isContactFieldsEditable;
   final form;
   const MyCoverAI({
     Key? key,
@@ -37,6 +38,7 @@ class MyCoverAI extends StatefulWidget {
     this.transactionType,
     this.onComplete,
     this.paymentOption,
+    this.isContactFieldsEditable,
   }) : super(key: key);
 
   @override
@@ -179,7 +181,12 @@ class _MyCoverAIState extends State<MyCoverAI> {
           Global.prefixList = prefixSet.toList();
           Global.test = widget.publicKey;
           Global.onComplete = widget.onComplete;
+          if (widget.isContactFieldsEditable != null) {
+            Global.isContactFieldsEditable = widget.isContactFieldsEditable!;
+          }
+          print(Global.isContactFieldsEditable);
           print(widget.onComplete);
+          print(Global.isContactFieldsEditable);
 
           //   response['data']['productDetails']
           //       .forEach((item) => {print(item['prefix'])});

@@ -316,7 +316,8 @@ class _FormScreenState extends State<FormScreen> {
           purchaseData['amount'] = price;
           purchaseData['vehicle_registration_number'] = 'AKD91HR';
           final controller = _getControllerOf(item['name'].toString(),
-              initValue: getInitialValue(item['label'].toString()));
+              initValue: getInitialValue(
+                  item['label'].toString(), item['name'].toString()));
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -452,7 +453,19 @@ class _FormScreenState extends State<FormScreen> {
                     : InputFormField(
                         controller: controller,
                         onChanged: (value) {
-                          print(item);
+                          print((item['name'].toString().toLowerCase() ==
+                                  "email" &&
+                              email.isNotEmpty &&
+                              !Global.isContactFieldsEditable));
+                          print(12);
+
+                          print(
+                              item['name'].toString().toLowerCase() == "email");
+                          print(12);
+                          print(email.isNotEmpty);
+                          print(1207);
+                          print(Global.isContactFieldsEditable);
+
                           if (item['data_type'] == 'number') {
                             if (controller.text.isNotEmpty) {
                               purchaseData[item['name']] = int.parse(
@@ -471,18 +484,13 @@ class _FormScreenState extends State<FormScreen> {
                                 controller.text.toString();
                           }
 
-                          if (item['name'].toString().contains('email')) {
+                          if (item['name'].toString() == 'email') {
                             email = controller.text;
                           }
                           if (item['name'].toString().contains('first_name')) {
                             firstName = controller.text;
                           }
-                          if (item['name'].toString().contains('phone') &&
-                              !item['name']
-                                  .toString()
-                                  .contains('next_of_kin_phone') &&
-                              item['name'].toString().toLowerCase() !=
-                                  "phone about screen image") {
+                          if (item['name'].toString() == 'phone_number') {
                             phone = controller.text;
                           }
                           if (item['name'].toString().contains('last_name')) {
@@ -558,9 +566,12 @@ class _FormScreenState extends State<FormScreen> {
                                 item['input_type'] == "file" ||
                                 item['label'].toString().toLowerCase().contains('product') ||
                                 item['name'].toString().toLowerCase().contains('is_full_year') ||
-                                item['name'].toString().toLowerCase().contains('stock_keeping')
+                                item['name'].toString().toLowerCase().contains('stock_keeping') ||
+                                (item['name'].toString().toLowerCase() == "email" && email.isNotEmpty && (Global.isContactFieldsEditable == false)) ||
+                                (item['name'].toString().toLowerCase() == "phone_number" && phone.isNotEmpty && (Global.isContactFieldsEditable == false))
                             ? false
                             : true,
+                        isTextDimmed: (item['name'].toString().toLowerCase() == "email" && email.isNotEmpty && (Global.isContactFieldsEditable == false)) || (item['name'].toString().toLowerCase() == "phone_number" && phone.isNotEmpty && (Global.isContactFieldsEditable == false)),
                         hint: item['description'],
                         prefixIcon: item['label'].toString().toLowerCase().contains('image') || item['input_type'] == "file"
                             ? Row(
@@ -1359,8 +1370,8 @@ class _FormScreenState extends State<FormScreen> {
         },
       );
 
-  getInitialValue(String title) {
-    if (title.toLowerCase().contains('email')) {
+  getInitialValue(String title, String name) {
+    if (name.toLowerCase() == 'email') {
       return email;
     } else if (title.toLowerCase().contains('product')) {
       return productId;
@@ -1370,7 +1381,7 @@ class _FormScreenState extends State<FormScreen> {
     } else if (title.toLowerCase().contains('last') &&
         title.toLowerCase().contains('name')) {
       return lastName;
-    } else if (title.toLowerCase().contains('phone')) {
+    } else if (name.toLowerCase() == 'phone_number') {
       return phone;
     } else {
       return '';
@@ -1447,186 +1458,228 @@ class _FormScreenState extends State<FormScreen> {
           field['name'].toString(),
         );
 
-        return InkWell(
-          onTap: () async {
-            if (field['data_url'].toString() != 'null') {
-              FocusScope.of(context).unfocus();
-              if (!isPickerLoading) {
-                setState(() {
-                  isPickerLoading = true;
-                });
-                pickItem(
-                    await getListData(field['data_url'],
-                        make: make, state: state),
-                    field['label'], onSelect: (value) {
-                  Navigator.pop(context);
-                  controller.text = value.toString();
-                  itemPair[key] = controller.text;
-                });
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              textBoxTitle(field['label']),
+              InkWell(
+                onTap: () async {
+                  if (field['data_url'].toString() != 'null') {
+                    FocusScope.of(context).unfocus();
+                    if (!isPickerLoading) {
+                      setState(() {
+                        isPickerLoading = true;
+                      });
+                      pickItem(
+                          await getListData(field['data_url'],
+                              make: make, state: state),
+                          field['label'], onSelect: (value) {
+                        Navigator.pop(context);
+                        controller.text = value.toString();
+                        itemPair[key] = controller.text;
+                      });
 
-                setState(() {
-                  isPickerLoading = false;
-                });
-              }
-            } else if (field['name'].toString().contains('is_full_year')) {
-              var list = ['Full year', 'Half year'];
-              pickItem(list, field['label'], onSelect: (value) {
-                Navigator.pop(context);
-                controller.text = value.toString();
-                itemPair[key] = controller.text == 'Full year' ? true : false;
-              });
-            } else if (field['name'].toString().contains('stock_keeping')) {
-              var list = ['Yes', 'No'];
-              pickItem(list, field['label'], onSelect: (value) {
-                Navigator.pop(context);
-                controller.text = value.toString();
-                itemPair[key] = controller.text == 'Full year' ? true : false;
-              });
-            } else if (field['label']
-                .toString()
-                .toLowerCase()
-                .contains('date')) {
-              _showDialog(CupertinoDatePicker(
-                initialDateTime: DateTime.now(),
-                mode: CupertinoDatePickerMode.date,
-                use24hFormat: true,
-                onDateTimeChanged: (DateTime newDate) {
-                  setState(() {
-                    controller.text = newDate.toString().substring(0, 10);
-                    itemPair[key] = controller.text;
+                      setState(() {
+                        isPickerLoading = false;
+                      });
+                    }
+                  } else if (field['name']
+                      .toString()
+                      .contains('is_full_year')) {
+                    var list = ['Full year', 'Half year'];
+                    pickItem(list, field['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      itemPair[key] =
+                          controller.text == 'Full year' ? true : false;
+                    });
+                  } else if (field['name']
+                      .toString()
+                      .contains('stock_keeping')) {
+                    var list = ['Yes', 'No'];
+                    pickItem(list, field['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      itemPair[key] =
+                          controller.text == 'Full year' ? true : false;
+                    });
+                  } else if (field['label']
+                      .toString()
+                      .toLowerCase()
+                      .contains('date')) {
+                    _showDialog(CupertinoDatePicker(
+                      initialDateTime: DateTime.now(),
+                      mode: CupertinoDatePickerMode.date,
+                      use24hFormat: true,
+                      onDateTimeChanged: (DateTime newDate) {
+                        setState(() {
+                          controller.text = newDate.toString().substring(0, 10);
+                          itemPair[key] = controller.text;
 
-                    _formKey.currentState!.validate();
-                  });
+                          _formKey.currentState!.validate();
+                        });
+                      },
+                    ));
+                  } else if (field['label']
+                          .toString()
+                          .toLowerCase()
+                          .contains('image') ||
+                      field['input_type'] == "file") {
+                    var selectedImage = await openGallery();
+                    if (selectedImage != null) {
+                      setState(() {
+                        controller.text = selectedImage!.path.toString();
+                      });
+                      String? uploadedUrl =
+                          await uploadSingleImage(key, selectedImage);
+                      if (uploadedUrl != null) {
+                        setState(() {
+                          itemPair[key] = uploadedUrl;
+                        });
+                      }
+                    }
+                  }
                 },
-              ));
-            } else if (field['label']
-                    .toString()
-                    .toLowerCase()
-                    .contains('image') ||
-                field['input_type'] == "file") {
-              var selectedImage = await openGallery();
-              if (selectedImage != null) {
-                setState(() {
-                  controller.text = selectedImage!.path.toString();
-                });
-                String? uploadedUrl =
-                    await uploadSingleImage(key, selectedImage);
-                if (uploadedUrl != null) {
-                  setState(() {
-                    itemPair[key] = uploadedUrl;
-                  });
-                }
-              }
-            }
-          },
-          child: InputFormField(
-            controller: controller,
-            onChanged: (value) {
-              if (field['data_type'] == 'number') {
-                if (controller.text.isNotEmpty) {
-                  itemPair[key] =
-                      int.parse(controller.text.replaceAll(",", ""));
-                  print(itemPair);
-                }
-              } else {
-                itemPair[key] = controller.text.toString();
-              }
-            },
-            keyboardType: (field['label']
-                        .toString()
-                        .toLowerCase()
-                        .contains('phone') ||
-                    field['label'].toString().toLowerCase().contains('cost') ||
-                    field['label'].toString().toLowerCase().contains('price') ||
-                    field['data_type']
-                        .toString()
-                        .toLowerCase()
-                        .contains('number') ||
-                    field['name'].toString().toLowerCase().contains('value') ||
-                    field['label'].toString().toLowerCase().contains('bvn'))
-                ? TextInputType.phone
-                : TextInputType.text,
-            textCapitalization:
-                field['label'].toString().toLowerCase().contains('email')
-                    ? TextCapitalization.none
-                    : TextCapitalization.sentences,
-            inputFormatters: field['label']
-                        .toString()
-                        .toLowerCase()
-                        .contains('value') ||
-                    field['label'].toString().toLowerCase().contains('cost') ||
-                    field['label'].toString().toLowerCase().contains('price')
-                ? <TextInputFormatter>[
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
-                    ThousandsSeparatorInputFormatter(),
-                  ]
-                : <TextInputFormatter>[
-                    (field['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('phone') ||
-                            field['label']
-                                .toString()
-                                .toLowerCase()
-                                .contains('bvn'))
-                        ? FilteringTextInputFormatter.digitsOnly
-                        : FilteringTextInputFormatter.deny(RegExp(r'[/\\]'))
-                  ],
-            enabled: field['data_url'].toString() != 'null' ||
-                    field['label'].toString().toLowerCase().contains('date') ||
-                    field['label'].toString().toLowerCase().contains('image') ||
-                    field['input_type'] == "file" ||
-                    field['label']
-                        .toString()
-                        .toLowerCase()
-                        .contains('product') ||
-                    field['name']
-                        .toString()
-                        .toLowerCase()
-                        .contains('is_full_year') ||
-                    field['name']
-                        .toString()
-                        .toLowerCase()
-                        .contains('stock_keeping')
-                ? false
-                : true,
-            hint: field['description'],
-            prefixIcon:
-                field['label'].toString().toLowerCase().contains('image') ||
-                        field['input_type'] == "file"
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.start,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          const SizedBox(width: 10),
-                          Container(
-                              decoration: BoxDecoration(
-                                  borderRadius: BorderRadius.circular(3),
-                                  border: Border.all(color: GREY)),
-                              child: const Padding(
-                                padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
-                                child: Text(
-                                  'Select Image',
-                                  style: TextStyle(fontSize: 12),
-                                ),
-                              )),
-                          const SizedBox(width: 10),
+                child: InputFormField(
+                  controller: controller,
+                  onChanged: (value) {
+                    if (field['data_type'] == 'number') {
+                      if (controller.text.isNotEmpty) {
+                        itemPair[key] =
+                            int.parse(controller.text.replaceAll(",", ""));
+                        print(itemPair);
+                      }
+                    } else {
+                      itemPair[key] = controller.text.toString();
+                    }
+                  },
+                  keyboardType: (field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('phone') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('cost') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('price') ||
+                          field['data_type']
+                              .toString()
+                              .toLowerCase()
+                              .contains('number') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('value') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('bvn'))
+                      ? TextInputType.phone
+                      : TextInputType.text,
+                  textCapitalization:
+                      field['label'].toString().toLowerCase().contains('email')
+                          ? TextCapitalization.none
+                          : TextCapitalization.sentences,
+                  inputFormatters: field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('value') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('cost') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('price')
+                      ? <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          ThousandsSeparatorInputFormatter(),
+                        ]
+                      : <TextInputFormatter>[
+                          (field['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('phone') ||
+                                  field['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('bvn'))
+                              ? FilteringTextInputFormatter.digitsOnly
+                              : FilteringTextInputFormatter.deny(
+                                  RegExp(r'[/\\]'))
                         ],
-                      )
-                    : null,
-            suffixIcon: (field['data_url'].toString() != 'null' ||
-                    field['name']
-                        .toString()
-                        .toLowerCase()
-                        .contains('is_full_year') ||
-                    field['name']
-                        .toString()
-                        .toLowerCase()
-                        .contains('stock_keeping'))
-                ? const Icon(Icons.expand_more)
-                : field['label'].toString().toLowerCase().contains('date')
-                    ? const Icon(Icons.event_note)
-                    : null,
+                  enabled: field['data_url'].toString() != 'null' ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('date') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('image') ||
+                          field['input_type'] == "file" ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('product') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('is_full_year') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('stock_keeping')
+                      ? false
+                      : true,
+                  hint: field['description'],
+                  prefixIcon: field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('image') ||
+                          field['input_type'] == "file"
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(width: 10),
+                            Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(color: GREY)),
+                                child: const Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Text(
+                                    'Select Image',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                )),
+                            const SizedBox(width: 10),
+                          ],
+                        )
+                      : null,
+                  suffixIcon: (field['data_url'].toString() != 'null' ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('is_full_year') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('stock_keeping'))
+                      ? const Icon(Icons.expand_more)
+                      : field['label'].toString().toLowerCase().contains('date')
+                          ? const Icon(Icons.event_note)
+                          : null,
+                ),
+              ),
+            ],
           ),
         );
       }).toList(),
@@ -1643,6 +1696,7 @@ class _FormScreenState extends State<FormScreen> {
       child: Column(
         children: [
           Stack(
+            clipBehavior: Clip.none,
             children: [
               Container(
                 decoration: BoxDecoration(
@@ -1659,7 +1713,7 @@ class _FormScreenState extends State<FormScreen> {
                 ),
               ),
               Positioned(
-                  bottom: 10,
+                  bottom: -15,
                   right: 8,
                   child: InkWell(
                     onTap: () => setState(() {
@@ -1684,7 +1738,8 @@ class _FormScreenState extends State<FormScreen> {
                             color: Colors.green,
                             borderRadius: BorderRadius.circular(3)),
                         child: const Padding(
-                          padding: EdgeInsets.fromLTRB(3, 1, 3, 1),
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
                           child: Row(
                             children: [
                               Icon(Icons.add_circle,

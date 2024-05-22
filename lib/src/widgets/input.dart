@@ -29,9 +29,11 @@ class InputFormField extends StatelessWidget {
     this.maxLength,
     this.inputFormatters,
     this.labelStyle,
+    this.isTextDimmed = false,
   }) : super(key: key);
 
   final TextStyle? labelStyle;
+  final bool isTextDimmed;
   final suffixIcon;
   final prefixIcon;
   final onChanged;
@@ -61,9 +63,9 @@ class InputFormField extends StatelessWidget {
         enabled: enabled,
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 14,
-          color: DARK,
+          color: isTextDimmed ? darkGREY : DARK,
           fontFamily: 'Space',
         ),
         textCapitalization: textCapitalization,
@@ -100,12 +102,12 @@ class InputFormField extends StatelessWidget {
           labelStyle: labelStyle ??
               TextStyle(
                 fontSize: 13,
-                color: GREY.withOpacity(0.4),
+                color: GREY.withOpacity(0.6),
                 fontFamily: 'Space',
               ),
           hintStyle: TextStyle(
             fontSize: 13,
-            color: GREY.withOpacity(0.4),
+            color: GREY.withOpacity(0.6),
             fontFamily: 'Space',
           ),
           contentPadding:

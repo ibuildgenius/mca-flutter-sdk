@@ -79,6 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'last_name': 'Aminu',
               'phone': '08123232332',
             },
+            isContactFieldsEditable: true,
             onComplete: _onComplete,
             // reference: "BUY-DRIPDM1713463188225-WR",
             paymentOption: PaymentOption.gateway,

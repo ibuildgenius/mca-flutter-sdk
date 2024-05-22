@@ -17,16 +17,19 @@ enum TypeOfProduct { auto, health, gadget, travel }
 enum TransactionType { purchase, inspection }
 
 class MyCoverAIInitializer {
-  const MyCoverAIInitializer(
-      {Key? key,
-      required this.context,
-      this.productId,
-      this.reference,
-      required this.email,
-      this.form,
-      required this.publicKey,
-      this.transactionType,
-      this.paymentOption});
+  const MyCoverAIInitializer({
+    Key? key,
+    required this.context,
+    this.productId,
+    this.reference,
+    required this.email,
+    this.form,
+    required this.publicKey,
+    this.transactionType,
+    this.paymentOption,
+    this.isContactFieldsEditable,
+    this.onComplete,
+  });
 
   final BuildContext context;
   final PaymentOption? paymentOption;
@@ -36,6 +39,8 @@ class MyCoverAIInitializer {
   final String email;
   final List? productId;
   final form;
+  final Function? onComplete;
+  final bool? isContactFieldsEditable;
 
   Future<String> getProductCat(catID) async {
     var response = await WebServices.getProductCategory(catID, publicKey);
@@ -115,6 +120,13 @@ class MyCoverAIInitializer {
         print(1111);
         print(prefixSet);
         Global.prefixList = prefixSet.toList();
+        Global.test = publicKey;
+        Global.onComplete = onComplete;
+        if (isContactFieldsEditable != null) {
+          Global.isContactFieldsEditable = isContactFieldsEditable!;
+        }
+
+        print(onComplete);
 
         //   response['data']['productDetails']
         //       .forEach((item) => {print(item['prefix'])});
