@@ -117,11 +117,8 @@ class MyCoverAIInitializer {
         for (var item in response['data']['productDetails']) {
           prefixSet.add(item['prefix']);
         }
-        print(1111);
-        print(prefixSet);
         Global.prefixList = prefixSet.toList();
         Global.test = publicKey;
-        Global.onComplete = onComplete;
         if (isContactFieldsEditable != null) {
           Global.isContactFieldsEditable = isContactFieldsEditable!;
         }
