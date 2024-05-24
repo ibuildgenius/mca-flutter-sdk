@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_html/flutter_html.dart';
+import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
+import 'package:mca_official_flutter_sdk/src/utils/spacers.dart';
+// import 'package:flutter_html/flutter_html.dart';
 import '../const.dart';
 import '../theme.dart';
 import '../widgets/common.dart';
@@ -43,10 +47,8 @@ class _HealthScreenState extends State<HealthScreen>
 
   @override
   Widget build(BuildContext context) {
-    return  healthIntro();
+    return healthIntro();
   }
-
-
 
   Widget healthIntro() {
     return Expanded(
@@ -56,6 +58,7 @@ class _HealthScreenState extends State<HealthScreen>
           TabBar(
             isScrollable: false,
             controller: tabController,
+            indicatorSize: TabBarIndicatorSize.tab,
             indicator: const BoxDecoration(color: LIGHT_GREY),
             tabs: <Widget>[
               InkWell(
@@ -78,60 +81,75 @@ class _HealthScreenState extends State<HealthScreen>
   }
 
   healthHowItWorks() => Container(
-    color: LIGHT_GREY,
-    child: Column(
-      children: [
-        verticalSpace(),
-        Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: GREEN, width: 0.1),
-                shape: BoxShape.circle,
-                color: FILL_GREEN),
-            child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Image.asset(book, height: 25, package: 'mca_official_flutter_sdk'
-                ))),
-        verticalSpace(),
-        const Divider(),
-        verticalSpace(),
-        Expanded(
-          child: SingleChildScrollView(
-            child: Html(data: widget.data["how_it_works"]  ?? "<p>no data</p>", style: htmlStyle,),
-          ),
-        )
-      ],
-    ),
-  );
+        color: LIGHT_GREY,
+        child: Column(
+          children: [
+            verticalSpace(),
+            Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: GREEN, width: 0.1),
+                    shape: BoxShape.circle,
+                    color: FILL_GREEN),
+                child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Image.asset(book,
+                        height: 25, package: 'mca_official_flutter_sdk'))),
+            verticalSpacer(10),
+            const Divider(
+              color: CustomColors.gray200Color,
+            ),
+            verticalSpacer(10),
+            Expanded(
+              child: SingleChildScrollView(
+                child: HtmlWidget(
+                  widget.data["how_it_works"] ?? "<p>no data</p>",
+                ),
+              ),
+            )
+          ],
+        ),
+      );
 
   healthBenefits() => Container(
-    color: LIGHT_GREY,
-    child: Column(
-      children: [
-        verticalSpace(),
-        Container(
-            decoration: BoxDecoration(
-                border: Border.all(color: GREEN, width: 0.1),
-                shape: BoxShape.circle,
-                color: FILL_GREEN),
-            child: Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Image.asset(insight, height: 25,                      package: 'mca_official_flutter_sdk'
-                ))),
-        verticalSpace(),
-        const Divider(),
-
-        Expanded(child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children:  (widget.data["full_benefits"] != null && widget.data["full_benefits"] is List) ?
-            List<Widget>.generate((widget.data["full_benefits"] as List).length, (index) {
-              return textTile(widget.data["full_benefits"][index]["name"] + " - " + widget.data["full_benefits"][index]["description"]);
-            }) : [Html(data: widget.data["key_benefits"] ?? "<p>no data</p>", style: htmlStyle,)],
-          ),
-        ))
-
-      ],
-    ),
-  );
+        color: LIGHT_GREY,
+        child: Column(
+          children: [
+            verticalSpace(),
+            Container(
+                decoration: BoxDecoration(
+                    border: Border.all(color: GREEN, width: 0.1),
+                    shape: BoxShape.circle,
+                    color: FILL_GREEN),
+                child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Image.asset(insight,
+                        height: 25, package: 'mca_official_flutter_sdk'))),
+            verticalSpacer(10),
+            const Divider(
+              color: CustomColors.gray200Color,
+            ),
+            verticalSpacer(10),
+            Expanded(
+                child: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: (widget.data["full_benefits"] != null &&
+                        widget.data["full_benefits"] is List)
+                    ? List<Widget>.generate(
+                        (widget.data["full_benefits"] as List).length, (index) {
+                        return textTile(widget.data["full_benefits"][index]
+                                ["name"] +
+                            " - " +
+                            widget.data["full_benefits"][index]["description"]);
+                      })
+                    : [
+                        HtmlWidget(
+                          widget.data["key_benefits"] ?? "<p>no data</p>",
+                        )
+                      ],
+              ),
+            ))
+          ],
+        ),
+      );
 }
-

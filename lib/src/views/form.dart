@@ -5,7 +5,15 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:mca_official_flutter_sdk/src/globals.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_colors.dart';
+import 'package:mca_official_flutter_sdk/src/utils/constants/custom_string.dart';
+import 'package:mca_official_flutter_sdk/src/utils/spacers.dart';
+import 'package:mca_official_flutter_sdk/src/utils/thousands_seperator.dart';
+import 'package:mca_official_flutter_sdk/src/widgets/clipboard_toaster.dart';
 
 import '../../mca_official_flutter_sdk.dart';
 import '../const.dart';
@@ -18,18 +26,18 @@ import '../widgets/dialogs.dart';
 import '../widgets/input.dart';
 
 class FormScreen extends StatefulWidget {
-  const FormScreen(
-      {Key? key,
-      required this.productDetail,
-      required this.instanceId,
-      required this.form,
-      required this.provider,
-      required this.reference,
-      required this.inspectable,
-      required this.email,
-      required this.publicKey,
-      required this.paymentOption})
-      : super(key: key);
+  const FormScreen({
+    Key? key,
+    required this.productDetail,
+    required this.instanceId,
+    required this.form,
+    required this.provider,
+    required this.reference,
+    required this.inspectable,
+    required this.email,
+    required this.publicKey,
+    required this.paymentOption,
+  }) : super(key: key);
   final productDetail;
   final form;
   final String instanceId;
@@ -49,6 +57,7 @@ class _FormScreenState extends State<FormScreen> {
   var productDetail;
   var forms;
   File? _image;
+  List<Map<String, File?>> imageList = [];
   String searchTerm = '';
   String firstName = '';
   String lastName = '';
@@ -78,6 +87,7 @@ class _FormScreenState extends State<FormScreen> {
   var pageData = [];
   bool enabledUssd = false;
   bool go = false;
+  bool isLoading = false;
   var identityList,
       titleList,
       stateList,
@@ -91,6 +101,8 @@ class _FormScreenState extends State<FormScreen> {
 
   var ussdProviders = [];
   var searchList = [];
+  bool isPickerLoading = false;
+  List<Map<String, dynamic>> globalItemPair = [];
 
   @override
   void initState() {
@@ -101,7 +113,7 @@ class _FormScreenState extends State<FormScreen> {
         go = true;
       });
     });
-    contentFormField.add(contentFormCard());
+    // contentFormField.add(contentFormCard());
 
     super.initState();
   }
@@ -124,8 +136,8 @@ class _FormScreenState extends State<FormScreen> {
       if (widget.form != null) {
         var inputForm = widget.form;
         phone = inputForm['phone'] ?? '';
-        firstName = '';
-        lastName = '';
+        firstName = inputForm['first_name'] ?? '';
+        lastName = inputForm['last_name'] ?? '';
       }
 
       if (paymentOption == PaymentOption.gateway && reference != '') {
@@ -183,21 +195,36 @@ class _FormScreenState extends State<FormScreen> {
   Widget inputBody() {
     return FormBodyScaffold(
       logo: logo,
-      text: 'Get Covered',
-      buttonAction: () {
+      text: (initialPage < (chunks.length - 1)) ? 'Continue' : 'Get Covered',
+      isLoading: isLoading,
+      buttonAction: () async {
+        print("I am here too");
+        print(logo);
         FocusScope.of(context).unfocus();
         if (_formKey.currentState!.validate()) {
           if (initialPage < (chunks.length - 1)) {
             initialPage++;
+            print("I am here too 1");
             setState(() => pageData = chunks[initialPage]);
           } else {
             if (stage == PurchaseStage.payment &&
                 paymentOption == PaymentOption.gateway) {
-              setState(() => bodyType = 'bank');
+              if (calcPrice == '') {
+                print("I am here too 30");
+                print(double.parse(purchaseData['amount']));
+                bool calculatedAmount = await calculateAmount();
+                if (calculatedAmount) {
+                  setState(() => bodyType = 'bank');
+                }
+              } else {
+                setState(() => bodyType = 'bank');
+              }
             } else if (stage == PurchaseStage.payment &&
                 paymentOption == PaymentOption.wallet) {
+              print("I am here too 3");
               makePayment();
             } else {
+              print("I am here too 4");
               uploadImage();
             }
           }
@@ -208,151 +235,73 @@ class _FormScreenState extends State<FormScreen> {
         if (initialPage > 0) {
           initialPage--;
           setState(() => pageData = chunks[initialPage]);
+        } else if (initialPage == 0) {
+          Navigator.canPop(context)
+              ? Navigator.pop(context)
+              : Dialogs.confirmClose(context);
+          // setState(() => bodyType = BodyType.introPage);
         } else {}
         // bodyType == BodyType.introPage
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
       },
-      body: Column(
-        children: [
-        /*  verticalSpace(height: 10),
-          if (widget.publicKey.toString().toLowerCase().contains('test'))
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Expanded(
-                    child:
-                        Container(height: 0.7, color: GREY.withOpacity(0.3))),
-                Container(
-                  decoration: BoxDecoration(
-                      color: Colors.amberAccent.withOpacity(0.4),
-                      borderRadius: BorderRadius.circular(5)),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 2, 12, 2),
-                    child: Text('TEST',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                            fontFamily: 'Space',
-                            color: DARK.withOpacity(0.8),
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400)),
-                  ),
+      body: Expanded(
+        child: Column(
+          children: [
+            verticalSpace(height: 15),
+            Text(productName,
+                textAlign: TextAlign.center,
+                style: GoogleFonts.spaceGrotesk(
+                    fontSize: 15, fontWeight: FontWeight.w700)),
+            verticalSpace(height: 25),
+            Container(
+              decoration: BoxDecoration(
+                  color: GREEN.withOpacity(0.05),
+                  borderRadius: BorderRadius.circular(3)),
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 10),
+                child: Row(
+                  children: [
+                    const Icon(Icons.info, color: GREEN),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child:
+                          Text('Enter details as it appear on legal documents.',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 12,
+                              )),
+                    )
+                  ],
                 ),
-                Expanded(
-                    child:
-                        Container(height: 0.7, color: GREY.withOpacity(0.3))),
-              ],
-            ),*/
-
-          verticalSpace(height: 15),
-          Text(productName,
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                  fontFamily: 'Space',
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700)),
-          verticalSpace(height: 25),
-          Container(
-            decoration: BoxDecoration(
-                color: GREEN.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(3)),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-              child: Row(
-                children: const [
-                  Icon(Icons.info, color: GREEN),
-                  SizedBox(width: 15),
-                  Expanded(
-                    child:
-                        Text('Enter details as it appear on legal documents.',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontFamily: 'Space',
-                            )),
-                  )
-                ],
               ),
             ),
-          ),
-          smallVerticalSpace(),
-          Align(
-              alignment: Alignment.topRight,
-              child: getProductName(provider.toUpperCase())),
-          verticalSpace(),
-          productDetail == null
-              ? const Center(child: CircularProgressIndicator.adaptive())
-              : forms == null
-                  ? const Center(child: CircularProgressIndicator.adaptive())
-                  : Form(
-                      key: _formKey,
-                      child: ListView.separated(
-                          physics: const NeverScrollableScrollPhysics(),
-                          separatorBuilder: (c, i) => smallVerticalSpace(),
-                          itemCount: 1,
-                          shrinkWrap: true,
-                          itemBuilder: (c, i) {
-                            return form(pageData);
-                          }),
-                    ),
-          if (pageData.length < 3) verticalSpace(height: height(context) * 0.1),
-
-          // Padding(
-          //   padding: const EdgeInsets.symmetric(vertical: 15.0),
-          //   child: button(
-          //       text: 'Get Covered',
-          //       onTap: () async {
-          //         FocusScope.of(context).unfocus();
-          //         if (_formKey.currentState!.validate()) {
-          //           if (initialPage < (chunks.length - 1)) {
-          //             initialPage++;
-          //             setState(() => pageData = chunks[initialPage]);
-          //           } else {
-          //             if (stage == PurchaseStage.payment &&
-          //                 paymentOption == PaymentOption.gateway) {
-          //               setState(() => bodyType = 'bank');
-          //             } else if (stage == PurchaseStage.payment &&
-          //                 paymentOption == PaymentOption.wallet) {
-          //               makePayment();
-          //             } else {
-          //               uploadImage();
-          //             }
-          //           }
-          //         }
-          //       }),
-          // ),
-          // Image.asset(myCover,
-          //     width: 170, fit: BoxFit.fitWidth, package: 'mca_official_flutter_sdk'),
-        ],
+            smallVerticalSpace(),
+            Align(
+                alignment: Alignment.topRight,
+                child: getProductName(provider.toUpperCase())),
+            verticalSpace(),
+            productDetail == null
+                ? const Center(child: CircularProgressIndicator.adaptive())
+                : forms == null
+                    ? const Center(child: CircularProgressIndicator.adaptive())
+                    : Form(
+                        key: _formKey,
+                        child: ListView.separated(
+                            physics: const NeverScrollableScrollPhysics(),
+                            separatorBuilder: (c, i) => smallVerticalSpace(),
+                            itemCount: 1,
+                            shrinkWrap: true,
+                            itemBuilder: (c, i) {
+                              return form(pageData);
+                            }),
+                      ),
+            if (pageData.length < 3)
+              verticalSpace(height: height(context) * 0.1),
+          ],
+        ),
       ),
     );
-
-    //   Padding(
-    //   padding: const EdgeInsets.fromLTRB(10, 0, 10, 0),
-    //   child: Column(
-    //     children: [
-    //       const SizedBox(height: 10),
-    //
-    //       Row(
-    //         mainAxisAlignment: MainAxisAlignment.center,
-    //         children: [
-    //           logo == ''
-    //               ? Image.asset(mca, height: 30, package: 'mca_official_flutter_sdk')
-    //               : Image.network(
-    //             logo,
-    //             height: 30,
-    //           ),
-    //         ],
-    //       ),
-    //       const SizedBox(height: 10),
-    //
-    //
-    //
-    //       const SizedBox(height: 10),
-    //       verticalSpace(),
-    //     ],
-    //   ),
-    // );
   }
 
   form(data) {
@@ -367,7 +316,8 @@ class _FormScreenState extends State<FormScreen> {
           purchaseData['amount'] = price;
           purchaseData['vehicle_registration_number'] = 'AKD91HR';
           final controller = _getControllerOf(item['name'].toString(),
-              initValue: getInitialValue(item['label'].toString()));
+              initValue: getInitialValue(
+                  item['label'].toString(), item['name'].toString()));
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -376,17 +326,28 @@ class _FormScreenState extends State<FormScreen> {
               InkWell(
                 onTap: () async {
                   if (item['data_url'].toString() != 'null') {
-                    pickItem(
-                        await getListData(item['data_url'],
-                            make: make, state: state),
-                        item['label'], onSelect: (value) {
-                      Navigator.pop(context);
-                      controller.text = value.toString();
-                      purchaseData[item['name']] = controller.text;
-                      if (item['name'].contains('make')) {
-                        make = controller.text;
-                      }
-                    });
+                    FocusScope.of(context).unfocus();
+                    if (!isPickerLoading) {
+                      setState(() {
+                        isPickerLoading = true;
+                      });
+                      pickItem(
+                          await getListData(item['data_url'],
+                              make: make, state: state),
+                          item['label'], onSelect: (value) {
+                        Navigator.pop(context);
+                        controller.text = value.toString();
+                        purchaseData[item['name']] = controller.text;
+                        if (item['name'].contains('make')) {
+                          make = controller.text;
+                        }
+                        // _formKey.currentState!..fields[];
+                      });
+
+                      setState(() {
+                        isPickerLoading = false;
+                      });
+                    }
                   } else if (item['name'].toString().contains('is_full_year')) {
                     var list = ['Full year', 'Half year'];
                     pickItem(list, item['label'], onSelect: (value) {
@@ -417,23 +378,32 @@ class _FormScreenState extends State<FormScreen> {
                         setState(() {
                           controller.text = newDate.toString().substring(0, 10);
                           purchaseData[item['name']] = controller.text;
+
+                          _formKey.currentState!.validate();
                         });
                       },
                     ));
                   } else if (item['label']
-                      .toString()
-                      .toLowerCase()
-                      .contains('image')) {
+                          .toString()
+                          .toLowerCase()
+                          .contains('image') ||
+                      item['input_type'] == "file") {
                     var selectedImage = await openGallery();
                     if (selectedImage != null) {
                       setState(() {
                         _image = selectedImage;
                         controller.text = _image!.path.toString();
+                        print(_image?.path);
+                        Map<String, File?> selectedImagemap = {
+                          item['name']: selectedImage
+                        };
+                        imageList.add(selectedImagemap);
+                        print(imageList);
                       });
                     }
                   }
                 },
-
+                //HERER
                 // {id: 94fda736-7721-4470-9ba9-c3047a803a11, product_id: 0386fe30-a3be-4ff2-a64a-048d2c99504b,
                 // form_field_id: 1, description: Items in your home that want to insure, name: home_items,
                 // label: Home items, position: 17, full_description: Items in your home that want to insure,
@@ -443,27 +413,70 @@ class _FormScreenState extends State<FormScreen> {
                 // form_field: {id: 1, name: Input, label: Input form field, created_at: 2022-07-28T17:15:53.581Z, updated_at: 2022-07-28T17:15:53.581Z}}
 
                 child: item['data_type'] == 'array'
-                    ? buildContentForm(context, item)
+                    ? InkWell(
+                        onTap: () => _showBottomSheet(context, item),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 10, 0, 12),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                                vertical: 15.0, horizontal: 15.0),
+                            decoration: BoxDecoration(
+                              color: LIGHT_GREY,
+                              border: Border.all(
+                                  color: GREY.withOpacity(0.6), width: 0.3),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: Text(
+                                    globalItemPair.isEmpty
+                                        ? item['description']
+                                        : "${globalItemPair.length} item(s) selected",
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      color: DARK,
+                                      fontFamily: 'Space',
+                                    ),
+                                  ),
+                                ),
+                                const Icon(
+                                  Icons.add_circle,
+                                  color: PRIMARY,
+                                )
+                              ],
+                            ),
+                          ),
+                        ),
+                      )
                     : InputFormField(
                         controller: controller,
                         onChanged: (value) {
-                          print(item);
-                          if (item['name'].toString().contains('cost') ||
-                              item['name'] == 'vehicle_value' ||
-                              item['name'] == 'vehicle_cost' ||
-                              item['name'] == 'units' ||
-                              item['name'] == 'stock_amount' ||
-                              item['name'] == 'payment_plan') {
+                          print((item['name'].toString().toLowerCase() ==
+                                  "email" &&
+                              email.isNotEmpty &&
+                              !Global.isContactFieldsEditable));
+                          print(12);
+
+                          print(
+                              item['name'].toString().toLowerCase() == "email");
+                          print(12);
+                          print(email.isNotEmpty);
+                          print(1207);
+                          print(Global.isContactFieldsEditable);
+
+                          if (item['data_type'] == 'number') {
                             if (controller.text.isNotEmpty) {
-                              purchaseData[item['name']] =
-                                  int.parse(controller.text);
+                              purchaseData[item['name']] = int.parse(
+                                  controller.text.replaceAll(",", ""));
                             }
+                          } else {
+                            purchaseData[item['name']] =
+                                controller.text.toString();
                           }
 
                           if (item['name'].contains('state')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-
                             state = controller.text;
                           }
                           if (item['name'] == 'registration_number') {
@@ -471,176 +484,96 @@ class _FormScreenState extends State<FormScreen> {
                                 controller.text.toString();
                           }
 
-                          if (item['name']
-                              .toString()
-                              .toLowerCase()
-                              .contains('address')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-
-                          if (item['name'].toString().contains('email')) {
+                          if (item['name'].toString() == 'email') {
                             email = controller.text;
                           }
                           if (item['name'].toString().contains('first_name')) {
                             firstName = controller.text;
                           }
-                          if (item['name'].toString().contains('phone') &&
-                              !item['name']
-                                  .toString()
-                                  .contains('next_of_kin_phone')) {
+                          if (item['name'].toString() == 'phone_number') {
                             phone = controller.text;
                           }
                           if (item['name'].toString().contains('last_name')) {
                             lastName = controller.text;
                           }
-
-                          if (item['name'].toString().contains('other_names')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('nature_of_business')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('shop_type')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                                  .toString()
-                                  .contains('next_of_kin_name') ||
-                              item['name']
-                                  .toString()
-                                  .contains('next_of_kin_phone') ||
-                              item['name']
-                                  .toString()
-                                  .contains('next_of_kin_address')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('marital_status')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('occupation')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('town')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('tenancy')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('description')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('pre_ownership')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name'].toString().contains('owner_title')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('chassis_number')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
-                          if (item['name']
-                              .toString()
-                              .contains('engine_number')) {
-                            purchaseData[item['name']] =
-                                controller.text.toString();
-                          }
                         },
-                        keyboardType:
-                            (item['label'].toString().toLowerCase().contains('phone') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('cost') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('price') ||
-                                    item['data_type']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('number') ||
-                                    item['name']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('value') ||
-                                    item['label']
-                                        .toString()
-                                        .toLowerCase()
-                                        .contains('bvn'))
-                                ? TextInputType.phone
-                                : TextInputType.text,
+                        keyboardType: (item['label'].toString().toLowerCase().contains('phone') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('cost') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('price') ||
+                                item['data_type']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('number') ||
+                                item['name']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('value') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('bvn'))
+                            ? TextInputType.phone
+                            : TextInputType.text,
                         textCapitalization: item['label']
                                 .toString()
                                 .toLowerCase()
                                 .contains('email')
                             ? TextCapitalization.none
-                            : item['label']
+                            :
+                            //  item['label']
+                            //         .toString()
+                            //         .toLowerCase()
+                            //         .contains('number')
+                            //     ? TextCapitalization.characters
+                            //     :
+                            TextCapitalization.sentences,
+                        inputFormatters: item['label'].toString().toLowerCase().contains('value') ||
+                                item['label']
                                     .toString()
                                     .toLowerCase()
-                                    .contains('number')
-                                ? TextCapitalization.characters
-                                : TextCapitalization.sentences,
-                        inputFormatters: <TextInputFormatter>[
-                          (item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('phone') ||
-                                  item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('cost') ||
-                                  item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('price') ||
-                                  item['label']
-                                      .toString()
-                                      .toLowerCase()
-                                      .contains('bvn'))
-                              ? FilteringTextInputFormatter.digitsOnly
-                              : FilteringTextInputFormatter.deny(
-                                  RegExp(r'[/\\]'))
-                        ],
+                                    .contains('cost') ||
+                                item['label']
+                                    .toString()
+                                    .toLowerCase()
+                                    .contains('price')
+                            ? <TextInputFormatter>[
+                                FilteringTextInputFormatter.allow(
+                                    RegExp(r'[0-9]')),
+                                ThousandsSeparatorInputFormatter(),
+                              ]
+                            : <TextInputFormatter>[
+                                (item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('phone') ||
+                                        item['label']
+                                            .toString()
+                                            .toLowerCase()
+                                            .contains('bvn'))
+                                    ? FilteringTextInputFormatter.digitsOnly
+                                    : FilteringTextInputFormatter.deny(
+                                        RegExp(r'[/\\]'))
+                              ],
                         enabled: item['data_url'].toString() != 'null' ||
-                                item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('date') ||
-                                item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('image') ||
-                                item['label']
-                                    .toString()
-                                    .toLowerCase()
-                                    .contains('product') ||
+                                item['label'].toString().toLowerCase().contains('date') ||
+                                item['label'].toString().toLowerCase().contains('image') ||
+                                item['input_type'] == "file" ||
+                                item['label'].toString().toLowerCase().contains('product') ||
                                 item['name'].toString().toLowerCase().contains('is_full_year') ||
-                                item['name'].toString().toLowerCase().contains('stock_keeping')
+                                item['name'].toString().toLowerCase().contains('stock_keeping') ||
+                                (item['name'].toString().toLowerCase() == "email" && email.isNotEmpty && (Global.isContactFieldsEditable == false)) ||
+                                (item['name'].toString().toLowerCase() == "phone_number" && phone.isNotEmpty && (Global.isContactFieldsEditable == false))
                             ? false
                             : true,
+                        isTextDimmed: (item['name'].toString().toLowerCase() == "email" && email.isNotEmpty && (Global.isContactFieldsEditable == false)) || (item['name'].toString().toLowerCase() == "phone_number" && phone.isNotEmpty && (Global.isContactFieldsEditable == false)),
                         hint: item['description'],
-                        prefixIcon: item['label'].toString().toLowerCase().contains('image')
+                        prefixIcon: item['label'].toString().toLowerCase().contains('image') || item['input_type'] == "file"
                             ? Row(
                                 mainAxisAlignment: MainAxisAlignment.start,
                                 mainAxisSize: MainAxisSize.min,
@@ -670,17 +603,41 @@ class _FormScreenState extends State<FormScreen> {
                                 : null,
                         validator: (value) {
                           var label = item['label'].toString().toLowerCase();
-                          if (label.contains('phone')) {
-                            return PhoneNumberValidator.validate(value,
+                          var dataType =
+                              item['data_type'].toString().toLowerCase();
+
+                          if (item['input_type'].toString().toLowerCase() ==
+                              "date") {
+                            return DateValidator.validate(value, item['label'],
+                                item["min_max_constraint"], item["min"],
                                 error: item['errorMsg']);
-                          } else if (label.contains('email')) {
-                            return EmailValidator.validate(value,
-                                error: item['errorMsg']);
-                          } else if (label.contains('bvn')) {
-                            return BVNValidator.validate(value,
-                                error: item['errorMsg']);
+                          } else if ((item['data_url'].toString() != 'null' ||
+                              item['name']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('is_full_year') ||
+                              item['name']
+                                  .toString()
+                                  .toLowerCase()
+                                  .contains('stock_keeping'))) {
+                            return null;
+                            // return DropdownValidator.validate(
+                            //     value,
+                            //     item['label'],
+                            //     item["min_max_constraint"],
+                            //     item["min"],
+                            //     error: item['errorMsg']);
+                          } else if (item['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('image')) {
+                            return null;
                           } else {
-                            return FieldValidator.validate(value,
+                            return CustomValidator.validate(
+                                value,
+                                item['label'],
+                                item["min_max_constraint"],
+                                item["min"],
                                 error: item['errorMsg']);
                           }
                         }),
@@ -691,7 +648,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   payment() {
-    return FormBodyScaffold(
+    return PaymentBodyScaffold(
       logo: logo,
       text: 'Get Covered',
       buttonAction: () {
@@ -713,245 +670,343 @@ class _FormScreenState extends State<FormScreen> {
 
         // setState(() => bodyType = BodyType.detail);
       },
-      backAction: () {
-        bodyType = 'form';
-        // initialPage--;
-        // pageData = chunks[initialPage];
-        setState(() {});
-        // bodyType == BodyType.introPage
-        //     ? Dialogs.confirmClose(context)
-        //     : setState(() => bodyType = BodyType.introPage);
-      },
-      body: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          verticalSpace(),
-          Row(
-            children: [
-              Expanded(
-                  child: Text(productName,
-                      textAlign: TextAlign.end,
-                      style: const TextStyle(
-                          fontSize: 15, fontWeight: FontWeight.w700)))
-            ],
-          ),
-          smallVerticalSpace(),
-          Container(
-            decoration: BoxDecoration(
-                color: GREEN.withOpacity(0.05),
-                borderRadius: BorderRadius.circular(3)),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(email, style: const TextStyle(fontSize: 12)),
-                  if (calcPrice != '')
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text: 'NGN$calcPrice',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
-                ],
-              ),
-            ),
-          ),
-          verticalSpace(),
-          paymentMethod == 'ussd' && enabledUssd
-              ? Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    !isBankSelected
-                        ? ussdProvidersCard()
-                        : Column(
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              InkWell(
-                                onTap: () =>
-                                    setState(() => isBankSelected = false),
-                                child: const InputFormField(
-                                    enabled: false,
-                                    hint: 'Search for bank of your choice',
-                                    prefixIcon: Icon(Icons.search),
-                                    textCapitalization:
-                                        TextCapitalization.sentences,
-                                    keyboardType: TextInputType.text),
+      backAction: paymentMethod == 'ussd' && enabledUssd
+          ? isBankSelected
+              ? () => setState(() => isBankSelected = false)
+              : () {
+                  setState(() {
+                    enabledUssd = false;
+                    isBankSelected = false;
+                  });
+                }
+          : () {
+              bodyType = 'form';
+              // initialPage--;
+              // pageData = chunks[initialPage];
+              setState(() {});
+              // bodyType == BodyType.introPage
+              //     ? Dialogs.confirmClose(context)
+              //     : setState(() => bodyType = BodyType.introPage);
+            },
+      body: Expanded(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                verticalSpacer(5),
+
+                smallVerticalSpace(),
+                Container(
+                  decoration: BoxDecoration(
+                      color: GREEN.withOpacity(0.05),
+                      borderRadius: BorderRadius.circular(3)),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                        vertical: 10.0, horizontal: 15),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                                child: Text(productName,
+                                    textAlign: TextAlign.end,
+                                    style: GoogleFonts.spaceGrotesk(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w700)))
+                          ],
+                        ),
+                        verticalSpacer(4),
+                        Text(email, style: const TextStyle(fontSize: 12)),
+                        if (calcPrice != '')
+                          RichText(
+                              text: TextSpan(children: [
+                            const TextSpan(
+                                text: 'Pay ',
+                                style: TextStyle(fontSize: 12, color: DARK)),
+                            TextSpan(
+                                text:
+                                    'NGN ${ConstantString.formatter.format(double.parse(calcPrice))}',
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: PRIMARY))
+                          ])),
+                        if (calcPrice == '')
+                          Padding(
+                            padding: const EdgeInsets.only(top: 2.0),
+                            child: RichText(
+                                text: TextSpan(children: [
+                              TextSpan(
+                                text: 'Amount Due  ',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  color: CustomColors.blackColor,
+                                ),
                               ),
-                              const SizedBox(height: 5),
-                              const Text('You want to make payment with USSD',
-                                  style: TextStyle(
-                                      fontSize: 13,
-                                      color: PRIMARY,
-                                      fontWeight: FontWeight.w600)),
-                              verticalSpace(),
-                              const Divider(),
-                              verticalSpace(),
-                              Text(bankName,
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                      fontSize: 23,
-                                      color: DARK,
-                                      fontWeight: FontWeight.w600)),
-                              Text('CODE - $bankCode',
-                                  style: const TextStyle(
-                                      fontSize: 20,
-                                      color: DARK,
-                                      fontWeight: FontWeight.w400)),
-                              verticalSpace(),
-                            ],
-                          ),
-                  ],
-                )
-              : Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    const Text('Select Payment method',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        )),
-                    const SizedBox(height: 5),
-                    const Text('Choose an option to proceed',
-                        style: TextStyle(fontSize: 12, color: DARK)),
-                    verticalSpace(),
-                    paymentMethodCard(transfer, 'Transfer',
-                        'Send to a bank Account', 'bank transfer'),
-                    verticalSpace(),
-                    paymentMethodCard(ussd, 'USSD',
-                        'Select any bank to generate USSD', 'ussd'),
-                  ],
+                              TextSpan(
+                                  text: calcPrice == ''
+                                      ? productDetail['data']['productDetails']
+                                              [0]['is_dynamic_pricing']
+                                          ? '$price%'
+                                          : '₦ ${ConstantString.formatter.format(double.parse(price))}'
+                                      : '₦ ${ConstantString.formatter.format(double.parse(calcPrice))}',
+                                  style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: CustomColors.success600Color))
+                            ])),
+                          )
+                      ],
+                    ),
+                  ),
                 ),
-          SizedBox(height: height(context) * 0.1),
-          Center(
-            child: getProductName(provider.toUpperCase()),
-          ),
-        ],
+                verticalSpacer(30),
+                paymentMethod == 'ussd' && enabledUssd
+                    ? Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          !isBankSelected
+                              ? ussdProvidersCard()
+                              : Column(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    InkWell(
+                                      onTap: () => setState(
+                                          () => isBankSelected = false),
+                                      child: const InputFormField(
+                                          enabled: false,
+                                          hint:
+                                              'Search for bank of your choice',
+                                          prefixIcon: Icon(Icons.search),
+                                          textCapitalization:
+                                              TextCapitalization.sentences,
+                                          keyboardType: TextInputType.text),
+                                    ),
+                                    const SizedBox(height: 5),
+                                    Text('You want to make payment with USSD',
+                                        style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 13,
+                                            color: PRIMARY,
+                                            fontWeight: FontWeight.w600)),
+                                    verticalSpace(),
+                                    const Divider(),
+                                    verticalSpace(),
+                                    Text(bankName,
+                                        textAlign: TextAlign.center,
+                                        style: const TextStyle(
+                                            fontSize: 23,
+                                            color: DARK,
+                                            fontWeight: FontWeight.w600)),
+                                    Text('CODE - $bankCode',
+                                        style: GoogleFonts.spaceGrotesk(
+                                            fontSize: 20,
+                                            color: DARK,
+                                            fontWeight: FontWeight.w400)),
+                                    verticalSpace(),
+                                  ],
+                                ),
+                        ],
+                      )
+                    : Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text('Select Payment method',
+                              style: GoogleFonts.spaceGrotesk(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                              )),
+                          const SizedBox(height: 3),
+                          Text('Choose an option to proceed',
+                              style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 12, color: DARK)),
+                          verticalSpacer(30),
+                          paymentMethodCard(transfer, 'Transfer',
+                              'Send to a bank Account', 'bank transfer'),
+                          verticalSpace(),
+                          paymentMethodCard(ussd, 'USSD',
+                              'Select any bank to generate USSD', 'ussd'),
+                        ],
+                      ),
+                // SizedBox(height: height(context) * 0.1),
+              ],
+            ),
+            Center(
+              child: getProductName(provider.toUpperCase()),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   bankDetailCard() {
-    return FormBodyScaffold(
+    return PaymentBodyScaffold(
       logo: logo,
       text: 'I have sent the money',
       buttonAction: () {
         verifyPayment(true);
       },
       backAction: () {
-        bodyType = 'form';
+        //TODO HERE
+        setState(() => bodyType = 'bank');
         // initialPage--;
         // pageData = chunks[initialPage];
-        setState(() {});
+        // setState(() {});
         // bodyType == BodyType.introPage
         //     ? Dialogs.confirmClose(context)
         //     : setState(() => bodyType = BodyType.introPage);
       },
-      body: Container(
-        decoration:
-            BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(5)),
-        padding: const EdgeInsets.fromLTRB(15, 10, 15, 10),
+      body: Expanded(
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            verticalSpace(),
-            Row(
-              children: [
-                Expanded(
-                    child: Text(productName,
-                        textAlign: TextAlign.end,
-                        style: const TextStyle(
-                            fontSize: 15, fontWeight: FontWeight.w700)))
-              ],
-            ),
-            smallVerticalSpace(),
-            Container(
-              decoration: BoxDecoration(
-                  color: GREEN.withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(3)),
-              child: Padding(
-                padding:
-                    const EdgeInsets.symmetric(vertical: 8.0, horizontal: 15),
+            Expanded(
+              child: Container(
+                decoration: BoxDecoration(
+                    color: WHITE, borderRadius: BorderRadius.circular(5)),
+                padding: const EdgeInsets.fromLTRB(0, 10, 0, 10),
                 child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text(email, style: const TextStyle(fontSize: 12)),
-                    RichText(
-                        text: TextSpan(children: [
-                      const TextSpan(
-                          text: 'Pay ',
-                          style: TextStyle(fontSize: 12, color: DARK)),
-                      TextSpan(
-                          text: calcPrice == ''
-                              ? productDetail['data']['productDetails'][0]
-                                      ['is_dynamic_pricing']
-                                  ? '$price%'
-                                  : 'NGN$price'
-                              : 'NGN$calcPrice',
-                          style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: PRIMARY))
-                    ]))
+                    // verticalSpace(),
+                    Row(
+                      children: [
+                        Expanded(
+                            child: Text(productName,
+                                textAlign: TextAlign.end,
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 15, fontWeight: FontWeight.w700)))
+                      ],
+                    ),
+                    smallVerticalSpace(),
+                    Container(
+                      decoration: BoxDecoration(
+                          color: CustomColors.success25Color,
+                          borderRadius: BorderRadius.circular(3)),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                            vertical: 8.0, horizontal: 15),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.end,
+                          children: [
+                            Text(email,
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  color: CustomColors.hintTextColor,
+                                )),
+                            verticalSpacer(5),
+                            RichText(
+                                text: TextSpan(children: [
+                              TextSpan(
+                                text: 'Pay  ',
+                                style: GoogleFonts.spaceGrotesk(
+                                  fontSize: 14,
+                                  color: CustomColors.blackColor,
+                                ),
+                              ),
+                              TextSpan(
+                                  text: calcPrice == ''
+                                      ? productDetail['data']['productDetails']
+                                              [0]['is_dynamic_pricing']
+                                          ? '$price%'
+                                          : '₦ ${ConstantString.formatter.format(double.parse(price))}'
+                                      : '₦ ${ConstantString.formatter.format(double.parse(calcPrice))}',
+                                  style: GoogleFonts.spaceGrotesk(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                      color: CustomColors.success600Color))
+                            ]))
+                          ],
+                        ),
+                      ),
+                    ),
+
+                    verticalSpace(),
+                    Expanded(
+                      child: Container(
+                        color: CustomColors.gray50Color,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 20),
+                            Text('Send to the Account No. below',
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 13,
+                                    color: PRIMARY,
+                                    fontWeight: FontWeight.w700)),
+                            verticalSpace(),
+                            const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 20.0),
+                              child: Divider(
+                                color: CustomColors.searchBorderColor,
+                              ),
+                            ),
+                            verticalSpace(),
+                            Text(bankName,
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 25,
+                                    color: DARK,
+                                    fontWeight: FontWeight.w700)),
+                            Text('MyCover.ai',
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 25,
+                                    color: DARK,
+                                    fontWeight: FontWeight.w600)),
+                            verticalSpace(height: 10.0),
+                            Text(accountNumber,
+                                style: GoogleFonts.spaceGrotesk(
+                                    fontSize: 28,
+                                    color: DARK,
+                                    fontWeight: FontWeight.w700)),
+                            verticalSpace(height: 10.0),
+                            GestureDetector(
+                              onTap: () async {
+                                await Clipboard.setData(
+                                    ClipboardData(text: accountNumber));
+                                ToastNotification.show(
+                                    context: context,
+                                    copiedText: accountNumber,
+                                    toastMessage: "Copied to clipboard!");
+                              },
+                              child: Container(
+                                height: 35,
+                                width: 35,
+                                decoration: const BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: CustomColors.bgWhiteColor,
+                                ),
+                                child: Center(
+                                    child: SvgPicture.asset(
+                                        ConstantString.copyIcon,
+                                        package: 'mca_official_flutter_sdk')),
+                              ),
+                            ),
+                            // verticalSpace(),
+                            // const Divider(),
+                          ],
+                        ),
+                      ),
+                    ),
+                    // const Divider(),
+                    // verticalSpace(),
+                    // AnimatedOpacity(
+                    //   duration: const Duration(seconds: 15),
+                    //   opacity: _opacity,
+                    //   child: Padding(
+                    //     padding: const EdgeInsets.symmetric(vertical: 20.0),
+                    //     child: button(
+                    //         text: 'I have sent the money',
+                    //         onTap: () => verifyPayment(true)),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
             ),
-            verticalSpace(),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                const SizedBox(height: 5),
-                const Text('Send to the Account No. below',
-                    style: TextStyle(
-                        fontFamily: 'Space',
-                        fontSize: 13,
-                        color: PRIMARY,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(),
-                const Divider(),
-                verticalSpace(),
-                Text(bankName,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(
-                        fontFamily: 'Space',
-                        fontSize: 25,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                const Text('MyCover.ai',
-                    style: TextStyle(
-                        fontSize: 25,
-                        color: DARK,
-                        fontWeight: FontWeight.w600)),
-                verticalSpace(height: 10.0),
-                Text(accountNumber,
-                    style: const TextStyle(
-                        fontSize: 28,
-                        color: DARK,
-                        fontWeight: FontWeight.w700)),
-                verticalSpace(),
-                const Divider(),
-              ],
-            ),
-            const Divider(),
-            verticalSpace(),
-            // AnimatedOpacity(
-            //   duration: const Duration(seconds: 15),
-            //   opacity: _opacity,
-            //   child: Padding(
-            //     padding: const EdgeInsets.symmetric(vertical: 20.0),
-            //     child: button(
-            //         text: 'I have sent the money',
-            //         onTap: () => verifyPayment(true)),
-            //   ),
-            // ),
             Center(
               child: getProductName(provider.toUpperCase()),
             ),
@@ -969,7 +1024,8 @@ class _FormScreenState extends State<FormScreen> {
         verifyPayment(true);
       },
       backAction: () {
-        bodyType = 'form';
+        // isBankSelected = false;
+        bodyType = 'bank';
         // initialPage--;
         // pageData = chunks[initialPage];
         setState(() {});
@@ -1019,7 +1075,8 @@ class _FormScreenState extends State<FormScreen> {
                                 fontSize: 12,
                                 color: DARK)),
                         TextSpan(
-                            text: 'NGN$calcPrice',
+                            text:
+                                'NGN ${ConstantString.formatter.format(double.parse(calcPrice))}',
                             style: const TextStyle(
                                 fontFamily: 'Space',
                                 fontSize: 18,
@@ -1102,7 +1159,9 @@ class _FormScreenState extends State<FormScreen> {
           child: Row(
             children: [
               Image.asset(image,
-                  height: 45, fit: BoxFit.fitWidth, package: 'mca_official_flutter_sdk'),
+                  height: 45,
+                  fit: BoxFit.fitWidth,
+                  package: 'mca_official_flutter_sdk'),
               const SizedBox(width: 15),
               Expanded(
                 child: Column(
@@ -1138,7 +1197,7 @@ class _FormScreenState extends State<FormScreen> {
     );
   }
 
-  final Map<String, TextEditingController> _controllerMap = Map();
+  final Map<String, TextEditingController> _controllerMap = {};
 
   TextEditingController _getControllerOf(String name, {initValue}) {
     var controller = _controllerMap[name];
@@ -1209,11 +1268,12 @@ class _FormScreenState extends State<FormScreen> {
   bool isBankSelected = false;
 
   ussdProvidersCard() {
+    //TODO HERE
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 22),
       decoration:
           BoxDecoration(color: WHITE, borderRadius: BorderRadius.circular(15)),
-      height: MediaQuery.of(context).size.height * 0.56,
+      height: MediaQuery.of(context).size.height * 0.45,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -1229,7 +1289,7 @@ class _FormScreenState extends State<FormScreen> {
               textCapitalization: TextCapitalization.sentences,
               suffixIcon: InkWell(
                   onTap: () => setState(() => isBankSelected = true),
-                  child: Icon(Icons.close)),
+                  child: const Icon(Icons.close)),
               keyboardType: TextInputType.text),
           Expanded(
               child: ListView.builder(
@@ -1310,8 +1370,8 @@ class _FormScreenState extends State<FormScreen> {
         },
       );
 
-  getInitialValue(String title) {
-    if (title.toLowerCase().contains('email')) {
+  getInitialValue(String title, String name) {
+    if (name.toLowerCase() == 'email') {
       return email;
     } else if (title.toLowerCase().contains('product')) {
       return productId;
@@ -1321,7 +1381,7 @@ class _FormScreenState extends State<FormScreen> {
     } else if (title.toLowerCase().contains('last') &&
         title.toLowerCase().contains('name')) {
       return lastName;
-    } else if (title.toLowerCase().contains('phone')) {
+    } else if (name.toLowerCase() == 'phone_number') {
       return phone;
     } else {
       return '';
@@ -1352,7 +1412,7 @@ class _FormScreenState extends State<FormScreen> {
       var paymentList = forms.where((i) => i['show_first'] == true).toList();
       var purchaseList = forms.where((i) => i['show_first'] != true).toList();
       List lst = stage == PurchaseStage.payment ? paymentList : purchaseList;
-      int chunkSize = 4;
+      int chunkSize = 3;
       for (var i = 0; i < lst.length; i += chunkSize) {
         chunks.add(lst.sublist(
             i, i + chunkSize > lst.length ? lst.length : i + chunkSize));
@@ -1367,67 +1427,349 @@ class _FormScreenState extends State<FormScreen> {
   final contentTitleController = <TextEditingController>[];
   final contentDescController = <TextEditingController>[];
 
-  Widget contentFormCard() {
-    var _contentTitleController = TextEditingController();
-    contentTitleController.add(_contentTitleController);
-    var _contentDescController = TextEditingController();
-    contentDescController.add(_contentDescController);
+  List<Map<String, dynamic>> homeContent = [];
+  Map<String, dynamic> globalItem = {};
 
-    var item = {
-      'name': _contentTitleController.text,
-      'amount': _contentDescController.text
-    };
+  Map<String, TextEditingController> _itemPairControllerMap = {};
 
-    homeContent.add(item);
-    productDetail['home_items'] = homeContent;
-    return Row(
-      children: [
-        Expanded(
-          child: InputFormField(
-            label: "Name",
-            controller: _contentTitleController,
-            onChanged: (v) {
-              item['name'] = _contentTitleController.text;
-            },
-            // validator: (value) => FieldValidator.validate(value),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Expanded(
-          child: InputFormField(
-            label: "Amount",
-            controller: _contentDescController,
-            keyboardType: TextInputType.number,
-            inputFormatters: <TextInputFormatter>[
-              FilteringTextInputFormatter.digitsOnly
+  TextEditingController _getItemPairControllerOf(String name, {initValue}) {
+    var controller = _itemPairControllerMap[name];
+    if (controller == null) {
+      controller = TextEditingController(text: initValue ?? '');
+      _itemPairControllerMap[name] = controller;
+    }
+    return controller;
+  }
+
+  Map<String, dynamic> itemPair = {};
+
+  Widget contentFormCard(formItem) {
+    Map<String, TextEditingController> controllers = {};
+
+    globalItem = itemPair;
+
+    return Column(
+      children: formItem['child_data'].map<Widget>((field) {
+        String key = field['name'];
+        String label = field['label'];
+        String dataType = field['data_type'];
+
+        final controller = _getItemPairControllerOf(
+          field['name'].toString(),
+        );
+
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 15.0, vertical: 5),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              textBoxTitle(field['label']),
+              InkWell(
+                onTap: () async {
+                  if (field['data_url'].toString() != 'null') {
+                    FocusScope.of(context).unfocus();
+                    if (!isPickerLoading) {
+                      setState(() {
+                        isPickerLoading = true;
+                      });
+                      pickItem(
+                          await getListData(field['data_url'],
+                              make: make, state: state),
+                          field['label'], onSelect: (value) {
+                        Navigator.pop(context);
+                        controller.text = value.toString();
+                        itemPair[key] = controller.text;
+                      });
+
+                      setState(() {
+                        isPickerLoading = false;
+                      });
+                    }
+                  } else if (field['name']
+                      .toString()
+                      .contains('is_full_year')) {
+                    var list = ['Full year', 'Half year'];
+                    pickItem(list, field['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      itemPair[key] =
+                          controller.text == 'Full year' ? true : false;
+                    });
+                  } else if (field['name']
+                      .toString()
+                      .contains('stock_keeping')) {
+                    var list = ['Yes', 'No'];
+                    pickItem(list, field['label'], onSelect: (value) {
+                      Navigator.pop(context);
+                      controller.text = value.toString();
+                      itemPair[key] =
+                          controller.text == 'Full year' ? true : false;
+                    });
+                  } else if (field['label']
+                      .toString()
+                      .toLowerCase()
+                      .contains('date')) {
+                    _showDialog(CupertinoDatePicker(
+                      initialDateTime: DateTime.now(),
+                      mode: CupertinoDatePickerMode.date,
+                      use24hFormat: true,
+                      onDateTimeChanged: (DateTime newDate) {
+                        setState(() {
+                          controller.text = newDate.toString().substring(0, 10);
+                          itemPair[key] = controller.text;
+
+                          _formKey.currentState!.validate();
+                        });
+                      },
+                    ));
+                  } else if (field['label']
+                          .toString()
+                          .toLowerCase()
+                          .contains('image') ||
+                      field['input_type'] == "file") {
+                    var selectedImage = await openGallery();
+                    if (selectedImage != null) {
+                      setState(() {
+                        controller.text = selectedImage!.path.toString();
+                      });
+                      String? uploadedUrl =
+                          await uploadSingleImage(key, selectedImage);
+                      if (uploadedUrl != null) {
+                        setState(() {
+                          itemPair[key] = uploadedUrl;
+                        });
+                      }
+                    }
+                  }
+                },
+                child: InputFormField(
+                  controller: controller,
+                  onChanged: (value) {
+                    if (field['data_type'] == 'number') {
+                      if (controller.text.isNotEmpty) {
+                        itemPair[key] =
+                            int.parse(controller.text.replaceAll(",", ""));
+                        print(itemPair);
+                      }
+                    } else {
+                      itemPair[key] = controller.text.toString();
+                    }
+                  },
+                  keyboardType: (field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('phone') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('cost') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('price') ||
+                          field['data_type']
+                              .toString()
+                              .toLowerCase()
+                              .contains('number') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('value') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('bvn'))
+                      ? TextInputType.phone
+                      : TextInputType.text,
+                  textCapitalization:
+                      field['label'].toString().toLowerCase().contains('email')
+                          ? TextCapitalization.none
+                          : TextCapitalization.sentences,
+                  inputFormatters: field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('value') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('cost') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('price')
+                      ? <TextInputFormatter>[
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9]')),
+                          ThousandsSeparatorInputFormatter(),
+                        ]
+                      : <TextInputFormatter>[
+                          (field['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('phone') ||
+                                  field['label']
+                                      .toString()
+                                      .toLowerCase()
+                                      .contains('bvn'))
+                              ? FilteringTextInputFormatter.digitsOnly
+                              : FilteringTextInputFormatter.deny(
+                                  RegExp(r'[/\\]'))
+                        ],
+                  enabled: field['data_url'].toString() != 'null' ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('date') ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('image') ||
+                          field['input_type'] == "file" ||
+                          field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('product') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('is_full_year') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('stock_keeping')
+                      ? false
+                      : true,
+                  hint: field['description'],
+                  prefixIcon: field['label']
+                              .toString()
+                              .toLowerCase()
+                              .contains('image') ||
+                          field['input_type'] == "file"
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.start,
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const SizedBox(width: 10),
+                            Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(3),
+                                    border: Border.all(color: GREY)),
+                                child: const Padding(
+                                  padding: EdgeInsets.fromLTRB(10, 5, 10, 5),
+                                  child: Text(
+                                    'Select Image',
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                )),
+                            const SizedBox(width: 10),
+                          ],
+                        )
+                      : null,
+                  suffixIcon: (field['data_url'].toString() != 'null' ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('is_full_year') ||
+                          field['name']
+                              .toString()
+                              .toLowerCase()
+                              .contains('stock_keeping'))
+                      ? const Icon(Icons.expand_more)
+                      : field['label'].toString().toLowerCase().contains('date')
+                          ? const Icon(Icons.event_note)
+                          : null,
+                ),
+              ),
             ],
-            onChanged: (v) {
-              item['amount'] = _contentDescController.text;
-            },
-            // validator: (value) => FieldValidator.validate(value),
           ),
-        ),
-      ],
+        );
+      }).toList(),
     );
   }
 
-  var homeContent = [];
+  Widget buildContentForm(
+      BuildContext context, formItem, StateSetter setState) {
+    contentFormField.isEmpty
+        ? contentFormField.add(contentFormCard(formItem))
+        : null;
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10),
+      child: Column(
+        children: [
+          Stack(
+            clipBehavior: Clip.none,
+            children: [
+              Container(
+                decoration: BoxDecoration(
+                    border:
+                        Border.all(color: GREY.withOpacity(0.6), width: 0.5),
+                    borderRadius: BorderRadius.circular(10),
+                    shape: BoxShape.rectangle),
+                margin: const EdgeInsets.symmetric(vertical: 10),
+                child: Row(
+                  children: [
+                    Expanded(child: contentFormCard(formItem)),
+                    const SizedBox(width: 5),
+                  ],
+                ),
+              ),
+              Positioned(
+                  bottom: -15,
+                  right: 8,
+                  child: InkWell(
+                    onTap: () => setState(() {
+                      print(contentFormCard);
+                      var vvv = contentFormCard;
+                      if (globalItem.isNotEmpty) {
+                        homeContent.add(globalItem);
+                        // productDetail[formItem['name']] = homeContent;
+                        globalItemPair = homeContent;
+                        productDetail[formItem['name']] = globalItemPair;
+                      }
 
-  Widget buildContentForm(BuildContext context, formItem) {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-              border: Border.all(color: GREY.withOpacity(0.6), width: 0.5),
-              borderRadius: BorderRadius.circular(10),
-              shape: BoxShape.rectangle),
-          // padding: const EdgeInsets.sy(10),
-          margin: const EdgeInsets.symmetric(vertical: 10),
-          child: Scrollbar(
+                      contentFormField.add(contentFormCard(formItem));
+                      setState(() {
+                        itemPair = {};
+                        _itemPairControllerMap = {};
+                      });
+                      // Navigator.pop(context);
+                    }),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.green,
+                            borderRadius: BorderRadius.circular(3)),
+                        child: const Padding(
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 10, vertical: 10),
+                          child: Row(
+                            children: [
+                              Icon(Icons.add_circle,
+                                  size: 15, color: Colors.white),
+                              Padding(
+                                  padding: EdgeInsets.all(4.0),
+                                  child: Text(
+                                    'Add Item',
+                                    style: TextStyle(
+                                        fontSize: 9,
+                                        fontFamily: 'Space',
+                                        fontWeight: FontWeight.w400,
+                                        color: Colors.white),
+                                  )),
+                            ],
+                          ),
+                        )),
+                  )),
+            ],
+          ),
+
+          const SizedBox(
+            height: 20,
+          ),
+          // const Expanded(child: SizedBox()),
+          Expanded(
             child: ListView.builder(
               shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: contentFormField.length,
+              // physics: const NeverScrollableScrollPhysics(),
+              itemCount: globalItemPair.length,
               itemBuilder: (BuildContext context, int index) {
                 // 'home_items':[
                 //   {'name': 'Home', 'amount': 500},
@@ -1435,57 +1777,108 @@ class _FormScreenState extends State<FormScreen> {
 
                 purchaseData[formItem['name']] = homeContent;
                 return Padding(
-                  padding: const EdgeInsets.only(left: 5.0),
-                  child: Row(
-                    children: [
-                      Expanded(child: contentFormField[index]),
-                      const SizedBox(width: 5),
-                      if (contentFormField.length > 1)
+                    padding: const EdgeInsets.only(left: 5.0),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Card(
+                            margin: const EdgeInsets.all(8.0),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 0.0, vertical: 5),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children:
+                                    globalItemPair[index].entries.map((entry) {
+                                  return Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 5.0),
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            '${entry.key[0].toUpperCase()}${entry.key.substring(1)}',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
+                                                fontWeight: FontWeight.w700,
+                                                fontSize: 12),
+                                          ),
+                                          const SizedBox(
+                                            height: 5,
+                                          ),
+                                          Text(
+                                            entry.value.toString(),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 5),
                         InkWell(
                           onTap: () {
-                            contentFormField.removeAt(index);
-                            setState(() {});
+                            globalItem = {};
+                            setState(() {
+                              contentFormField.removeAt(index);
+                              globalItemPair.removeAt(index);
+                            });
                           },
                           child: const Icon(Icons.remove_circle,
                               size: 20, color: Colors.red),
                         ),
-                    ],
-                  ),
-                );
+                      ],
+                    ));
               },
             ),
           ),
-        ),
-        Positioned(
-            bottom: 0,
-            right: 8,
-            child: InkWell(
-              onTap: () =>
-                  setState(() => contentFormField.add(contentFormCard())),
-              child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.green,
-                      borderRadius: BorderRadius.circular(3)),
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(3, 1, 3, 1),
-                    child: Row(
-                      children: const [
-                        Icon(Icons.add_circle, size: 15, color: Colors.white),
-                        Padding(
-                            padding: EdgeInsets.all(4.0),
-                            child: Text(
-                              'Add Item',
-                              style: TextStyle(
-                                  fontSize: 9,
-                                  fontFamily: 'Space',
-                                  fontWeight: FontWeight.w400,
-                                  color: Colors.white),
-                            )),
-                      ],
-                    ),
-                  )),
-            )),
-      ],
+        ],
+      ),
+    );
+  }
+
+  void _showBottomSheet(BuildContext context, Map<String, dynamic> formItem) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      builder: (BuildContext context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setState) {
+            return SizedBox(
+              height: MediaQuery.of(context).size.height * 0.8,
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: buildContentForm(context, formItem, setState),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -1559,6 +1952,7 @@ class _FormScreenState extends State<FormScreen> {
     if (url != null) {
       var response = await WebServices.getListData(
           getUrl(url, make: make), widget.publicKey);
+      print(response);
       print(response['data']);
       if (url.contains('model')) {
         var models = [];
@@ -1615,10 +2009,71 @@ class _FormScreenState extends State<FormScreen> {
     }
   }
 
+  Future<bool> calculateAmount() async {
+    // Dialogs.showLoading(context: context, text: 'Submitting Payment');
+    setState(() {
+      isLoading = true;
+    });
+    // ignore: prefer_typing_uninitialized_variables
+    var paymentChannel;
+    String? debitWalletReference;
+    if (paymentOption == PaymentOption.gateway) {
+      paymentChannel = {
+        "channel": "bank transfer",
+        "amount": double.parse(purchaseData['amount'])
+      };
+      if (paymentMethod.contains('ussd')) {
+        paymentChannel['bank_code'] = bankCode;
+      }
+    } else {
+      debitWalletReference = widget.reference;
+    }
+    if (purchaseData['email'] == null || purchaseData['email'] == '') {
+      purchaseData['email'] = email;
+    }
+    if (purchaseData['first_name'] == null ||
+        purchaseData['first_name'] == '') {
+      purchaseData['first_name'] = firstName;
+    }
+    if (purchaseData['last_name'] == null || purchaseData['last_name'] == '') {
+      purchaseData['last_name'] = lastName;
+    }
+    if (purchaseData['phone_number'] == null ||
+        purchaseData['phone_number'] == '') {
+      purchaseData['phone_number'] = phone;
+    }
+    if (purchaseData['phone'] == null || purchaseData['phone'] == '') {
+      purchaseData['phone'] = phone;
+      purchaseData['phone'] = phone;
+    }
+    var res = await WebServices.initiatePurchase(
+        publicKey: widget.publicKey,
+        businessId: businessId,
+        instanceId: widget.instanceId,
+        payload: purchaseData,
+        debitWalletReference: debitWalletReference,
+        paymentOption: PaymentOption.gateway,
+        paymentChannel: paymentChannel);
+
+    print(res);
+    // Navigator.pop(context);
+    setState(() {
+      isLoading = false;
+    });
+    if (res is String) {
+      Dialogs.showErrorMessage(res);
+      return false;
+    } else {
+      setState(() => calcPrice = res['data']['amount'].toString());
+      return true;
+    }
+  }
+
   makePayment() async {
     Dialogs.showLoading(context: context, text: 'Submitting Payment');
+    // ignore: prefer_typing_uninitialized_variables
     var paymentChannel;
-    var debitWalletReference;
+    String? debitWalletReference;
     if (paymentOption == PaymentOption.gateway) {
       paymentChannel = {
         "channel": paymentMethod,
@@ -1654,6 +2109,7 @@ class _FormScreenState extends State<FormScreen> {
         instanceId: widget.instanceId,
         payload: purchaseData,
         debitWalletReference: debitWalletReference,
+        paymentOption: paymentOption,
         paymentChannel: paymentChannel);
 
     print(res);
@@ -1686,7 +2142,7 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   initialiseSdk(context) {
-    final mycover = MyCoverAI(
+    final mycover = MyCoverAIInitializer(
         context: context,
         form: widget.form,
         productId: [productId],
@@ -1720,25 +2176,33 @@ class _FormScreenState extends State<FormScreen> {
     if (res is String) {
       Dialogs.showErrorMessage(res);
     } else {
+      /////TODO Change Inspection to inspectable
       Dialogs.successDialog(
           context: context,
           title: 'Purchase Successful',
           message: !widget.inspectable
               ? 'You have just purchased \n$productName,\nKindly Check your email\nfor purchase detail'
-              : 'You have just purchased \n$productName,\nContinue to inspection',
+              : 'You have just purchased \n$productName,\nKindly Check your email\nto continue for inspection'
+          // 'You have just purchased \n$productName,\nContinue to inspection'
+          ,
           productName: productName,
-          isContinue: widget.inspectable ? true : false,
+          showOkButton: widget.inspectable ? true : false,
+          isContinue:
+              // widget.inspectable ? true :
+              false,
           onCancel: () {
             Navigator.pop(context);
             Navigator.pop(context);
           },
           onTap: () {
-            Navigator.pop(context);
-            if (widget.inspectable) {
-              initialiseSdk(context);
-            } else {
-              Navigator.pop(context);
-            }
+            Global.onComplete!();
+            // Navigator.pop(context);
+            // if (widget.inspectable) {
+            //   initialiseSdk(context);
+            // } else {
+            //   Global.onComplete!();
+            //   // Navigator.pop(context);
+            // }
           });
     }
   }
@@ -1790,14 +2254,40 @@ class _FormScreenState extends State<FormScreen> {
 
       setState(() {
         stage = PurchaseStage.purchase;
-        purchaseData['amount'] = res['data']['amount'];
-        purchaseData['vehicle_category'] = res['data']['vehicle_category'];
-        purchaseData['date_of_birth'] = res['data']['date_of_birth'];
-        purchaseData['phone_number'] = res['data']['phone_number'];
-        purchaseData['phone'] = res['data']['phone'];
-        purchaseData['last_name'] = res['data']['last_name'];
-        purchaseData['first_name'] = res['data']['first_name'];
-        purchaseData['email'] = res['data']['email'];
+        print("purchaseData");
+        print(purchaseData);
+        if (res['data'].containsKey('amount')) {
+          purchaseData['amount'] = res['data']['amount'];
+        }
+
+        if (res['data'].containsKey('vehicle_category')) {
+          purchaseData['vehicle_category'] = res['data']['vehicle_category'];
+        }
+
+        if (res['data'].containsKey('date_of_birth')) {
+          purchaseData['date_of_birth'] = res['data']['date_of_birth'];
+        }
+
+        if (res['data'].containsKey('phone_number')) {
+          purchaseData['phone_number'] = res['data']['phone_number'];
+        }
+
+        if (res['data'].containsKey('phone')) {
+          purchaseData['phone'] = res['data']['phone'];
+        }
+
+        if (res['data'].containsKey('last_name')) {
+          purchaseData['last_name'] = res['data']['last_name'];
+        }
+
+        if (res['data'].containsKey('first_name')) {
+          purchaseData['first_name'] = res['data']['first_name'];
+        }
+
+        if (res['data'].containsKey('email')) {
+          purchaseData['email'] = res['data']['email'];
+        }
+
         initialPage = 0;
         chunks = [];
         pageData = [];
@@ -1808,35 +2298,63 @@ class _FormScreenState extends State<FormScreen> {
   }
 
   uploadImage() async {
-    if (_image != null) {
-      Dialogs.showLoading(context: context, text: 'Uploading Image');
-      var res = await WebServices.uploadFile(
-          context, businessId, _image!, widget.publicKey);
+    if (imageList.isNotEmpty) {
+      for (var imageMap in imageList) {
+        for (var entry in imageMap.entries) {
+          var key = entry.key; // String
+          var file = entry.value; // File?
+          Dialogs.showLoading(context: context, text: 'Uploading Image');
+          var res = await WebServices.uploadFile(
+              context, businessId, file!, widget.publicKey);
 
-      Navigator.pop(context);
-      if (res.statusCode.toString() == '200' ||
-          res.statusCode.toString() == '201') {
-        res.stream.transform(utf8.decoder).listen((value) {
-          setState(() {
-            var body = jsonDecode(value);
-            purchaseData['image'] = body['data']['file_url'];
-            purchaseData['identification_url'] = body['data']['file_url'];
-            purchaseData['identification_image_url'] = body['data']['file_url'];
-            purchaseData['image_url'] = body['data']['file_url'];
-            purchaseData['national_id_image'] = body['data']['file_url'];
-            completePurchase();
-          });
-        });
-      } else {
-        res.stream.transform(utf8.decoder).listen((value) {
-          var body = jsonDecode(value);
-          print(body['responseText']);
-          Dialogs.showErrorMessage(res.reas);
-        });
+          Navigator.pop(context);
+          if (res.statusCode.toString() == '200' ||
+              res.statusCode.toString() == '201') {
+            await res.stream.transform(utf8.decoder).listen((value) {
+              setState(() {
+                var body = jsonDecode(value);
+                purchaseData[key] = body['data']['file_url'];
+              });
+            });
+          } else {
+            await res.stream.transform(utf8.decoder).listen((value) {
+              var body = jsonDecode(value);
+              print(body['responseText']);
+              Dialogs.showErrorMessage(res.reas);
+            });
+          }
+        }
       }
+      completePurchase();
     } else {
       completePurchase();
     }
+  }
+
+  Future<String?> uploadSingleImage(String key, File? file) async {
+    Dialogs.showLoading(context: context, text: 'Uploading Image');
+    var res = await WebServices.uploadFile(
+        context, businessId, file!, widget.publicKey);
+
+    Navigator.pop(context);
+
+    // Create a variable to hold the file URL
+    String? fileUrl;
+
+    // Listen to the stream once and handle both cases
+    await res.stream.transform(utf8.decoder).listen((value) {
+      var body = jsonDecode(value);
+      if (res.statusCode == 200 || res.statusCode == 201) {
+        setState(() {
+          fileUrl = body['data']['file_url'];
+        });
+      } else {
+        print(body['responseText']);
+        Dialogs.showErrorMessage(body['responseText']);
+      }
+    });
+
+    return fileUrl;
   }
 }
 

@@ -68,11 +68,11 @@ class Dialogs {
                     padding: const EdgeInsets.fromLTRB(20, 0, 15, 20),
                     child: Column(
                       children: [
-                        SizedBox(
+                        const SizedBox(
                           width: double.infinity,
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
-                            children: const <Widget>[
+                            children: <Widget>[
                               Padding(
                                 padding: EdgeInsets.only(
                                   left: 20.0,
@@ -204,6 +204,7 @@ class Dialogs {
       productName,
       onCancel,
       onTap,
+      showOkButton = false,
       isContinue = false}) async {
     return showDialog(
         barrierDismissible: false,
@@ -244,9 +245,10 @@ class Dialogs {
                           Center(
                             child: Text(
                               title ?? 'Payment Successful',
-                              style: const TextStyle(                          fontFamily: 'Space',
-
-                                  fontWeight: FontWeight.w700, fontSize: 21),
+                              style: const TextStyle(
+                                  fontFamily: 'Space',
+                                  fontWeight: FontWeight.w700,
+                                  fontSize: 21),
                             ),
                           ),
                           verticalSpace(),
@@ -254,13 +256,14 @@ class Dialogs {
                               message ??
                                   'You paid for $productName,\nKindly proceed to complete your purchase',
                               textAlign: TextAlign.center,
-                              style: const TextStyle(                          fontFamily: 'Space',
-                                  fontSize: 14)),
+                              style: const TextStyle(
+                                  fontFamily: 'Space', fontSize: 14)),
                           verticalSpace(),
                           Padding(
                             padding: const EdgeInsets.fromLTRB(35, 28, 35, 15),
-                            child:
-                                successButton(text: 'Continue', onTap: onTap),
+                            child: successButton(
+                                text: showOkButton ? 'Ok' : 'Continue',
+                                onTap: onTap),
                           ),
                           if (isContinue)
                             Center(
@@ -277,8 +280,8 @@ class Dialogs {
                                   child: Text(
                                     'Later',
                                     style: TextStyle(
-                                        color: PRIMARY,                          fontFamily: 'Space',
-
+                                        color: PRIMARY,
+                                        fontFamily: 'Space',
                                         fontWeight: FontWeight.w600,
                                         fontSize: 15),
                                   ),
@@ -427,7 +430,7 @@ class Dialogs {
                           verticalSpace(),
                           Text(message ?? '',
                               textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 14)),
+                              style: const TextStyle(fontSize: 14)),
                           verticalSpace(),
                           Padding(
                             padding: const EdgeInsets.all(35.0),

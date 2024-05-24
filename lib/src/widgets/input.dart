@@ -1,14 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../theme.dart';
 
-Text textBoxTitle(text) => Text(' $text',
-    style: const TextStyle(
-        fontSize: 13, fontWeight: FontWeight.w500, color: DARK,                          fontFamily: 'Space',
+Text textBoxTitle(text) => Text('$text',
+    style: GoogleFonts.spaceGrotesk(
+      fontSize: 13,
+      fontWeight: FontWeight.w500,
+      color: DARK,
     ));
 
 class InputFormField extends StatelessWidget {
   const InputFormField({
+    Key? key,
     this.suffixIcon,
     this.prefixIcon,
     this.validator,
@@ -24,8 +28,12 @@ class InputFormField extends StatelessWidget {
     this.keyboardType,
     this.maxLength,
     this.inputFormatters,
-  });
+    this.labelStyle,
+    this.isTextDimmed = false,
+  }) : super(key: key);
 
+  final TextStyle? labelStyle;
+  final bool isTextDimmed;
   final suffixIcon;
   final prefixIcon;
   final onChanged;
@@ -48,13 +56,17 @@ class InputFormField extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(0, 10, 0, 12),
       child: TextFormField(
         buildCounter: (context,
-            {required currentLength, required isFocused, maxLength}) =>
-        null,
+                {required currentLength, required isFocused, maxLength}) =>
+            null,
+        autovalidateMode: AutovalidateMode.onUserInteraction,
         inputFormatters: inputFormatters,
         enabled: enabled,
         controller: controller,
         keyboardType: keyboardType,
-        style: const TextStyle(fontSize: 14, color: DARK,                          fontFamily: 'Space',
+        style: TextStyle(
+          fontSize: 14,
+          color: isTextDimmed ? darkGREY : DARK,
+          fontFamily: 'Space',
         ),
         textCapitalization: textCapitalization,
         validator: validator,
@@ -68,10 +80,10 @@ class InputFormField extends StatelessWidget {
           border: InputBorder.none,
           enabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: GREY.withOpacity(0.6), width: 0.3),
-              borderRadius: const BorderRadius.all(const Radius.circular(4))),
+              borderRadius: const BorderRadius.all(Radius.circular(4))),
           disabledBorder: OutlineInputBorder(
               borderSide: BorderSide(color: GREY.withOpacity(0.6), width: 0.3),
-              borderRadius: const BorderRadius.all(const Radius.circular(4))),
+              borderRadius: const BorderRadius.all(Radius.circular(4))),
           focusedBorder: OutlineInputBorder(
               borderSide: BorderSide(color: GREY.withOpacity(0.7), width: 0.3),
               borderRadius: const BorderRadius.all(Radius.circular(4))),
@@ -87,12 +99,19 @@ class InputFormField extends StatelessWidget {
           prefixIcon: prefixIcon,
           labelText: label,
           hintText: hint,
-          labelStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4),                          fontFamily: 'Space',
-          ),
-          hintStyle: TextStyle(fontSize: 13, color: GREY.withOpacity(0.4),                          fontFamily: 'Space',
+          labelStyle: labelStyle ??
+              TextStyle(
+                fontSize: 13,
+                color: GREY.withOpacity(0.6),
+                fontFamily: 'Space',
+              ),
+          hintStyle: TextStyle(
+            fontSize: 13,
+            color: GREY.withOpacity(0.6),
+            fontFamily: 'Space',
           ),
           contentPadding:
-           EdgeInsets.symmetric(vertical: padding??15.0, horizontal: 15.0),
+              EdgeInsets.symmetric(vertical: padding ?? 15.0, horizontal: 15.0),
         ),
       ),
     );
