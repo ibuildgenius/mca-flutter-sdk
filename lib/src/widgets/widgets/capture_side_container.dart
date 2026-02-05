@@ -16,7 +16,7 @@ class CaptureSideContainer extends StatelessWidget {
       onTap: isLoading ? null : onTap,
       child: Container(
         width: MediaQuery.of(context).size.width * 0.15,
-        color: CustomColors.blackColor.withOpacity(0.7),
+        color: CustomColors.blackColor.withValues(alpha:0.7),
         child: Padding(
           padding: const EdgeInsets.symmetric(
             horizontal: 10,

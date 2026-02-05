@@ -78,7 +78,7 @@ class CountdownTimerState extends State<CountdownTimer> {
                     strokeWidth: 5.0,
                     valueColor: AlwaysStoppedAnimation(timerColor),
                     value: widget.controller.value,
-                    backgroundColor: CustomColors.blackColor.withOpacity(0.05),
+                    backgroundColor: CustomColors.blackColor.withValues(alpha: 0.05),
                   ),
                 ),
                 mediumText(timerString,
